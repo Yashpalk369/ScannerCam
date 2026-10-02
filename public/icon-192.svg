@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#059669"/>
+  <rect x="44" y="36" width="104" height="130" rx="10" fill="white" opacity="0.15"/>
+  <rect x="52" y="44" width="88" height="114" rx="8" fill="white" opacity="0.9"/>
+  <!-- Document lines -->
+  <rect x="64" y="68" width="64" height="6" rx="3" fill="#059669" opacity="0.6"/>
+  <rect x="64" y="82" width="48" height="6" rx="3" fill="#059669" opacity="0.5"/>
+  <rect x="64" y="96" width="56" height="6" rx="3" fill="#059669" opacity="0.5"/>
+  <rect x="64" y="110" width="40" height="6" rx="3" fill="#059669" opacity="0.4"/>
+  <!-- Camera lens -->
+  <circle cx="96" cy="138" r="14" fill="#059669" opacity="0.3"/>
+  <circle cx="96" cy="138" r="9" fill="#059669"/>
+  <circle cx="96" cy="138" r="5" fill="white" opacity="0.8"/>
+</svg>
