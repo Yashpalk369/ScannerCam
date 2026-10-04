@@ -125,9 +125,149 @@ function orderQuadCorners(points: Point[]): Quad {
 }
 
 /**
+ * Calculates cosine of the corner angle ∠ABC at vertex B.
+ */
+function cornerCosine(a: Point, b: Point, c: Point): number {
+  const bax = a.x - b.x
+  const bay = a.y - b.y
+  const bcx = c.x - b.x
+  const bcy = c.y - b.y
+  const mag = Math.hypot(bax, bay) * Math.hypot(bcx, bcy)
+  if (mag < 1e-6) return 1.0
+  return (bax * bcx + bay * bcy) / mag
+}
+
+/**
+ * Validates whether the 4 points form a geometrically plausible document in perspective:
+ * - Must be strictly convex.
+ * - Corner angles must be roughly perpendicular (between ~45° and ~135°).
+ * - Area must be between 10% and 94% of the image frame.
+ * - Aspect ratio must not be extremely skewed.
+ */
+function isRealisticDocumentQuad(quad: Quad, imgW: number, imgH: number): boolean {
+  if (!isConvexQuad(quad)) return false
+
+  const area = polygonArea(quad)
+  const areaRatio = area / (imgW * imgH)
+  if (areaRatio < 0.10 || areaRatio > 0.94) return false
+
+  const d0 = distance(quad[0], quad[1]) // Top
+  const d1 = distance(quad[1], quad[2]) // Right
+  const d2 = distance(quad[2], quad[3]) // Bottom
+  const d3 = distance(quad[3], quad[0]) // Left
+
+  const minSide = Math.min(imgW, imgH) * 0.15
+  if (d0 < minSide || d1 < minSide || d2 < minSide || d3 < minSide) return false
+
+  // Check all 4 corner angles: in real perspective, corner angles should not be ultra-sharp or flat
+  // |cos(θ)| <= 0.72 corresponds to angles between ~44° and ~136°
+  const cos0 = Math.abs(cornerCosine(quad[3], quad[0], quad[1]))
+  const cos1 = Math.abs(cornerCosine(quad[0], quad[1], quad[2]))
+  const cos2 = Math.abs(cornerCosine(quad[1], quad[2], quad[3]))
+  const cos3 = Math.abs(cornerCosine(quad[2], quad[3], quad[0]))
+  if (cos0 > 0.72 || cos1 > 0.72 || cos2 > 0.72 || cos3 > 0.72) return false
+
+  const maxW = Math.max(d0, d2)
+  const maxH = Math.max(d1, d3)
+  const aspect = maxW / maxH
+  if (aspect < 0.2 || aspect > 5.0) return false
+
+  return true
+}
+
+/**
+ * Edge Verification:
+ * Samples pixel gradient along all 4 boundary segments of the candidate quad.
+ * Rejects false positives (e.g. noise on walls or floors) that don't have true contrast edges.
+ */
+function verifyQuadEdges(
+  quad: Quad,
+  grad: Float32Array,
+  width: number,
+  height: number,
+  edgeThreshold: number,
+): { valid: boolean; score: number } {
+  const sides: [Point, Point][] = [
+    [quad[0], quad[1]], // Top
+    [quad[1], quad[2]], // Right
+    [quad[2], quad[3]], // Bottom
+    [quad[3], quad[0]], // Left
+  ]
+
+  const SAMPLES_PER_SIDE = 20
+  const minGradPerPixel = Math.max(22, edgeThreshold * 0.55)
+
+  let totalHits = 0
+  let totalGradSum = 0
+  let totalSamples = 0
+
+  for (const [p1, p2] of sides) {
+    const dx = p2.x - p1.x
+    const dy = p2.y - p1.y
+    const len = Math.hypot(dx, dy)
+    if (len < 1e-4) return { valid: false, score: 0 }
+
+    // Unit normal vector perpendicular to the side
+    const nx = -dy / len
+    const ny = dx / len
+
+    let sideHits = 0
+    let sideGradSum = 0
+
+    // Sample along side from t = 0.08 to 0.92 (avoiding corner intersection artifacts)
+    for (let s = 1; s <= SAMPLES_PER_SIDE; s += 1) {
+      const t = 0.08 + (s / (SAMPLES_PER_SIDE + 1)) * 0.84
+      const sx = p1.x + t * dx
+      const sy = p1.y + t * dy
+
+      // Search in a small perpendicular window (-2px to +2px) for local gradient peak
+      let maxLocal = 0
+      for (let offset = -2; offset <= 2; offset += 1) {
+        const qx = Math.round(sx + offset * nx)
+        const qy = Math.round(sy + offset * ny)
+        if (qx >= 0 && qx < width && qy >= 0 && qy < height) {
+          const g = grad[qy * width + qx]
+          if (g > maxLocal) maxLocal = g
+        }
+      }
+
+      sideGradSum += maxLocal
+      if (maxLocal >= minGradPerPixel) {
+        sideHits += 1
+      }
+    }
+
+    const sideHitRate = sideHits / SAMPLES_PER_SIDE
+    const sideAvgGrad = sideGradSum / SAMPLES_PER_SIDE
+
+    // Every side MUST have a minimum fraction of edge hits and contrast.
+    // If even ONE side of the quad has no contrast edge, this is not a real document!
+    if (sideHitRate < 0.35 || sideAvgGrad < 18) {
+      return { valid: false, score: 0 }
+    }
+
+    totalHits += sideHits
+    totalGradSum += sideGradSum
+    totalSamples += SAMPLES_PER_SIDE
+  }
+
+  const overallHitRate = totalHits / totalSamples
+  const overallAvgGrad = totalGradSum / totalSamples
+
+  // Overall criteria across all 4 sides combined
+  if (overallHitRate < 0.45 || overallAvgGrad < Math.max(25, edgeThreshold * 0.60)) {
+    return { valid: false, score: 0 }
+  }
+
+  const score = overallHitRate * 0.6 + (overallAvgGrad / edgeThreshold) * 0.4
+  return { valid: true, score }
+}
+
+/**
  * Intelligent Document Quad Detection.
  * Uses 2D Sobel gradient magnitude, inward edge ray scanning, convex hull,
- * and adaptive RDP polygon simplification to accurately identify document corners.
+ * RDP polygon simplification, and strict edge-continuity verification to detect
+ * real documents while rejecting walls, floors, and blank surfaces.
  */
 export function detectDocumentQuad(imageData: ImageData): Quad | null {
   const { data, width, height } = imageData
@@ -138,6 +278,10 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
   const targetH = Math.max(100, Math.round(height * scale))
 
   const gray = new Uint8Array(targetW * targetH)
+  let sumLum = 0
+  let sumLumSq = 0
+  let sampleCount = 0
+
   for (let y = 0; y < targetH; y += 1) {
     const srcY = Math.min(height - 1, Math.floor(y / scale))
     const rowOffset = y * targetW
@@ -146,11 +290,26 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
     for (let x = 0; x < targetW; x += 1) {
       const srcX = Math.min(width - 1, Math.floor(x / scale))
       const idx = (srcRowOffset + srcX) * 4
-      gray[rowOffset + x] = Math.round(
+      const lum = Math.round(
         data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114,
       )
+      gray[rowOffset + x] = lum
+
+      // Sample every 4th pixel for fast scene contrast check
+      if ((x & 1) === 0 && (y & 1) === 0) {
+        sumLum += lum
+        sumLumSq += lum * lum
+        sampleCount += 1
+      }
     }
   }
+
+  // Fast rejection of flat/monotone scenes (blank walls, uniform textures):
+  // A scene with a document on a table has distinct contrast (stdDev >= 18).
+  // Blank walls have stdDev typically < 10-14.
+  const meanLum = sumLum / Math.max(1, sampleCount)
+  const variance = Math.max(0, sumLumSq / Math.max(1, sampleCount) - meanLum * meanLum)
+  const stdDev = Math.sqrt(variance)
 
   // Step 2: 3x3 Box blur to remove high-frequency text & noise
   const blurred = new Uint8Array(targetW * targetH)
@@ -210,11 +369,13 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
     }
   }
 
-  if (maxGrad < 20) {
+  // If contrast is very low or maximum gradient across entire frame is weak,
+  // there is no document in frame (e.g. wall, floor, empty room).
+  if (maxGrad < 35 || (stdDev < 14 && maxGrad < 55)) {
     return null
   }
 
-  const edgeThreshold = Math.max(25, maxGrad * 0.22)
+  const edgeThreshold = Math.max(30, maxGrad * 0.25)
   const candidatePoints: Point[] = []
 
   // Step 4: Scan outward from center across 72 radial rays (every 5 degrees)
@@ -227,7 +388,6 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
     const cos = Math.cos(angleRad)
     const sin = Math.sin(angleRad)
 
-    // Scan from 25% outward to 98% edge of image
     let bestRadius = -1
     let bestMag = edgeThreshold
 
@@ -291,7 +451,7 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
     }
   }
 
-  if (candidatePoints.length < 16) {
+  if (candidatePoints.length < 24) {
     return null
   }
 
@@ -304,8 +464,10 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
   // Step 6: Multi-pass RDP polygon simplification to isolate 4 dominant corners
   const hullClosed = [...hull, hull[0]]
   let bestQuad: Quad | null = null
-  let minEpsilon = 4
-  let maxEpsilon = Math.min(targetW, targetH) * 0.35
+  let bestScore = -1
+
+  const minEpsilon = 4
+  const maxEpsilon = Math.min(targetW, targetH) * 0.35
 
   for (let eps = minEpsilon; eps <= maxEpsilon; eps += 2) {
     const simplified = ramerDouglasPeucker(hullClosed, eps)
@@ -314,27 +476,30 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
 
     if (unique.length === 4) {
       const ordered = orderQuadCorners(unique)
-      if (isConvexQuad(ordered)) {
-        const areaRatio = polygonArea(ordered) / (targetW * targetH)
-        if (areaRatio >= 0.18 && areaRatio <= 0.96) {
+      if (isRealisticDocumentQuad(ordered, targetW, targetH)) {
+        const { valid, score } = verifyQuadEdges(ordered, grad, targetW, targetH, edgeThreshold)
+        if (valid && score > bestScore) {
+          bestScore = score
           bestQuad = ordered
-          break
         }
       }
     }
   }
 
-  // Fallback: If exact 4-point RDP couldn't find a convex 4-gon, take 4 extreme projections of hull
+  // Fallback candidate: If exact 4-point RDP couldn't find a valid convex 4-gon,
+  // test the extreme projections of the hull, but ONLY accept if it strictly passes
+  // edge verification and geometric realism.
   if (!bestQuad) {
     const extremeQuad = orderQuadCorners(hull)
-    if (isConvexQuad(extremeQuad)) {
-      const areaRatio = polygonArea(extremeQuad) / (targetW * targetH)
-      if (areaRatio >= 0.18 && areaRatio <= 0.96) {
+    if (isRealisticDocumentQuad(extremeQuad, targetW, targetH)) {
+      const { valid, score } = verifyQuadEdges(extremeQuad, grad, targetW, targetH, edgeThreshold)
+      if (valid && score >= 0.50) {
         bestQuad = extremeQuad
       }
     }
   }
 
+  // If no candidate passed edge verification, this scene does NOT contain a document!
   if (!bestQuad) {
     return null
   }
