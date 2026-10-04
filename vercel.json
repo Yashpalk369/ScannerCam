@@ -1,0 +1,1 @@
+{"rewrites":[{"destination":"/blog/:slug.html","source":"/blog/:slug"},{"destination":"/index.html","source":"/(.*)"}]}
