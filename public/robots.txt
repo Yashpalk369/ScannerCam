@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://scanner.cam/sitemap.xml
+Sitemap: https://www.scanner.cam/sitemap.xml
