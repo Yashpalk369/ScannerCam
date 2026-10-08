@@ -259,19 +259,22 @@ export const App: React.FC = () => {
             No server uploads, no watermarks, no accounts required.
           </p>
           <div className="footer-links">
-            <span>Free & Open Web Tool</span>
+            <a href="/blog" className="footer-nav-link">Guides & Tutorials</a>
             <span>•</span>
-            <span>Client-Side WebAssembly & Web Workers</span>
+            <span>100% Free & Open Web Tool</span>
             <span>•</span>
-            <span>Offline Support (IndexedDB)</span>
+            <span>Client-Side Web Workers</span>
+            <span>•</span>
+            <span>Zero Cloud Storage</span>
           </div>
           <div className="footer-tags">
-            <span className="footer-tag">Online Scanner</span>
-            <span className="footer-tag">Cam Scanner</span>
-            <span className="footer-tag">CamScanner Online Free</span>
-            <span className="footer-tag">Free CamScanner Alternative</span>
-            <span className="footer-tag">Scan to PDF in Browser</span>
-            <span className="footer-tag">Private Document Scanner</span>
+            <a href="/blog/how-to-scan-id-card-online" className="footer-tag">Scan ID Card Online</a>
+            <a href="/blog/how-to-scan-receipts-for-expenses" className="footer-tag">Scan Receipts for Expenses</a>
+            <a href="/blog/scan-multi-page-pdf-online-free" className="footer-tag">Multi-Page PDF Scanner</a>
+            <a href="/blog/camscanner-vs-free-online-alternatives" className="footer-tag">Free CamScanner Alternative</a>
+            <a href="/blog/how-to-scan-documents-iphone-without-app" className="footer-tag">Scan on iPhone (No App)</a>
+            <a href="/blog/how-to-scan-documents-android-without-app" className="footer-tag">Scan on Android (No App)</a>
+            <a href="/blog/is-it-safe-to-scan-documents-online" className="footer-tag">Private Document Scanner</a>
           </div>
         </div>
       </footer>

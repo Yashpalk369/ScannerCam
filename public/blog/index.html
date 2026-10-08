@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Document Scanning Guides &amp; Tutorials | Scanner.cam</title>
+  <meta name="description" content="Free tutorials and guides on how to scan documents, ID cards, receipts, and multi-page PDFs in your browser without installing apps or creating accounts." />
+  <link rel="canonical" href="https://www.scanner.cam/blog" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Document Scanning Guides &amp; Tutorials | Scanner.cam" />
+  <meta property="og:description" content="Step-by-step tutorials on scanning ID cards, receipts, and multi-page PDFs right in your mobile or desktop browser without app downloads." />
+  <meta property="og:url" content="https://www.scanner.cam/blog" />
+  <meta property="og:image" content="https://www.scanner.cam/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Document Scanning Guides &amp; Tutorials | Scanner.cam" />
+  <meta name="twitter:description" content="Step-by-step tutorials on scanning documents directly in your browser without app downloads or signups." />
+  <meta name="twitter:image" content="https://www.scanner.cam/og-image.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "headline": "Document Scanning Guides & Tutorials",
+    "description": "Step-by-step guides on scanning ID cards, receipts, and multi-page PDFs in browser with zero server uploads.",
+    "url": "https://www.scanner.cam/blog",
+    "publisher": {
+      "@type": "Organization",
+      "name": "ScannerCam",
+      "url": "https://www.scanner.cam/"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --brand: #059669;
+      --brand-hover: #047857;
+      --brand-dim: rgba(5, 150, 105, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --bg-page: #f8fafc;
+      --border-subtle: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 3rem;
+    }
+    header.site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand), #047857);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    }
+    .brand-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .brand-title span { color: var(--brand); }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, var(--brand), #047857);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+      transition: all 160ms ease;
+    }
+    .btn-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+    }
+    .hero-wrap {
+      max-width: 1040px;
+      margin: 2.5rem auto 2rem;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+    .badge-pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: var(--brand-dim);
+      color: var(--brand);
+      border: 1px solid rgba(5, 150, 105, 0.25);
+      margin-bottom: 0.75rem;
+    }
+    h1.hero-title {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+    p.hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .content-wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .guides-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .guide-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.4rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+    .guide-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--brand);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .card-tag {
+      font-size: 0.725rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: var(--brand-dim);
+      color: var(--brand);
+    }
+    .card-time {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+    .guide-card:hover .card-title {
+      color: var(--brand);
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.25rem;
+      flex-grow: 1;
+    }
+    .card-action {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--brand);
+      margin-top: auto;
+    }
+    footer.site-footer {
+      max-width: 1040px;
+      margin: 4rem auto 0;
+      padding: 2rem 1.5rem 0;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--brand); text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand-wrap">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <div class="brand-title">Scanner<span>.cam</span></div>
+      </a>
+
+      <a href="/" class="btn-cta">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        <span>Open Scanner</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero-wrap">
+      <div class="badge-pill">Knowledge Base &amp; Tutorials</div>
+      <h1 class="hero-title">Document Scanning Guides &amp; Tutorials</h1>
+      <p class="hero-desc">
+        Practical walkthroughs to help you digitize IDs, receipts, and multi-page documents directly
+        in your mobile or desktop browser — completely free, watermark-free, and 100% private.
+      </p>
+    </div>
+
+    <div class="content-wrap">
+      <div class="guides-grid">
+        <a href="/blog/how-to-scan-id-card-online" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">ID &amp; KYC</span>
+            <span class="card-time">3 min read</span>
+          </div>
+          <h2 class="card-title">How to Scan an ID Card Online (Front &amp; Back, Free)</h2>
+          <p class="card-desc">Capture both sides of your ID or driver's license and export one clean, correctly sized PDF page — zero apps, zero signups.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+
+        <a href="/blog/how-to-scan-receipts-for-expenses" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">Receipts &amp; Taxes</span>
+            <span class="card-time">4 min read</span>
+          </div>
+          <h2 class="card-title">How to Scan Receipts for Expense Reports (Free, No App)</h2>
+          <p class="card-desc">Digitize thermal receipts for expense reports and tax deductions with high contrast, crisp text, and no glare.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+
+        <a href="/blog/scan-multi-page-pdf-online-free" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">Multi-Page PDF</span>
+            <span class="card-time">3 min read</span>
+          </div>
+          <h2 class="card-title">How to Scan Multi-Page PDFs Online Free</h2>
+          <p class="card-desc">Batch capture multiple document pages, reorder or rotate them, and compile into a single watermark-free PDF in A4 or Letter.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+
+        <a href="/blog/camscanner-vs-free-online-alternatives" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">Comparison</span>
+            <span class="card-time">4 min read</span>
+          </div>
+          <h2 class="card-title">CamScanner vs Free Online Alternatives</h2>
+          <p class="card-desc">Comparison of watermarks, cloud upload risks, subscriptions, and why browser-based scanning is safer for sensitive papers.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+
+        <a href="/blog/how-to-scan-documents-iphone-without-app" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">iOS &amp; iPhone</span>
+            <span class="card-time">3 min read</span>
+          </div>
+          <h2 class="card-title">How to Scan Documents on iPhone Without an App</h2>
+          <p class="card-desc">Turn Mobile Safari into a portable scanner with live edge detection, shadow removal, and instant PDF downloads.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+
+        <a href="/blog/how-to-scan-documents-android-without-app" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">Android</span>
+            <span class="card-time">3 min read</span>
+          </div>
+          <h2 class="card-title">How to Scan Documents on Android Without an App</h2>
+          <p class="card-desc">Scan receipts, letters, and forms in Android Chrome without installing intrusive third-party camera apps.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+
+        <a href="/blog/is-it-safe-to-scan-documents-online" class="guide-card">
+          <div class="card-top">
+            <span class="card-tag">Privacy &amp; Security</span>
+            <span class="card-time">4 min read</span>
+          </div>
+          <h2 class="card-title">Is It Safe to Scan Documents Online? Privacy Explained</h2>
+          <p class="card-desc">Deep dive into client-side Web Workers and WebAssembly: why your sensitive documents never touch a cloud server.</p>
+          <div class="card-action">Read guide &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 <a href="/">Scanner.cam</a> &mdash; 100% Client-Side Private Document Scanner. No server uploads, no watermarks, no signups.</p>
+    <p style="margin-top: 0.5rem;"><a href="/">&larr; Back to Free Document Scanner Tool</a></p>
+  </footer>
+</body>
+</html>

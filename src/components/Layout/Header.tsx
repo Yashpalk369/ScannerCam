@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { Camera, Upload, Download, ShieldCheck, Trash2 } from 'lucide-react'
+import { Camera, Upload, Download, ShieldCheck, Trash2, BookOpen } from 'lucide-react'
 
 interface HeaderProps {
   pageCount: number
@@ -54,6 +54,15 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="header-actions">
+        <a
+          href="/blog"
+          className="btn btn-ghost header-guides-link"
+          title="Document Scanning Guides & Tutorials"
+        >
+          <BookOpen size={15} />
+          <span>Guides</span>
+        </a>
+
         <input
           ref={fileInputRef}
           type="file"

@@ -13,6 +13,11 @@ import {
   Lock,
   Smartphone,
   Cpu,
+  BookOpen,
+  ArrowRight,
+  CreditCard,
+  Receipt,
+  FileStack,
 } from 'lucide-react'
 
 export const SeoArticle: React.FC = () => {
@@ -42,6 +47,65 @@ export const SeoArticle: React.FC = () => {
     {
       q: 'What document filters are available and which should I choose?',
       a: 'We offer five specialized filters: "Magic Color" (flattens background illumination and removes uneven shadows while keeping color photos vibrant), "Clean B/W" (uses local adaptive thresholding to convert documents into crisp, high-contrast monochrome text), "Enhance" (boosts contrast and ink saturation), "Grayscale", and "Original" raw capture.',
+    },
+  ]
+
+  const guides = [
+    {
+      slug: '/blog/how-to-scan-id-card-online',
+      title: 'How to Scan an ID Card Online (Front & Back, Free)',
+      desc: 'Capture both sides of your ID card and export one clean, correctly sized PDF page — zero apps, zero signups.',
+      tag: 'ID & KYC',
+      icon: CreditCard,
+      readTime: '3 min read',
+    },
+    {
+      slug: '/blog/how-to-scan-receipts-for-expenses',
+      title: 'How to Scan Receipts for Expense Reports (Free, No App)',
+      desc: 'Digitize thermal paper receipts for expense reports and tax deductions with high contrast, crisp text, and no glare.',
+      tag: 'Receipts & Taxes',
+      icon: Receipt,
+      readTime: '4 min read',
+    },
+    {
+      slug: '/blog/scan-multi-page-pdf-online-free',
+      title: 'How to Scan Multi-Page PDFs Online Free',
+      desc: 'Batch capture multiple document pages, reorder or rotate them, and compile into a single watermark-free PDF.',
+      tag: 'Multi-Page PDF',
+      icon: FileStack,
+      readTime: '3 min read',
+    },
+    {
+      slug: '/blog/camscanner-vs-free-online-alternatives',
+      title: 'CamScanner vs Free Online Alternatives',
+      desc: 'Comparison of watermarks, cloud upload risks, subscriptions, and why browser-based scanning is safer.',
+      tag: 'Comparison',
+      icon: ShieldCheck,
+      readTime: '4 min read',
+    },
+    {
+      slug: '/blog/how-to-scan-documents-iphone-without-app',
+      title: 'How to Scan Documents on iPhone Without an App',
+      desc: 'Turn Mobile Safari into a portable scanner with live edge detection, shadow removal, and instant PDF downloads.',
+      tag: 'iOS & iPhone',
+      icon: Smartphone,
+      readTime: '3 min read',
+    },
+    {
+      slug: '/blog/how-to-scan-documents-android-without-app',
+      title: 'How to Scan Documents on Android Without an App',
+      desc: 'Scan receipts, letters, and forms in Android Chrome without installing intrusive third-party camera apps.',
+      tag: 'Android',
+      icon: Smartphone,
+      readTime: '3 min read',
+    },
+    {
+      slug: '/blog/is-it-safe-to-scan-documents-online',
+      title: 'Is It Safe to Scan Documents Online? Privacy Explained',
+      desc: 'Deep dive into client-side Web Workers and WebAssembly: why your sensitive documents never touch a cloud server.',
+      tag: 'Privacy & Security',
+      icon: Lock,
+      readTime: '4 min read',
     },
   ]
 
@@ -302,6 +366,50 @@ export const SeoArticle: React.FC = () => {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Practical Guides and SEO Topic Clusters */}
+      <section className="article-section guides-section" id="guides">
+        <div className="guides-section-header">
+          <div className="article-badge">
+            <BookOpen size={16} />
+            <span>Practical Guides & Tutorials</span>
+          </div>
+          <h3 className="section-heading">Document Scanning Guides & Tutorials</h3>
+          <p className="section-text">
+            Step-by-step walkthroughs to digitize IDs, receipts, and multi-page paperwork directly in your mobile
+            or desktop browser without downloading third-party apps or creating accounts.
+          </p>
+        </div>
+
+        <div className="guides-cards-grid">
+          {guides.map((guide) => {
+            const Icon = guide.icon
+            return (
+              <a
+                key={guide.slug}
+                href={guide.slug}
+                className="guide-card-link"
+              >
+                <div className="guide-card-top">
+                  <span className="guide-badge">{guide.tag}</span>
+                  <span className="guide-read-time">{guide.readTime}</span>
+                </div>
+                <div className="guide-card-main">
+                  <div className="guide-card-icon">
+                    <Icon size={20} />
+                  </div>
+                  <h4 className="guide-card-title">{guide.title}</h4>
+                </div>
+                <p className="guide-card-desc">{guide.desc}</p>
+                <div className="guide-card-action">
+                  <span>Read full guide</span>
+                  <ArrowRight size={14} />
+                </div>
+              </a>
+            )
+          })}
         </div>
       </section>
 

@@ -215,7 +215,7 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
       const projY = editorView.offsetY + pt.y * editorView.scale
       const d = distance(pointer, { x: projX, y: projY })
 
-      if (d < 30 && d < minDist) {
+      if (d < 38 && d < minDist) {
         closestIndex = idx
         minDist = d
       }
