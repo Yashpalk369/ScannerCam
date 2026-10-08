@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, lazy, Suspense } from 'react'
 import { Header } from './components/Layout/Header'
 import { DocumentCanvas } from './components/Editor/DocumentCanvas'
 import { FilterToolbar } from './components/Editor/FilterToolbar'
 import { PageStrip } from './components/Pages/PageStrip'
-import { CameraModal } from './components/Camera/CameraModal'
-import { ExportModal } from './components/Export/ExportModal'
 import { SeoArticle } from './components/Content/SeoArticle'
 import { useScanner } from './hooks/useScanner'
 import { Loader2, AlertCircle, CheckCircle2, UploadCloud } from 'lucide-react'
 import './styles/app.css'
+
+const CameraModal = lazy(() =>
+  import('./components/Camera/CameraModal').then((m) => ({ default: m.CameraModal })),
+)
+const ExportModal = lazy(() =>
+  import('./components/Export/ExportModal').then((m) => ({ default: m.ExportModal })),
+)
 
 export const App: React.FC = () => {
   const {
@@ -272,20 +277,28 @@ export const App: React.FC = () => {
       </footer>
 
       {/* Camera Capture Modal */}
-      <CameraModal
-        isOpen={isCameraOpen}
-        onClose={() => setIsCameraOpen(false)}
-        onCapture={handleCameraCapture}
-      />
+      {isCameraOpen && (
+        <Suspense fallback={null}>
+          <CameraModal
+            isOpen={isCameraOpen}
+            onClose={() => setIsCameraOpen(false)}
+            onCapture={handleCameraCapture}
+          />
+        </Suspense>
+      )}
 
       {/* Export Dialog */}
-      <ExportModal
-        isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
-        pages={pages}
-        activePage={activePage ?? null}
-        setStatus={setStatus}
-      />
+      {isExportOpen && (
+        <Suspense fallback={null}>
+          <ExportModal
+            isOpen={isExportOpen}
+            onClose={() => setIsExportOpen(false)}
+            pages={pages}
+            activePage={activePage ?? null}
+            setStatus={setStatus}
+          />
+        </Suspense>
+      )}
 
       {/* Drag and Drop Full Screen Overlay */}
       {isDraggingOver && (

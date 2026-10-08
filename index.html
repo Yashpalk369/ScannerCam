@@ -193,27 +193,262 @@
     }
     </script>
     <style>
-      /* Minimal fallback styles for the static SEO content below.
-         The React app replaces this markup on load. */
-      #seo-fallback { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 24px 16px; color: #1f2937; line-height: 1.6; }
-      #seo-fallback h1 { font-size: 1.8rem; margin-bottom: .5rem; }
-      #seo-fallback h2 { font-size: 1.3rem; margin-top: 1.75rem; }
+      /* Pre-rendered App Shell & SEO Fallback Typography */
+      :root {
+        --brand: #059669;
+        --brand-glow: rgba(5, 150, 105, 0.2);
+        --bg-app: #f8fafc;
+        --border-subtle: #e2e8f0;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-app);
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        color: #0f172a;
+      }
+      .app-shell-pre {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+      .header-pre {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-bottom: 1px solid var(--border-subtle);
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .brand-pre {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .brand-icon-pre {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #059669, #047857);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        box-shadow: 0 4px 12px var(--brand-glow);
+      }
+      .brand-text-pre {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+      }
+      .brand-text-pre span { color: var(--brand); }
+      .brand-tagline-pre {
+        font-size: 0.725rem;
+        color: #64748b;
+      }
+      .privacy-badge-pre {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(5, 150, 105, 0.08);
+        border: 1px solid rgba(5, 150, 105, 0.25);
+        color: #047857;
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .privacy-dot-pre {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #059669;
+      }
+      .header-actions-pre {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .btn-pre {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .btn-pre-camera {
+        background: #059669;
+        color: #fff;
+      }
+      .btn-pre-upload {
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid var(--border-subtle);
+      }
+      .workspace-pre {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 1.25rem;
+        padding: 1.25rem 1.5rem;
+        min-height: calc(100vh - 120px);
+      }
+      @media (max-width: 1024px) {
+        .workspace-pre { grid-template-columns: 1fr; }
+        .sidebar-pre { display: none; }
+      }
+      .canvas-pre {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        min-height: 440px;
+        padding: 2rem;
+        text-align: center;
+      }
+      .canvas-pre-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: rgba(5, 150, 105, 0.08);
+        color: #059669;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+      .canvas-pre h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.35rem;
+      }
+      .canvas-pre p {
+        font-size: 0.9rem;
+        color: #64748b;
+        max-width: 360px;
+      }
+      .sidebar-pre {
+        background: #ffffff;
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .sidebar-pre-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .sidebar-pre-card {
+        height: 80px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+      }
+      /* Fallback article typography */
+      #seo-fallback {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 24px 20px;
+        color: #1f2937;
+        line-height: 1.6;
+        border-top: 1px solid #e2e8f0;
+      }
+      #seo-fallback h1 { font-size: 1.8rem; margin-bottom: .5rem; color: #0f172a; }
+      #seo-fallback h2 { font-size: 1.3rem; margin-top: 1.75rem; color: #0f172a; }
       #seo-fallback .lede { font-size: 1.05rem; color: #374151; }
       #seo-fallback table { border-collapse: collapse; width: 100%; margin-top: 1rem; font-size: .9rem; }
       #seo-fallback th, #seo-fallback td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+      #seo-fallback th { background: #f8fafc; font-weight: 600; }
       #seo-fallback ul, #seo-fallback ol { padding-left: 1.25rem; }
       #seo-fallback .guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; list-style: none; padding-left: 0; }
       #seo-fallback .guide-cards li { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; background: #fff; }
       #seo-fallback .guide-cards a { font-weight: 600; color: #111827; text-decoration: none; }
       #seo-fallback .guide-cards a:hover { text-decoration: underline; }
       #seo-fallback .guide-cards p { font-size: .9rem; color: #4b5563; margin: .5rem 0 0; }
+      #seo-fallback a { color: #059669; text-decoration: underline; }
     </style>
   </head>
   <body>
     <div id="app">
-      <!-- Static SEO fallback: visible to crawlers and no-JS clients.
-           React replaces this entire block on mount. Content mirrors the
-           in-app guide so there is no cloaking. -->
+      <!-- Pre-rendered App Shell: Displays instantly on first paint while React boots -->
+      <div class="app-shell-pre">
+        <header class="header-pre">
+          <div class="brand-pre">
+            <div class="brand-icon-pre">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <div>
+              <div class="brand-text-pre">Scanner<span>.cam</span></div>
+              <div class="brand-tagline-pre">Free Private Online Document Scanner</div>
+            </div>
+            <div class="privacy-badge-pre">
+              <span class="privacy-dot-pre"></span>
+              <span>100% Client-Side & Private</span>
+            </div>
+          </div>
+          <div class="header-actions-pre">
+            <div class="btn-pre btn-pre-camera">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>Scan Camera</span>
+            </div>
+            <div class="btn-pre btn-pre-upload">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Add Files</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="workspace-pre">
+          <section class="canvas-pre">
+            <div class="canvas-pre-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                <path d="M12 12v9"></path>
+                <path d="m16 16-4-4-4 4"></path>
+              </svg>
+            </div>
+            <h3>Upload or Scan Document</h3>
+            <p>Drag and drop image files here, or use your camera with live corner detection. Zero cloud uploads.</p>
+          </section>
+
+          <aside class="sidebar-pre">
+            <div class="sidebar-pre-title">Pages</div>
+            <div class="sidebar-pre-card"></div>
+            <div class="sidebar-pre-card"></div>
+          </aside>
+        </main>
+      </div>
+
+      <!-- Static SEO fallback: visible to crawlers and positioned naturally below the workspace -->
       <div id="seo-fallback">
         <h1>Free Online Document Scanner — Scan to PDF in Your Browser</h1>
         <p class="lede">Scanner.cam is a 100% free, private online document scanner and CamScanner web
