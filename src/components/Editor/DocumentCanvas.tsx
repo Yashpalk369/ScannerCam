@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { EditorView, Point, Quad, ScanPage } from '../../core/cv/types'
 import { distance } from '../../core/cv/homography'
 import { CornerMagnifier } from './CornerMagnifier'
-import { Camera, Upload, Shield, Zap, FileCheck2, Sparkles } from 'lucide-react'
-import { Logo } from '../Layout/Logo'
 
 interface DocumentCanvasProps {
   page: ScanPage | null
@@ -11,8 +9,6 @@ interface DocumentCanvasProps {
   editingQuad: Quad | null
   onUpdateQuadCorner: (index: number, pt: Point) => void
   isProcessing: boolean
-  onOpenCamera?: () => void
-  onAddFiles?: (files: FileList) => void
 }
 
 const CORNER_LABELS = ['TL', 'TR', 'BR', 'BL']
@@ -23,12 +19,9 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   editingQuad,
   onUpdateQuadCorner,
   isProcessing,
-  onOpenCamera,
-  onAddFiles,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const emptyFileInputRef = useRef<HTMLInputElement | null>(null)
   const [editorView, setEditorView] = useState<EditorView | null>(null)
   const [activeHandleIndex, setActiveHandleIndex] = useState<number | null>(null)
   const [magnifierPos, setMagnifierPos] = useState<Point | null>(null)
@@ -286,74 +279,9 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   if (!page) {
     return (
       <div className="canvas-empty-state">
-        <input
-          ref={emptyFileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          style={{ display: 'none' }}
-          onChange={(e) => {
-            if (e.target.files && e.target.files.length > 0 && onAddFiles) {
-              onAddFiles(e.target.files)
-              e.target.value = ''
-            }
-          }}
-        />
-
-        <div className="empty-hero-card">
-          <div className="empty-badge-wrap">
-            <Logo size={64} className="empty-hero-logo" />
-            <span className="empty-glow-ring" />
-          </div>
-
-          <h2 className="empty-title">Free Online Document Scanner</h2>
-          <p className="empty-subtitle">
-            Scan documents, contracts, receipts & IDs right in your browser.
-            Auto-crop, shadow removal & multi-page PDF export — zero server uploads.
-          </p>
-
-          <div className="empty-action-group">
-            <button
-              type="button"
-              className="btn btn-primary btn-lg empty-cta-btn"
-              onClick={onOpenCamera}
-              disabled={isProcessing}
-            >
-              <Camera size={19} />
-              <span>Scan with Camera</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-secondary btn-lg empty-cta-btn"
-              onClick={() => emptyFileInputRef.current?.click()}
-              disabled={isProcessing}
-            >
-              <Upload size={19} />
-              <span>Upload Photos / Files</span>
-            </button>
-          </div>
-
-          <p className="empty-drag-hint">or drag & drop images anywhere on screen</p>
-
-          <div className="empty-trust-grid">
-            <div className="trust-pill">
-              <Shield size={14} className="text-brand" />
-              <span>100% Client-Side Privacy</span>
-            </div>
-            <div className="trust-pill">
-              <Zap size={14} className="text-brand" />
-              <span>Auto-Edge Detection</span>
-            </div>
-            <div className="trust-pill">
-              <FileCheck2 size={14} className="text-brand" />
-              <span>Clean Multi-Page PDF</span>
-            </div>
-            <div className="trust-pill">
-              <Sparkles size={14} className="text-brand" />
-              <span>No Watermark & Free</span>
-            </div>
-          </div>
+        <div className="empty-content">
+          <p className="empty-title">No Document Selected</p>
+          <p className="empty-subtitle">Take a photo with your camera or drop image files here.</p>
         </div>
       </div>
     )
