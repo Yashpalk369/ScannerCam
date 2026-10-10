@@ -43,7 +43,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Network-first for HTML (always fresh app shell)
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/\/api\//],
+        navigateFallbackDenylist: [/\/api\//, /\/blog/],
         runtimeCaching: [
           {
             // Google Fonts

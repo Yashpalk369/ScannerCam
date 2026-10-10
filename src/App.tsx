@@ -68,6 +68,11 @@ export const App: React.FC = () => {
   // Global drag-and-drop listener
   useEffect(() => {
     const onDragOver = (e: DragEvent) => {
+      const hasFiles = e.dataTransfer?.types
+        ? Array.from(e.dataTransfer.types).includes('Files')
+        : false
+      if (!hasFiles) return
+
       e.preventDefault()
       setIsDraggingOver(true)
     }
@@ -77,6 +82,11 @@ export const App: React.FC = () => {
       }
     }
     const onDrop = (e: DragEvent) => {
+      const hasFiles = e.dataTransfer?.types
+        ? Array.from(e.dataTransfer.types).includes('Files')
+        : false
+      if (!hasFiles) return
+
       e.preventDefault()
       setIsDraggingOver(false)
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FilterMode, Point, Quad, ScanPage } from '../core/cv/types'
 import { cvWorker } from '../core/workers/workerClient'
 import { cloneQuad, defaultQuad, isConvexQuad, polygonArea } from '../core/cv/homography'
@@ -11,6 +11,7 @@ export function useScanner() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [statusMessage, setStatusMessage] = useState('Ready.')
   const [isError, setIsError] = useState(false)
+  const hasInitializedDbRef = useRef(false)
 
   // Corner perspective editing state
   const [editMode, setEditMode] = useState(false)
@@ -41,22 +42,30 @@ export function useScanner() {
     scanDb
       .loadAllPages()
       .then((restored) => {
-        if (!mounted || restored.length === 0) return
-        setPages(restored)
-        setActivePageId(restored[0].id)
-        pushHistory(restored, restored[0].id)
-        setStatus(`Restored ${restored.length} page${restored.length > 1 ? 's' : ''} from session.`)
+        if (!mounted) return
+        if (restored.length > 0) {
+          setPages(restored)
+          setActivePageId(restored[0].id)
+          pushHistory(restored, restored[0].id)
+          setStatus(`Restored ${restored.length} page${restored.length > 1 ? 's' : ''} from session.`)
+        }
       })
       .catch((err) => {
         console.warn('Failed to restore pages from IndexedDB:', err)
+      })
+      .finally(() => {
+        if (mounted) {
+          hasInitializedDbRef.current = true
+        }
       })
     return () => {
       mounted = false
     }
   }, [setStatus, pushHistory])
 
-  // Sync state changes to IndexedDB
+  // Sync state changes to IndexedDB (only after initial load has completed)
   useEffect(() => {
+    if (!hasInitializedDbRef.current) return
     if (pages.length > 0) {
       scanDb.saveAllPages(pages).catch(console.error)
     } else {
@@ -348,9 +357,12 @@ export function useScanner() {
   const undoAction = useCallback(() => {
     const entry = undo()
     if (!entry) return
-    // Revoke any previewUrls that are going away would be complex; instead we simply restore state.
-    // The old Blobs remain referenced so they stay alive.
-    setPages(entry.pages)
+    // Re-create object URLs for any pages that might have had their previous URLs revoked
+    const restoredPages = entry.pages.map((p) => ({
+      ...p,
+      previewUrl: URL.createObjectURL(p.blob),
+    }))
+    setPages(restoredPages)
     setActivePageId(entry.activePageId)
     setEditMode(false)
     setEditingQuad(null)
@@ -361,7 +373,11 @@ export function useScanner() {
   const redoAction = useCallback(() => {
     const entry = redo()
     if (!entry) return
-    setPages(entry.pages)
+    const restoredPages = entry.pages.map((p) => ({
+      ...p,
+      previewUrl: URL.createObjectURL(p.blob),
+    }))
+    setPages(restoredPages)
     setActivePageId(entry.activePageId)
     setEditMode(false)
     setEditingQuad(null)

@@ -82,6 +82,8 @@ function warpPerspectivePixels(
       const mapped: Point = applyHomography(h, x, y)
 
       if (
+        !Number.isFinite(mapped.x) ||
+        !Number.isFinite(mapped.y) ||
         mapped.x < 0 ||
         mapped.y < 0 ||
         mapped.x >= srcWidth - 1 ||

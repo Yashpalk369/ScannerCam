@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { Trash2, Plus, FileText, GripVertical } from 'lucide-react'
+import { Trash2, Plus, FileText, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
 import type { ScanPage } from '../../core/cv/types'
 
 interface PageStripProps {
@@ -18,6 +18,7 @@ export const PageStrip: React.FC<PageStripProps> = ({
   activePageId,
   isProcessing,
   onSelectPage,
+  onMovePage,
   onReorderPages,
   onRemovePage,
   onAddFiles,
@@ -125,12 +126,37 @@ export const PageStrip: React.FC<PageStripProps> = ({
               </div>
 
               <div className="thumbnail-actions" onClick={(e) => e.stopPropagation()}>
+                {pages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn-tiny"
+                      disabled={isProcessing || index === 0}
+                      onClick={() => onMovePage(page.id, 'up')}
+                      title="Move page up"
+                      aria-label={`Move page ${index + 1} up`}
+                    >
+                      <ChevronUp size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-tiny"
+                      disabled={isProcessing || index === pages.length - 1}
+                      onClick={() => onMovePage(page.id, 'down')}
+                      title="Move page down"
+                      aria-label={`Move page ${index + 1} down`}
+                    >
+                      <ChevronDown size={13} />
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   className="btn-tiny btn-danger"
                   disabled={isProcessing}
                   onClick={() => onRemovePage(page.id)}
                   title="Remove page"
+                  aria-label={`Remove page ${index + 1}`}
                 >
                   <Trash2 size={13} />
                 </button>

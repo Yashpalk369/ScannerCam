@@ -128,6 +128,9 @@ export function buildHomography(from: Quad, to: Quad): number[] {
 
 export function applyHomography(matrix: number[], x: number, y: number): Point {
   const denominator = matrix[6] * x + matrix[7] * y + matrix[8]
+  if (Math.abs(denominator) < 1e-10) {
+    return { x: -1, y: -1 }
+  }
   const mappedX = (matrix[0] * x + matrix[1] * y + matrix[2]) / denominator
   const mappedY = (matrix[3] * x + matrix[4] * y + matrix[5]) / denominator
   return { x: mappedX, y: mappedY }

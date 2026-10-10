@@ -73,9 +73,9 @@ export const CornerMagnifier: React.FC<CornerMagnifierProps> = ({
     ctx.restore()
   }, [sourceImage, cornerPoint, zoom, size])
 
-  // Position loupe offset above the finger/cursor
+  // Position loupe offset above the finger/cursor; flip below if too close to top edge
   const left = canvasPos.x - size / 2
-  const top = canvasPos.y - size - 24
+  const top = canvasPos.y - size - 24 < 12 ? canvasPos.y + 28 : canvasPos.y - size - 24
 
   return (
     <div

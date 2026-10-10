@@ -30,6 +30,8 @@ export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const detectIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sharedCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const stableFramesRef = useRef(0)
   const lastQuadRef = useRef<Quad | null>(null)
 
@@ -46,6 +48,10 @@ export function useCamera() {
   const [autoCaptureEnabled, setAutoCaptureEnabled] = useState(true)
 
   const stopCamera = useCallback(() => {
+    if (startTimerRef.current !== null) {
+      clearTimeout(startTimerRef.current)
+      startTimerRef.current = null
+    }
     if (detectIntervalRef.current !== null) {
       clearInterval(detectIntervalRef.current)
       detectIntervalRef.current = null
@@ -79,9 +85,14 @@ export function useCamera() {
     const scale = targetW / video.videoWidth
     const targetH = Math.round(video.videoHeight * scale)
 
-    const canvas = document.createElement('canvas')
-    canvas.width = targetW
-    canvas.height = targetH
+    if (!sharedCanvasRef.current) {
+      sharedCanvasRef.current = document.createElement('canvas')
+    }
+    const canvas = sharedCanvasRef.current
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW
+      canvas.height = targetH
+    }
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) return
 
@@ -188,7 +199,7 @@ export function useCamera() {
         }
 
         // Give video a moment to render first frame, then start live detection
-        setTimeout(startLiveDetection, 800)
+        startTimerRef.current = setTimeout(startLiveDetection, 800)
       } catch (err: unknown) {
         console.error('Camera access error:', err)
         setError('Could not access camera. Please check permissions.')

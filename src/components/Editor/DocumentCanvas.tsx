@@ -34,14 +34,24 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
       setRawImage(null)
       return
     }
+    let active = true
     const img = new Image()
     const url = URL.createObjectURL(page.rawBlob)
     img.onload = () => {
+      if (active) {
+        setRawImage(img)
+      }
       URL.revokeObjectURL(url)
-      setRawImage(img)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
     }
     img.src = url
-  }, [page?.rawBlob, page])
+    return () => {
+      active = false
+      URL.revokeObjectURL(url)
+    }
+  }, [page?.id, page?.rawBlob])
 
   // Load output image for standard preview
   useEffect(() => {
