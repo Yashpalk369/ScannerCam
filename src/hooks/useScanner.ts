@@ -12,6 +12,11 @@ export function useScanner() {
   const [statusMessage, setStatusMessage] = useState('Ready.')
   const [isError, setIsError] = useState(false)
   const hasInitializedDbRef = useRef(false)
+  const pagesRef = useRef<ScanPage[]>([])
+
+  useEffect(() => {
+    pagesRef.current = pages
+  }, [pages])
 
   // Corner perspective editing state
   const [editMode, setEditMode] = useState(false)
@@ -97,7 +102,8 @@ export function useScanner() {
 
         // Warp perspective and apply filter
         const warped = await cvWorker.warpAndFilter(blob, initialQuad, defaultFilter)
-        const pageName = customName || `Page ${pages.length + 1}`
+        const currentPages = pagesRef.current
+        const pageName = customName || `Page ${currentPages.length + 1}`
 
         const newPage: ScanPage = {
           id: crypto.randomUUID(),
@@ -114,7 +120,8 @@ export function useScanner() {
           createdAt: Date.now(),
         }
 
-        const newPages = [...pages, newPage]
+        const newPages = [...currentPages, newPage]
+        pagesRef.current = newPages
         commitPages(newPages, newPage.id)
         setEditMode(false)
         setEditingQuad(null)
@@ -126,7 +133,70 @@ export function useScanner() {
         setIsProcessing(false)
       }
     },
-    [pages, setStatus, commitPages],
+    [setStatus, commitPages],
+  )
+
+  const addBlobsAsPages = useCallback(
+    async (blobs: Blob[], defaultFilter: FilterMode = 'magic') => {
+      if (blobs.length === 0) return
+      setIsProcessing(true)
+      setStatus(`Processing 1 of ${blobs.length} images...`)
+
+      const newPagesList: ScanPage[] = []
+
+      try {
+        for (let i = 0; i < blobs.length; i += 1) {
+          const blob = blobs[i]
+          setStatus(`Processing image ${i + 1} of ${blobs.length}...`)
+
+          const rawImg = await cvWorker.blobToImage(blob)
+          const rawWidth = rawImg.naturalWidth
+          const rawHeight = rawImg.naturalHeight
+
+          let initialQuad: Quad
+          try {
+            initialQuad = await cvWorker.detectQuad(blob)
+          } catch {
+            initialQuad = defaultQuad(rawWidth, rawHeight)
+          }
+
+          const warped = await cvWorker.warpAndFilter(blob, initialQuad, defaultFilter)
+          const currentTotal = pagesRef.current.length + newPagesList.length
+          const pageName = `Page ${currentTotal + 1}`
+
+          const newPage: ScanPage = {
+            id: crypto.randomUUID(),
+            name: pageName,
+            blob: warped.blob,
+            previewUrl: URL.createObjectURL(warped.blob),
+            width: warped.width,
+            height: warped.height,
+            filter: defaultFilter,
+            quad: initialQuad,
+            rawBlob: blob,
+            rawWidth,
+            rawHeight,
+            createdAt: Date.now(),
+          }
+
+          newPagesList.push(newPage)
+        }
+
+        const combinedPages = [...pagesRef.current, ...newPagesList]
+        pagesRef.current = combinedPages
+        const lastPage = newPagesList[newPagesList.length - 1]
+        commitPages(combinedPages, lastPage?.id || null)
+        setEditMode(false)
+        setEditingQuad(null)
+        setStatus(`Added ${newPagesList.length} page${newPagesList.length > 1 ? 's' : ''}.`)
+      } catch (err: unknown) {
+        console.error(err)
+        setStatus('Failed to process some images. Try another file.', true)
+      } finally {
+        setIsProcessing(false)
+      }
+    },
+    [setStatus, commitPages],
   )
 
   const updateFilter = useCallback(
@@ -398,6 +468,7 @@ export function useScanner() {
     setStatus,
     setActivePageId,
     addBlobAsPage,
+    addBlobsAsPages,
     updateFilter,
     rotateActivePage,
     startEditCorners,

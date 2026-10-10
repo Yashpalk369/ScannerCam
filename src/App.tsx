@@ -30,6 +30,7 @@ export const App: React.FC = () => {
     setStatus,
     setActivePageId,
     addBlobAsPage,
+    addBlobsAsPages,
     updateFilter,
     rotateActivePage,
     startEditCorners,
@@ -50,19 +51,23 @@ export const App: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
 
-  // Handle file uploads (batch support)
+  // Handle file uploads (batch multi-image support)
   const handleAddFiles = async (files: FileList) => {
+    const validImages: Blob[] = []
     for (let i = 0; i < files.length; i += 1) {
       const file = files[i]
       if (file.type.startsWith('image/')) {
-        await addBlobAsPage(file, `Page ${pages.length + i + 1}`, 'magic')
+        validImages.push(file)
       }
+    }
+    if (validImages.length > 0) {
+      await addBlobsAsPages(validImages, 'magic')
     }
   }
 
   // Handle camera captures
   const handleCameraCapture = async (blob: Blob) => {
-    await addBlobAsPage(blob, `Page ${pages.length + 1}`, 'magic')
+    await addBlobAsPage(blob, undefined, 'magic')
   }
 
   // Global drag-and-drop listener
