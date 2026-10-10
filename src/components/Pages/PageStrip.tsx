@@ -130,21 +130,21 @@ export const PageStrip: React.FC<PageStripProps> = ({
                   <>
                     <button
                       type="button"
-                      className="btn-tiny"
+                      className="btn-tiny btn-move-prev"
                       disabled={isProcessing || index === 0}
                       onClick={() => onMovePage(page.id, 'up')}
-                      title="Move page up"
-                      aria-label={`Move page ${index + 1} up`}
+                      title="Move page earlier"
+                      aria-label={`Move page ${index + 1} earlier`}
                     >
                       <ChevronUp size={13} />
                     </button>
                     <button
                       type="button"
-                      className="btn-tiny"
+                      className="btn-tiny btn-move-next"
                       disabled={isProcessing || index === pages.length - 1}
                       onClick={() => onMovePage(page.id, 'down')}
-                      title="Move page down"
-                      aria-label={`Move page ${index + 1} down`}
+                      title="Move page later"
+                      aria-label={`Move page ${index + 1} later`}
                     >
                       <ChevronDown size={13} />
                     </button>

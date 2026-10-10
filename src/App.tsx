@@ -1,11 +1,11 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react'
+import React, { useEffect, useState, useRef, lazy, Suspense } from 'react'
 import { Header } from './components/Layout/Header'
 import { DocumentCanvas } from './components/Editor/DocumentCanvas'
 import { FilterToolbar } from './components/Editor/FilterToolbar'
 import { PageStrip } from './components/Pages/PageStrip'
 import { SeoArticle } from './components/Content/SeoArticle'
 import { useScanner } from './hooks/useScanner'
-import { Loader2, AlertCircle, CheckCircle2, UploadCloud } from 'lucide-react'
+import { Loader2, AlertCircle, CheckCircle2, UploadCloud, Camera, Upload, Download } from 'lucide-react'
 import './styles/app.css'
 
 const CameraModal = lazy(() =>
@@ -49,6 +49,7 @@ export const App: React.FC = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
+  const mobileFileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Handle file uploads (batch support)
   const handleAddFiles = async (files: FileList) => {
@@ -210,6 +211,8 @@ export const App: React.FC = () => {
             editingQuad={editingQuad}
             onUpdateQuadCorner={updateQuadCorner}
             isProcessing={isProcessing}
+            onOpenCamera={() => setIsCameraOpen(true)}
+            onAddFiles={handleAddFiles}
           />
 
           {/* Bottom Filter & Actions Toolbar */}
@@ -239,6 +242,59 @@ export const App: React.FC = () => {
           onAddFiles={handleAddFiles}
         />
       </main>
+
+      {/* Mobile Floating Bottom Action Dock */}
+      <nav className="mobile-bottom-dock" aria-label="Mobile Actions">
+        <input
+          ref={mobileFileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            if (e.target.files) handleAddFiles(e.target.files)
+            e.target.value = ''
+          }}
+        />
+
+        <button
+          type="button"
+          className="mobile-dock-btn"
+          onClick={() => mobileFileInputRef.current?.click()}
+          disabled={isProcessing}
+          aria-label="Upload Images"
+        >
+          <Upload size={20} />
+          <span>Upload</span>
+        </button>
+
+        <button
+          type="button"
+          className="mobile-dock-btn mobile-dock-primary"
+          onClick={() => setIsCameraOpen(true)}
+          disabled={isProcessing}
+          aria-label="Scan with Camera"
+        >
+          <div className="mobile-dock-camera-glow">
+            <Camera size={22} />
+          </div>
+          <span>Scan Camera</span>
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-dock-btn ${pages.length > 0 ? 'mobile-dock-accent' : ''}`}
+          onClick={() => setIsExportOpen(true)}
+          disabled={pages.length === 0 || isProcessing}
+          aria-label={`Export ${pages.length} pages`}
+        >
+          <div className="dock-badge-wrap">
+            <Download size={20} />
+            {pages.length > 0 && <span className="dock-page-badge">{pages.length}</span>}
+          </div>
+          <span>Export</span>
+        </button>
+      </nav>
 
       {/* Global Status Bar */}
       <footer className="scanner-status-bar">

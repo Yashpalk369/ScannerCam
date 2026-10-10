@@ -1,0 +1,90 @@
+import React from 'react'
+
+interface LogoProps {
+  size?: number
+  className?: string
+}
+
+export const Logo: React.FC<LogoProps> = ({ size = 36, className = '' }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 512 512"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-label="Scanner.cam Logo"
+      role="img"
+    >
+      <defs>
+        <linearGradient id="scLogoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="50%" stopColor="#059669" />
+          <stop offset="100%" stopColor="#047857" />
+        </linearGradient>
+
+        <linearGradient id="scLogoLens" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#065f46" />
+          <stop offset="100%" stopColor="#022c22" />
+        </linearGradient>
+
+        <linearGradient id="scLogoLaser" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#34d399" stopOpacity="0" />
+          <stop offset="25%" stopColor="#34d399" stopOpacity="0.8" />
+          <stop offset="50%" stopColor="#ffffff" stopOpacity="1" />
+          <stop offset="75%" stopColor="#34d399" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+        </linearGradient>
+
+        <filter id="scLogoShadow" x="-10%" y="-5%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#022c22" floodOpacity="0.32" />
+        </filter>
+
+        <filter id="scLogoGlow" x="-20%" y="-150%" width="140%" height="400%">
+          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Squircle App Container */}
+      <rect width="512" height="512" rx="112" fill="url(#scLogoBg)" />
+
+      {/* Floating Document Paper */}
+      <g filter="url(#scLogoShadow)">
+        <rect x="92" y="76" width="328" height="360" rx="32" fill="#ffffff" />
+      </g>
+
+      {/* Document Folded Corner */}
+      <path d="M 348 76 L 420 148 L 348 148 Z" fill="#e2e8f0" />
+      <path d="M 348 76 L 348 148 L 420 148" stroke="#cbd5e1" strokeWidth="4" strokeLinejoin="round" fill="none" />
+
+      {/* Document Header Lines */}
+      <rect x="138" y="130" width="130" height="14" rx="7" fill="#059669" fillOpacity="0.85" />
+      <rect x="138" y="158" width="190" height="11" rx="5.5" fill="#94a3b8" fillOpacity="0.5" />
+
+      {/* Corner Edge-Detection Brackets */}
+      <path d="M 124 236 L 124 206 C 124 200 128 196 134 196 L 164 196" stroke="#059669" strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M 388 236 L 388 206 C 388 200 384 196 378 196 L 348 196" stroke="#059669" strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M 124 356 L 124 386 C 124 392 128 396 134 396 L 164 396" stroke="#059669" strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M 388 356 L 388 386 C 388 392 384 396 378 396 L 348 396" stroke="#059669" strokeWidth="10" strokeLinecap="round" fill="none" />
+
+      {/* Center Camera Shutter Lens */}
+      <circle cx="256" cy="296" r="82" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="4" />
+      <circle cx="256" cy="296" r="74" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="2" />
+      <circle cx="256" cy="296" r="66" fill="url(#scLogoLens)" />
+      <circle cx="256" cy="296" r="48" fill="#047857" fillOpacity="0.4" stroke="#10b981" strokeWidth="6" />
+      <circle cx="256" cy="296" r="28" fill="#022c22" />
+      <circle cx="238" cy="278" r="14" fill="#ffffff" fillOpacity="0.9" />
+      <circle cx="272" cy="312" r="6" fill="#34d399" fillOpacity="0.75" />
+
+      {/* Glowing Laser Scan Beam */}
+      <g filter="url(#scLogoGlow)">
+        <line x1="96" y1="296" x2="416" y2="296" stroke="url(#scLogoLaser)" strokeWidth="7" strokeLinecap="round" />
+      </g>
+    </svg>
+  )
+}
