@@ -84,44 +84,11 @@ function ramerDouglasPeucker(points: Point[], epsilon: number): Point[] {
  * Organizes 4 points into canonical [TL, TR, BR, BL] order.
  */
 function orderQuadCorners(points: Point[]): Quad {
-  let tl = points[0]
-  let tr = points[0]
-  let br = points[0]
-  let bl = points[0]
-
-  let minSum = tl.x + tl.y
-  let maxSum = minSum
-  let minDiff = tl.x - tl.y
-  let maxDiff = minDiff
-
-  for (const pt of points) {
-    const sum = pt.x + pt.y
-    const diff = pt.x - pt.y
-
-    if (sum < minSum) {
-      minSum = sum
-      tl = pt
-    }
-    if (sum > maxSum) {
-      maxSum = sum
-      br = pt
-    }
-    if (diff > maxDiff) {
-      maxDiff = diff
-      tr = pt
-    }
-    if (diff < minDiff) {
-      minDiff = diff
-      bl = pt
-    }
-  }
-
-  return [
-    { x: tl.x, y: tl.y },
-    { x: tr.x, y: tr.y },
-    { x: br.x, y: br.y },
-    { x: bl.x, y: bl.y },
-  ]
+  // Angular ordering keeps all four vertices distinct on rotated documents.
+  const center = points.reduce((sum, point) => ({ x: sum.x + point.x / points.length, y: sum.y + point.y / points.length }), { x: 0, y: 0 })
+  const ordered = [...points].sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x))
+  const first = ordered.reduce((best, point, index) => point.x + point.y < ordered[best].x + ordered[best].y ? index : best, 0)
+  return Array.from({ length: 4 }, (_, index) => ({ ...ordered[(first + index) % ordered.length] })) as Quad
 }
 
 /**
@@ -170,7 +137,8 @@ function isRealisticDocumentQuad(quad: Quad, imgW: number, imgH: number): boolea
   const maxW = Math.max(d0, d2)
   const maxH = Math.max(d1, d3)
   const aspect = maxW / maxH
-  if (aspect < 0.2 || aspect > 5.0) return false
+  // Long receipts are legitimate documents too.
+  if (aspect < 0.1 || aspect > 10.0) return false
 
   return true
 }
@@ -272,10 +240,13 @@ function verifyQuadEdges(
 export function detectDocumentQuad(imageData: ImageData): Quad | null {
   const { data, width, height } = imageData
 
-  // Step 1: Compute downscaled grayscale map (width ~400px)
-  const targetW = 400
-  const scale = targetW / width
-  const targetH = Math.max(100, Math.round(height * scale))
+  // Step 1: Compute downscaled grayscale map (longest edge at most 400px)
+  if (width < 8 || height < 8) return null
+  const scale = Math.min(1, 400 / Math.max(width, height))
+  const targetW = Math.max(8, Math.round(width * scale))
+  const targetH = Math.max(8, Math.round(height * scale))
+  const scaleX = targetW / width
+  const scaleY = targetH / height
 
   const gray = new Uint8Array(targetW * targetH)
   let sumLum = 0
@@ -283,12 +254,12 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
   let sampleCount = 0
 
   for (let y = 0; y < targetH; y += 1) {
-    const srcY = Math.min(height - 1, Math.floor(y / scale))
+    const srcY = Math.min(height - 1, Math.floor(y / scaleY))
     const rowOffset = y * targetW
     const srcRowOffset = srcY * width
 
     for (let x = 0; x < targetW; x += 1) {
-      const srcX = Math.min(width - 1, Math.floor(x / scale))
+      const srcX = Math.min(width - 1, Math.floor(x / scaleX))
       const idx = (srcRowOffset + srcX) * 4
       const lum = Math.round(
         data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114,
@@ -312,7 +283,7 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
   const stdDev = Math.sqrt(variance)
 
   // Step 2: 3x3 Box blur to remove high-frequency text & noise
-  const blurred = new Uint8Array(targetW * targetH)
+  const blurred = new Uint8Array(gray)
   for (let y = 1; y < targetH - 1; y += 1) {
     const yRow = y * targetW
     const ym1Row = (y - 1) * targetW
@@ -451,53 +422,68 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
     }
   }
 
-  if (candidatePoints.length < 24) {
-    return null
+  // Evaluate connected edge contours independently. A separate object on the
+  // desk must not expand a global hull around the page and corrupt its crop.
+  const best: { quad: Quad | null; score: number } = { quad: null, score: -1 }
+  const evaluateHull = (points: Point[], threshold: number) => {
+    const hull = convexHull(points)
+    if (hull.length < 4) return
+    const closed = [...hull, hull[0]]
+    for (let eps = 2; eps <= Math.min(targetW, targetH) * 0.12; eps += 2) {
+      const unique = ramerDouglasPeucker(closed, eps).slice(0, -1)
+      if (unique.length !== 4) continue
+      const quad = orderQuadCorners(unique)
+      if (!isRealisticDocumentQuad(quad, targetW, targetH)) continue
+      const verification = verifyQuadEdges(quad, grad, targetW, targetH, threshold)
+      if (!verification.valid) continue
+      const areaRatio = polygonArea(quad) / (targetW * targetH)
+      // Favor a larger complete page over internal text boxes.
+      const score = Math.min(1.5, verification.score) + areaRatio * 0.8
+      if (score > best.score) {
+        best.score = score
+        best.quad = quad
+      }
+    }
   }
 
-  // Step 5: Compute Convex Hull of candidate boundary points
-  const hull = convexHull(candidatePoints)
-  if (hull.length < 4) {
-    return null
-  }
-
-  // Step 6: Multi-pass RDP polygon simplification to isolate 4 dominant corners
-  const hullClosed = [...hull, hull[0]]
-  let bestQuad: Quad | null = null
-  let bestScore = -1
-
-  const minEpsilon = 4
-  const maxEpsilon = Math.min(targetW, targetH) * 0.35
-
-  for (let eps = minEpsilon; eps <= maxEpsilon; eps += 2) {
-    const simplified = ramerDouglasPeucker(hullClosed, eps)
-    // Remove duplicate end point if present
-    const unique = simplified.slice(0, simplified.length - 1)
-
-    if (unique.length === 4) {
-      const ordered = orderQuadCorners(unique)
-      if (isRealisticDocumentQuad(ordered, targetW, targetH)) {
-        const { valid, score } = verifyQuadEdges(ordered, grad, targetW, targetH, edgeThreshold)
-        if (valid && score > bestScore) {
-          bestScore = score
-          bestQuad = ordered
+  for (const threshold of [edgeThreshold, Math.max(22, edgeThreshold * 0.5)]) {
+    const visited = new Uint8Array(grad.length)
+    const queue = new Int32Array(grad.length)
+    for (let y = 3; y < targetH - 3; y += 1) {
+      for (let x = 3; x < targetW - 3; x += 1) {
+        const start = y * targetW + x
+        if (visited[start] || grad[start] < threshold) continue
+        let head = 0
+        let tail = 1
+        queue[0] = start
+        visited[start] = 1
+        const points: Point[] = []
+        while (head < tail) {
+          const index = queue[head++]
+          const px = index % targetW
+          const py = Math.floor(index / targetW)
+          points.push({ x: px, y: py })
+          for (let dy = -1; dy <= 1; dy += 1) {
+            for (let dx = -1; dx <= 1; dx += 1) {
+              const nx = px + dx
+              const ny = py + dy
+              if (nx < 3 || nx >= targetW - 3 || ny < 3 || ny >= targetH - 3) continue
+              const next = ny * targetW + nx
+              if (!visited[next] && grad[next] >= threshold) {
+                visited[next] = 1
+                queue[tail++] = next
+              }
+            }
+          }
         }
+        if (points.length >= 24) evaluateHull(points, threshold)
       }
     }
   }
+  // Keep the ray-based candidate for boundaries with gaps or interrupted edges.
+  if (candidatePoints.length >= 24) evaluateHull(candidatePoints, edgeThreshold)
 
-  // Fallback candidate: If exact 4-point RDP couldn't find a valid convex 4-gon,
-  // test the extreme projections of the hull, but ONLY accept if it strictly passes
-  // edge verification and geometric realism.
-  if (!bestQuad) {
-    const extremeQuad = orderQuadCorners(hull)
-    if (isRealisticDocumentQuad(extremeQuad, targetW, targetH)) {
-      const { valid, score } = verifyQuadEdges(extremeQuad, grad, targetW, targetH, edgeThreshold)
-      if (valid && score >= 0.50) {
-        bestQuad = extremeQuad
-      }
-    }
-  }
+  const bestQuad = best.quad
 
   // If no candidate passed edge verification, this scene does NOT contain a document!
   if (!bestQuad) {
@@ -505,23 +491,22 @@ export function detectDocumentQuad(imageData: ImageData): Quad | null {
   }
 
   // Step 7: Scale coordinates back to original image resolution
-  const invScale = 1.0 / scale
   const nativeQuad: Quad = [
     {
-      x: clamp(Math.round(bestQuad[0].x * invScale), 0, width - 1),
-      y: clamp(Math.round(bestQuad[0].y * invScale), 0, height - 1),
+      x: clamp(Math.round(bestQuad[0].x / scaleX), 0, width - 1),
+      y: clamp(Math.round(bestQuad[0].y / scaleY), 0, height - 1),
     },
     {
-      x: clamp(Math.round(bestQuad[1].x * invScale), 0, width - 1),
-      y: clamp(Math.round(bestQuad[1].y * invScale), 0, height - 1),
+      x: clamp(Math.round(bestQuad[1].x / scaleX), 0, width - 1),
+      y: clamp(Math.round(bestQuad[1].y / scaleY), 0, height - 1),
     },
     {
-      x: clamp(Math.round(bestQuad[2].x * invScale), 0, width - 1),
-      y: clamp(Math.round(bestQuad[2].y * invScale), 0, height - 1),
+      x: clamp(Math.round(bestQuad[2].x / scaleX), 0, width - 1),
+      y: clamp(Math.round(bestQuad[2].y / scaleY), 0, height - 1),
     },
     {
-      x: clamp(Math.round(bestQuad[3].x * invScale), 0, width - 1),
-      y: clamp(Math.round(bestQuad[3].y * invScale), 0, height - 1),
+      x: clamp(Math.round(bestQuad[3].x / scaleX), 0, width - 1),
+      y: clamp(Math.round(bestQuad[3].y / scaleY), 0, height - 1),
     },
   ]
 

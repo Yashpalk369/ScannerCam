@@ -76,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="btn btn-secondary"
           onClick={() => fileInputRef.current?.click()}
+          aria-label="Upload"
           disabled={isProcessing}
         >
           <Upload size={16} />
@@ -86,6 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="btn btn-primary"
           onClick={onOpenCamera}
+          aria-label="Scan Camera"
           disabled={isProcessing}
         >
           <Camera size={16} />
@@ -96,6 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="btn btn-accent"
           onClick={onOpenExport}
+          aria-label={pageCount > 0 ? `Export (${pageCount})` : 'Export'}
           disabled={pageCount === 0 || isProcessing}
         >
           <Download size={16} />

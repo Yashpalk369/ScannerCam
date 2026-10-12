@@ -2,7 +2,6 @@ import type { FilterMode, Point, Quad } from '../cv/types'
 import {
   applyHomography,
   buildHomography,
-  defaultQuad,
   estimateWarpSize,
 } from '../cv/homography'
 import { applyFilterToImageData } from '../cv/filters'
@@ -178,7 +177,7 @@ workerScope.onmessage = (event: MessageEvent<WorkerRequest>) => {
       const response: WorkerSuccessResponse = {
         id: req.id,
         success: true,
-        quad: detected ?? defaultQuad(req.srcWidth, req.srcHeight),
+        quad: detected ?? undefined,
       }
 
       workerScope.postMessage(response)

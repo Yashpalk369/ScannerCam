@@ -1,5 +1,7 @@
 import { jsPDF } from 'jspdf'
 import type { ScanPage } from '../cv/types'
+import { fitImage, idCardBoxes, PDF_QUALITY_PRESETS, rasterSize } from './pdfLayout'
+import type { ImageBox, PdfLayout, PdfQuality } from './pdfLayout'
 
 export interface PdfExportOptions {
   filename?: string
@@ -7,6 +9,9 @@ export interface PdfExportOptions {
   orientation?: 'auto' | 'portrait' | 'landscape'
   margin?: number // in points
   quality?: number
+  qualityPreset?: PdfQuality
+  layout?: PdfLayout
+  signal?: AbortSignal
   /** If true, embeds an invisible OCR text layer for searchable/copyable PDF */
   searchable?: boolean
   /** OCR text per page, indexed by page order. Must be provided when searchable=true. */
@@ -14,13 +19,42 @@ export interface PdfExportOptions {
   onProgress?: (current: number, total: number, message: string) => void
 }
 
-async function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => reject(new Error('Failed to read blob as data URL'))
-    reader.readAsDataURL(blob)
-  })
+function checkAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException('PDF preparation cancelled.', 'AbortError')
+}
+
+async function prepareImage(page: ScanPage, placement: ImageBox, options: PdfExportOptions): Promise<Uint8Array> {
+  checkAborted(options.signal)
+  const url = URL.createObjectURL(page.blob)
+  try {
+    const image = new Image()
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve()
+      image.onerror = () => reject(new Error(`Could not read ${page.name}.`))
+      image.src = url
+    })
+    checkAborted(options.signal)
+    const quality = options.qualityPreset ?? 'balanced'
+    const size = rasterSize(image.naturalWidth, image.naturalHeight, placement, quality)
+    const canvas = document.createElement('canvas')
+    canvas.width = size.width
+    canvas.height = size.height
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Could not prepare the PDF image.')
+    context.fillStyle = '#fff'
+    context.fillRect(0, 0, size.width, size.height)
+    context.drawImage(image, 0, 0, size.width, size.height)
+    const jpegQuality = options.quality ?? PDF_QUALITY_PRESETS[quality].jpegQuality
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Could not compress the PDF image.')), 'image/jpeg', jpegQuality)
+    })
+    // Release raster memory before processing the next scan.
+    canvas.width = canvas.height = 1
+    checkAborted(options.signal)
+    return new Uint8Array(await blob.arrayBuffer())
+  } finally {
+    URL.revokeObjectURL(url)
+  }
 }
 
 /**
@@ -58,14 +92,15 @@ function embedTextLayer(
   doc.setFontSize(12)
 }
 
-export async function exportPagesToPdf(
+export async function createPdfBlob(
   pages: ScanPage[],
   options: PdfExportOptions = {},
-): Promise<void> {
-  if (pages.length === 0) return
+): Promise<Blob> {
+  if (pages.length === 0) throw new Error('Add a scan before exporting.')
+  if (options.layout === 'id-card' && pages.length > 2) throw new Error('Choose one or two sides for an ID card.')
+  checkAborted(options.signal)
 
   const {
-    filename = `ScannerCam-${new Date().toISOString().replaceAll(':', '-').slice(0, 19)}.pdf`,
     format = 'a4',
     margin = 20,
     searchable = false,
@@ -74,10 +109,9 @@ export async function exportPagesToPdf(
   } = options
 
   // Read first page to determine initial document orientation
-  const firstDataUrl = await blobToDataUrl(pages[0].blob)
   const firstIsLandscape = pages[0].width > pages[0].height
   const initialOrientation =
-    options.orientation === 'auto'
+    options.layout === 'id-card' ? 'portrait' : options.orientation === 'auto'
       ? firstIsLandscape
         ? 'landscape'
         : 'portrait'
@@ -94,7 +128,6 @@ export async function exportPagesToPdf(
     const page = pages[i]
     onProgress?.(i + 1, pages.length, `Adding page ${i + 1} of ${pages.length}…`)
 
-    const dataUrl = i === 0 ? firstDataUrl : await blobToDataUrl(page.blob)
     const isLandscape = page.width > page.height
     const pageOrientation =
       options.orientation === 'auto'
@@ -103,24 +136,26 @@ export async function exportPagesToPdf(
           : 'portrait'
         : options.orientation || (isLandscape ? 'landscape' : 'portrait')
 
-    if (i > 0) {
+    if (i > 0 && options.layout !== 'id-card') {
       doc.addPage(format, pageOrientation)
     }
 
     const pageWidth = doc.internal.pageSize.getWidth()
     const pageHeight = doc.internal.pageSize.getHeight()
 
-    const availW = Math.max(20, pageWidth - margin * 2)
-    const availH = Math.max(20, pageHeight - margin * 2)
-
-    const scale = Math.min(availW / page.width, availH / page.height)
-    const renderW = page.width * scale
-    const renderH = page.height * scale
-
-    const x = (pageWidth - renderW) / 2
-    const y = (pageHeight - renderH) / 2
-
-    doc.addImage(dataUrl, 'JPEG', x, y, renderW, renderH, undefined, 'FAST')
+    const box = options.layout === 'id-card'
+      ? idCardBoxes(pageWidth, pageHeight, pages.length, margin)[i]
+      : { x: margin, y: margin, width: pageWidth - margin * 2, height: pageHeight - margin * 2 }
+    const placement = fitImage(page.width, page.height, box)
+    const { x, y, width: renderW, height: renderH } = placement
+    const image = await prepareImage(page, placement, options)
+    checkAborted(options.signal)
+    doc.addImage(image, 'JPEG', x, y, renderW, renderH, undefined, 'FAST')
+    if (options.layout === 'id-card') {
+      doc.setFontSize(10)
+      doc.setTextColor(80, 80, 80)
+      doc.text(i === 0 ? 'Front' : 'Back', box.x, box.y - 8)
+    }
 
     // Embed invisible OCR text layer if available
     if (searchable && ocrTexts[i]) {
@@ -128,8 +163,16 @@ export async function exportPagesToPdf(
     }
   }
 
-  onProgress?.(pages.length, pages.length, 'Saving PDF…')
-  doc.save(filename.endsWith('.pdf') ? filename : `${filename}.pdf`)
+  checkAborted(options.signal)
+  return doc.output('blob')
+}
+
+export async function exportPagesToPdf(pages: ScanPage[], options: PdfExportOptions = {}): Promise<void> {
+  if (pages.length === 0) return
+  const blob = await createPdfBlob(pages, options)
+  const filename = options.filename || `ScannerCam-${new Date().toISOString().slice(0, 10)}`
+  options.onProgress?.(pages.length, pages.length, 'Saving PDF…')
+  downloadBlob(blob, filename.endsWith('.pdf') ? filename : `${filename}.pdf`)
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {
@@ -140,5 +183,6 @@ export function downloadBlob(blob: Blob, filename: string): void {
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  // Give the browser time to start reading the file before releasing its URL.
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

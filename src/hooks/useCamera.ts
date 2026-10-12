@@ -1,39 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { detectDocumentQuad } from '../core/cv/edgeDetection'
+import { cvWorker } from '../core/workers/workerClient'
 import type { Quad } from '../core/cv/types'
+import { assessCaptureQuality, EMPTY_STABILITY, updateCaptureStability } from '../core/cv/captureGuidance'
+import type { CaptureStability } from '../core/cv/captureGuidance'
 
 export interface CameraDevice {
   deviceId: string
   label: string
 }
 
-export interface LiveDetectionResult {
-  quad: Quad | null
-  stable: boolean // true when the quad has been stable for auto-capture
-}
+const LIVE_DETECT_INTERVAL_MS = 250
 
-const LIVE_DETECT_INTERVAL_MS = 120    // ~8 FPS for live quad overlay
-const STABILITY_FRAMES_REQUIRED = 5   // ~600ms of stable detection before auto-capture
-const STABILITY_THRESHOLD_PX = 12     // max pixel drift allowed between frames
-
-function quadDistance(a: Quad, b: Quad): number {
-  let sum = 0
-  for (let i = 0; i < 4; i += 1) {
-    const dx = a[i].x - b[i].x
-    const dy = a[i].y - b[i].y
-    sum += Math.sqrt(dx * dx + dy * dy)
-  }
-  return sum / 4
-}
-
-export function useCamera() {
+export function useCamera(detectionPaused = false) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const detectIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sharedCanvasRef = useRef<HTMLCanvasElement | null>(null)
-  const stableFramesRef = useRef(0)
-  const lastQuadRef = useRef<Quad | null>(null)
+  const detectionBusyRef = useRef(false)
+  const stabilityRef = useRef<CaptureStability>(EMPTY_STABILITY)
+  const latestQuadRef = useRef<Quad | null>(null)
+  const rearmQuadRef = useRef<Quad | null>(null)
+  const requestRef = useRef(0)
+  const pausedRef = useRef(detectionPaused)
+  pausedRef.current = detectionPaused
+  const [guidance, setGuidance] = useState('Place the whole document in view.')
 
   const [isActive, setIsActive] = useState(false)
   const [hasTorch, setHasTorch] = useState(false)
@@ -48,6 +39,7 @@ export function useCamera() {
   const [autoCaptureEnabled, setAutoCaptureEnabled] = useState(true)
 
   const stopCamera = useCallback(() => {
+    requestRef.current += 1
     if (startTimerRef.current !== null) {
       clearTimeout(startTimerRef.current)
       startTimerRef.current = null
@@ -68,21 +60,27 @@ export function useCamera() {
     setHasTorch(false)
     setLiveQuad(null)
     setAutoCapturePending(false)
-    stableFramesRef.current = 0
-    lastQuadRef.current = null
+    stabilityRef.current = EMPTY_STABILITY
+    latestQuadRef.current = null
+    rearmQuadRef.current = null
   }, [])
 
   /**
    * Runs a lightweight quad detection on the current video frame.
-   * Called on a ~8 FPS interval while the camera is active.
+   * Called on a ~4 FPS interval while the camera is active.
    */
-  const runLiveDetection = useCallback(() => {
+  const runLiveDetection = useCallback(async () => {
+    if (detectionBusyRef.current) return
     const video = videoRef.current
-    if (!video || !video.videoWidth || !video.videoHeight || video.paused) return
+    if (pausedRef.current || document.hidden || !video || !video.videoWidth || !video.videoHeight || video.paused) {
+      stabilityRef.current = EMPTY_STABILITY
+      setAutoCapturePending(false)
+      return
+    }
 
-    // Downscale to 400px wide for fast detection
-    const targetW = 400
-    const scale = targetW / video.videoWidth
+    // Bound the longest edge for fast detection, without enlarging the image.
+    const scale = Math.min(1, 400 / Math.max(video.videoWidth, video.videoHeight))
+    const targetW = Math.round(video.videoWidth * scale)
     const targetH = Math.round(video.videoHeight * scale)
 
     if (!sharedCanvasRef.current) {
@@ -96,40 +94,61 @@ export function useCamera() {
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) return
 
-    ctx.drawImage(video, 0, 0, targetW, targetH)
-    const imageData = ctx.getImageData(0, 0, targetW, targetH)
-    const detectedSmall = detectDocumentQuad(imageData)
+    detectionBusyRef.current = true
+    const request = requestRef.current
+    try {
+      ctx.drawImage(video, 0, 0, targetW, targetH)
+      const imageData = ctx.getImageData(0, 0, targetW, targetH)
+      const detectedSmall = await cvWorker.detectImageData(imageData)
+      if (request !== requestRef.current || pausedRef.current || document.hidden) return
 
-    if (!detectedSmall) {
-      setLiveQuad(null)
-      stableFramesRef.current = 0
-      lastQuadRef.current = null
+      if (!detectedSmall) {
+        setLiveQuad(null)
+        stabilityRef.current = EMPTY_STABILITY
+        latestQuadRef.current = null
+        rearmQuadRef.current = null
+        setGuidance('Place the whole document in view.')
+        setAutoCapturePending(false)
+        return
+      }
+
+      // Scale quad back to video coordinates
+      const invScale = 1 / scale
+      const detected: Quad = [
+        { x: Math.round(detectedSmall[0].x * invScale), y: Math.round(detectedSmall[0].y * invScale) },
+        { x: Math.round(detectedSmall[1].x * invScale), y: Math.round(detectedSmall[1].y * invScale) },
+        { x: Math.round(detectedSmall[2].x * invScale), y: Math.round(detectedSmall[2].y * invScale) },
+        { x: Math.round(detectedSmall[3].x * invScale), y: Math.round(detectedSmall[3].y * invScale) },
+      ]
+
+      setLiveQuad(detected)
+
+      latestQuadRef.current = detectedSmall
+      const rearmQuad = rearmQuadRef.current
+      if (rearmQuad && detectedSmall.every((point, index) => Math.hypot(point.x - rearmQuad[index].x, point.y - rearmQuad[index].y) < 18)) {
+        stabilityRef.current = EMPTY_STABILITY
+        setAutoCapturePending(false)
+        setGuidance('Move to the next page, or tap Capture photo.')
+        return
+      }
+      rearmQuadRef.current = null
+      const quality = assessCaptureQuality(imageData, detectedSmall)
+      const nearBorder = detectedSmall.some(point => point.x < 6 || point.y < 6 || point.x > targetW - 7 || point.y > targetH - 7)
+      const allowsCapture = !quality.lowLight && !quality.blurry && !nearBorder
+      stabilityRef.current = updateCaptureStability(stabilityRef.current, detectedSmall, performance.now(), allowsCapture)
+      setAutoCapturePending(stabilityRef.current.ready)
+      setGuidance(nearBorder ? 'Move back so all page edges are visible.'
+        : quality.lowLight ? 'Add more light or turn on the torch.'
+        : quality.blurry ? 'Text looks soft. Hold steady and let the camera focus.'
+        : stabilityRef.current.ready ? 'Ready to capture.' : 'Document found. Hold steady.')
+    } catch {
+      if (request !== requestRef.current) return
+      stabilityRef.current = EMPTY_STABILITY
       setAutoCapturePending(false)
-      return
-    }
-
-    // Scale quad back to video coordinates
-    const invScale = 1 / scale
-    const detected: Quad = [
-      { x: Math.round(detectedSmall[0].x * invScale), y: Math.round(detectedSmall[0].y * invScale) },
-      { x: Math.round(detectedSmall[1].x * invScale), y: Math.round(detectedSmall[1].y * invScale) },
-      { x: Math.round(detectedSmall[2].x * invScale), y: Math.round(detectedSmall[2].y * invScale) },
-      { x: Math.round(detectedSmall[3].x * invScale), y: Math.round(detectedSmall[3].y * invScale) },
-    ]
-
-    setLiveQuad(detected)
-
-    // Stability tracking for auto-capture
-    const prev = lastQuadRef.current
-    if (prev && quadDistance(prev, detected) < STABILITY_THRESHOLD_PX) {
-      stableFramesRef.current += 1
-    } else {
-      stableFramesRef.current = 1
-    }
-    lastQuadRef.current = detected
-
-    if (stableFramesRef.current >= STABILITY_FRAMES_REQUIRED) {
-      setAutoCapturePending(true)
+      setLiveQuad(null)
+      setGuidance('Automatic edge detection is unavailable. You can still take a photo.')
+    } finally {
+      detectionBusyRef.current = false
     }
   }, [])
 
@@ -137,8 +156,7 @@ export function useCamera() {
     if (detectIntervalRef.current !== null) {
       clearInterval(detectIntervalRef.current)
     }
-    stableFramesRef.current = 0
-    lastQuadRef.current = null
+    stabilityRef.current = EMPTY_STABILITY
     detectIntervalRef.current = setInterval(runLiveDetection, LIVE_DETECT_INTERVAL_MS)
   }, [runLiveDetection])
 
@@ -146,9 +164,10 @@ export function useCamera() {
     async (deviceId?: string) => {
       stopCamera()
       setError(null)
+      const request = requestRef.current
 
       if (!navigator.mediaDevices?.getUserMedia) {
-        setError('Camera API is not supported in this browser.')
+        setError(window.isSecureContext ? 'This browser does not support camera access. You can upload a photo instead.' : 'Camera access requires HTTPS. You can upload a photo instead.')
         return
       }
 
@@ -169,6 +188,10 @@ export function useCamera() {
           audio: false,
         })
 
+        if (request !== requestRef.current || !videoRef.current) {
+          stream.getTracks().forEach(track => track.stop())
+          return
+        }
         streamRef.current = stream
 
         if (videoRef.current) {
@@ -176,6 +199,7 @@ export function useCamera() {
           await videoRef.current.play()
         }
 
+        if (request !== requestRef.current) return
         setIsActive(true)
 
         // Check torch capability
@@ -183,10 +207,16 @@ export function useCamera() {
         if (videoTrack) {
           const capabilities = (videoTrack.getCapabilities?.() || {}) as Record<string, unknown>
           setHasTorch(Boolean(capabilities.torch))
+          videoTrack.addEventListener('ended', () => {
+            if (request !== requestRef.current) return
+            stopCamera()
+            setError('The camera disconnected. Reconnect it and try again.')
+          }, { once: true })
         }
 
         // Enumerate video devices
-        const allDevices = await navigator.mediaDevices.enumerateDevices()
+        const allDevices = await navigator.mediaDevices.enumerateDevices().catch(() => [])
+        if (request !== requestRef.current) return
         const videoInputs = allDevices
           .filter((d) => d.kind === 'videoinput')
           .map((d, index) => ({
@@ -201,8 +231,14 @@ export function useCamera() {
         // Give video a moment to render first frame, then start live detection
         startTimerRef.current = setTimeout(startLiveDetection, 800)
       } catch (err: unknown) {
-        console.error('Camera access error:', err)
-        setError('Could not access camera. Please check permissions.')
+        if (request !== requestRef.current) return
+        stopCamera()
+        const name = err instanceof DOMException ? err.name : ''
+        setError(name === 'NotAllowedError' ? 'Camera permission was denied. Allow camera access in your browser settings, then try again.'
+          : name === 'NotFoundError' ? 'No camera was found. Connect a camera or upload a photo.'
+          : name === 'NotReadableError' ? 'The camera is busy. Close other apps using it, then try again.'
+          : name === 'OverconstrainedError' ? 'This camera is unavailable. Try another camera or upload a photo.'
+          : 'Could not start the camera. Try again or upload a photo.')
       }
     },
     [stopCamera, startLiveDetection],
@@ -214,11 +250,12 @@ export function useCamera() {
     if (!track) return
 
     try {
+      const currentStream = streamRef.current
       const nextTorch = !torchOn
       await (track as MediaStreamTrack & { applyConstraints: (c: unknown) => Promise<void> }).applyConstraints({
         advanced: [{ torch: nextTorch }],
       })
-      setTorchOn(nextTorch)
+      if (streamRef.current === currentStream) setTorchOn(nextTorch)
     } catch (err) {
       console.warn('Could not toggle torch:', err)
     }
@@ -264,15 +301,24 @@ export function useCamera() {
   }, [])
 
   /** Reset auto-capture state (call after a capture to restart the stability counter) */
-  const resetAutoCapture = useCallback(() => {
-    stableFramesRef.current = 0
-    lastQuadRef.current = null
+  const resetAutoCapture = useCallback((requireMovement = false) => {
+    rearmQuadRef.current = requireMovement ? latestQuadRef.current : null
+    stabilityRef.current = EMPTY_STABILITY
     setAutoCapturePending(false)
     setLiveQuad(null)
+    setGuidance('Place the whole document in view.')
   }, [])
 
   useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stopCamera()
+        setError('Camera paused while you were away. Tap Retry camera to continue.')
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
       stopCamera()
     }
   }, [stopCamera])
@@ -285,6 +331,7 @@ export function useCamera() {
     devices,
     selectedDeviceId,
     error,
+    guidance,
     liveQuad,
     autoCapturePending,
     autoCaptureEnabled,

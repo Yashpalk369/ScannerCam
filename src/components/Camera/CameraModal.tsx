@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { X, Zap, ZapOff, SwitchCamera, Check, Camera, Crosshair } from 'lucide-react'
+import { X, Zap, ZapOff, SwitchCamera, Check, Camera, Crosshair, RotateCcw, Loader2 } from 'lucide-react'
 import { useCamera } from '../../hooks/useCamera'
+import { mapVideoQuad } from '../../core/cv/captureGuidance'
 import type { Quad } from '../../core/cv/types'
 
 interface CameraModalProps {
@@ -9,308 +10,204 @@ interface CameraModalProps {
   onCapture: (blob: Blob) => Promise<void>
 }
 
-/**
- * Renders the live green quad overlay on the video feed.
- * Points are scaled from native video dimensions to the visible <video> element dimensions.
- */
 function LiveQuadOverlay({ quad, videoEl }: { quad: Quad | null; videoEl: HTMLVideoElement | null }) {
-  if (!quad || !videoEl) return null
-
-  const vw = videoEl.videoWidth
-  const vh = videoEl.videoHeight
-  const dw = videoEl.clientWidth
-  const dh = videoEl.clientHeight
-  if (!vw || !vh || !dw || !dh) return null
-
-  const sx = dw / vw
-  const sy = dh / vh
-
-  const pts = quad.map((p) => ({
-    x: p.x * sx,
-    y: p.y * sy,
-  }))
-
-  const pathD = `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y} L ${pts[2].x} ${pts[2].y} L ${pts[3].x} ${pts[3].y} Z`
-
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  useEffect(() => {
+    if (!videoEl) return
+    const update = () => setSize({ width: videoEl.clientWidth, height: videoEl.clientHeight })
+    const observer = new ResizeObserver(update)
+    observer.observe(videoEl)
+    videoEl.addEventListener('loadedmetadata', update)
+    update()
+    return () => {
+      observer.disconnect()
+      videoEl.removeEventListener('loadedmetadata', update)
+    }
+  }, [videoEl])
+  if (!quad || !videoEl?.videoWidth || !videoEl.videoHeight || !size.width || !size.height) return null
+  const points = mapVideoQuad(quad, videoEl.videoWidth, videoEl.videoHeight, size.width, size.height)
+  const path = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ') + ' Z'
   return (
-    <svg
-      className="live-quad-svg"
-      viewBox={`0 0 ${dw} ${dh}`}
-      width={dw}
-      height={dh}
-      style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-    >
-      {/* Filled region highlight */}
-      <path d={pathD} fill="rgba(0, 220, 120, 0.08)" stroke="none" />
-      {/* Edge outline */}
-      <path d={pathD} fill="none" stroke="#00dc78" strokeWidth="2.5" strokeLinejoin="round" strokeDasharray="0" />
-      {/* Corner dots */}
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="7" fill="#00dc78" stroke="#fff" strokeWidth="2" />
-      ))}
+    <svg className="live-quad-svg" viewBox={`0 0 ${size.width} ${size.height}`} width={size.width} height={size.height} aria-hidden="true">
+      <path d={path} fill="rgba(0, 220, 120, 0.08)" stroke="#00dc78" strokeWidth="2.5" strokeLinejoin="round" />
+      {points.map((point, index) => <circle key={index} cx={point.x} cy={point.y} r="6" fill="#00dc78" stroke="#fff" strokeWidth="2" />)}
     </svg>
   )
 }
 
-export const CameraModal: React.FC<CameraModalProps> = ({
-  isOpen,
-  onClose,
-  onCapture,
-}) => {
-  const {
-    videoRef,
-    isActive,
-    hasTorch,
-    torchOn,
-    devices,
-    selectedDeviceId,
-    error,
-    liveQuad,
-    autoCapturePending,
-    autoCaptureEnabled,
-    setAutoCaptureEnabled,
-    startCamera,
-    stopCamera,
-    toggleTorch,
-    captureFrame,
-    resetAutoCapture,
-  } = useCamera()
-
+export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture }) => {
   const [capturedCount, setCapturedCount] = useState(0)
   const [isCapturing, setIsCapturing] = useState(false)
-  const [flashAnimation, setFlashAnimation] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [reviewBlob, setReviewBlob] = useState<Blob | null>(null)
+  const [reviewUrl, setReviewUrl] = useState('')
+  const [captureError, setCaptureError] = useState<string | null>(null)
   const [autoCaptureCountdown, setAutoCaptureCountdown] = useState<number | null>(null)
-  const autoCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const captureLock = useRef(false)
+  const saveLock = useRef(false)
+  const sessionRef = useRef(0)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const reviewButtonRef = useRef<HTMLButtonElement>(null)
+  const shutterButtonRef = useRef<HTMLButtonElement>(null)
+  const {
+    videoRef, isActive, hasTorch, torchOn, devices, selectedDeviceId,
+    error, guidance, liveQuad, autoCapturePending, autoCaptureEnabled,
+    setAutoCaptureEnabled, startCamera, stopCamera, toggleTorch, captureFrame, resetAutoCapture,
+  } = useCamera(Boolean(reviewBlob) || isCapturing || isSaving)
 
-  // Start camera when modal opens, stop when closes
   useEffect(() => {
-    if (isOpen) {
-      setCapturedCount(0)
-      startCamera()
-    } else {
+    if (!isOpen) return
+    const previousFocus = document.activeElement as HTMLElement | null
+    setCapturedCount(0)
+    void startCamera()
+    closeButtonRef.current?.focus()
+    return () => {
+      sessionRef.current += 1
       stopCamera()
-      setAutoCaptureCountdown(null)
-      if (autoCaptureTimerRef.current) clearTimeout(autoCaptureTimerRef.current)
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+      previousFocus?.focus()
     }
   }, [isOpen, startCamera, stopCamera])
 
-  const triggerCapture = useCallback(async () => {
-    if (isCapturing || !isActive) return
-    setIsCapturing(true)
-    setFlashAnimation(true)
-    setTimeout(() => setFlashAnimation(false), 220)
+  useEffect(() => {
+    if (!reviewBlob) {
+      setReviewUrl('')
+      shutterButtonRef.current?.focus()
+      return
+    }
+    const url = URL.createObjectURL(reviewBlob)
+    setReviewUrl(url)
+    reviewButtonRef.current?.focus()
+    return () => URL.revokeObjectURL(url)
+  }, [reviewBlob])
 
+  const triggerCapture = useCallback(async () => {
+    if (captureLock.current || reviewBlob || !isActive) return
+    captureLock.current = true
+    setIsCapturing(true)
+    setCaptureError(null)
+    const session = sessionRef.current
     try {
       const blob = await captureFrame()
-      setCapturedCount((prev) => prev + 1)
-      await onCapture(blob)
-      resetAutoCapture()
-    } catch (err) {
-      console.error('Capture failed:', err)
+      if (session !== sessionRef.current) return
+      setReviewBlob(blob)
+    } catch {
+      if (session === sessionRef.current) setCaptureError('Could not capture this photo. Hold steady and try again.')
     } finally {
-      setIsCapturing(false)
-      setAutoCaptureCountdown(null)
-    }
-  }, [isCapturing, isActive, captureFrame, onCapture, resetAutoCapture])
-
-  // Auto-capture: when quad is stable and feature is enabled, show 2s countdown ring then fire
-  useEffect(() => {
-    if (!autoCapturePending || !autoCaptureEnabled || isCapturing) return
-    if (autoCaptureCountdown !== null) return // already counting
-
-    let remaining = 2
-    setAutoCaptureCountdown(remaining)
-
-    countdownIntervalRef.current = setInterval(() => {
-      remaining -= 1
-      setAutoCaptureCountdown(remaining)
-      if (remaining <= 0) {
-        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+      captureLock.current = false
+      if (session === sessionRef.current) {
+        setIsCapturing(false)
+        setAutoCaptureCountdown(null)
       }
-    }, 1000)
-
-    autoCaptureTimerRef.current = setTimeout(() => {
-      setAutoCaptureCountdown(null)
-      triggerCapture()
-    }, 2000)
-
-    return () => {
-      if (autoCaptureTimerRef.current) clearTimeout(autoCaptureTimerRef.current)
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoCapturePending, autoCaptureEnabled, isCapturing])
+  }, [reviewBlob, isActive, captureFrame])
 
-  const handleSwitchDevice = () => {
-    if (devices.length <= 1) return
-    const currentIdx = devices.findIndex((d) => d.deviceId === selectedDeviceId)
-    const nextDevice = devices[(currentIdx + 1) % devices.length]
-    if (nextDevice) {
-      startCamera(nextDevice.deviceId)
+  // Losing stability, hiding the camera, disabling AUTO or reviewing a photo
+  // cancels both timers. State changes in the countdown do not restart them.
+  useEffect(() => {
+    if (!isOpen || !isActive || !autoCapturePending || !autoCaptureEnabled || isCapturing || reviewBlob) {
+      setAutoCaptureCountdown(null)
+      return
+    }
+    setAutoCaptureCountdown(2)
+    const tick = setTimeout(() => setAutoCaptureCountdown(1), 1000)
+    const capture = setTimeout(() => void triggerCapture(), 2000)
+    return () => {
+      clearTimeout(tick)
+      clearTimeout(capture)
+    }
+  }, [isOpen, isActive, autoCapturePending, autoCaptureEnabled, isCapturing, reviewBlob, triggerCapture])
+
+  const keepCapture = async (finish: boolean) => {
+    if (!reviewBlob || saveLock.current) return
+    saveLock.current = true
+    setIsSaving(true)
+    setCaptureError(null)
+    const session = sessionRef.current
+    try {
+      await onCapture(reviewBlob)
+      if (session !== sessionRef.current) return
+      setCapturedCount(count => count + 1)
+      setReviewBlob(null)
+      resetAutoCapture(true)
+      if (finish) onClose()
+    } catch {
+      if (session === sessionRef.current) setCaptureError('Could not save this scan. Your photo is still here; try keeping it again.')
+    } finally {
+      saveLock.current = false
+      if (session === sessionRef.current) setIsSaving(false)
     }
   }
 
+  const handleSwitchDevice = () => {
+    if (devices.length <= 1 || isCapturing || reviewBlob) return
+    const currentIndex = devices.findIndex(device => device.deviceId === selectedDeviceId)
+    const nextDevice = devices[(currentIndex + 1) % devices.length]
+    if (nextDevice) void startCamera(nextDevice.deviceId)
+  }
+
+  const trapFocus = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Tab') return
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
+    if (buttons.length === 0) { event.preventDefault(); return }
+    const first = buttons[0]
+    const last = buttons[buttons.length - 1]
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+  }
+
   if (!isOpen) return null
-
-  const hasLiveQuad = liveQuad !== null
-
   return (
-    <div className="camera-modal-overlay">
+    <div className="camera-modal-overlay" role="dialog" aria-modal="true" aria-label={reviewBlob ? 'Review captured photo' : 'Scan documents with camera'} onKeyDown={trapFocus}>
       <div className="camera-viewport-wrap">
-        {/* Shutter flash effect */}
-        {flashAnimation && <div className="camera-shutter-flash" />}
-
-        {/* Video feed */}
-        <video
-          ref={videoRef}
-          playsInline
-          autoPlay
-          muted
-          className="camera-video-stream"
-        />
-
-        {/* Live quad detection overlay */}
-        <LiveQuadOverlay quad={liveQuad} videoEl={videoRef.current} />
-
-        {/* Static framing guide (shown only when no live quad detected) */}
-        {!hasLiveQuad && (
-          <div className="camera-guidelines">
+        <video ref={videoRef} playsInline autoPlay muted className="camera-video-stream" aria-label="Live camera preview" />
+        {!reviewBlob && <LiveQuadOverlay quad={liveQuad} videoEl={videoRef.current} />}
+        {!reviewBlob && !liveQuad && !error && (
+          <div className="camera-guidelines" aria-hidden="true">
             <div className="guide-box">
-              <div className="notch notch-tl" />
-              <div className="notch notch-tr" />
-              <div className="notch notch-br" />
-              <div className="notch notch-bl" />
-              <p className="guide-hint">
-                <Crosshair size={14} style={{ display: 'inline', marginRight: 6 }} />
-                Point at a document to auto-detect
-              </p>
+              <div className="notch notch-tl" /><div className="notch notch-tr" />
+              <div className="notch notch-br" /><div className="notch notch-bl" />
+              <p className="guide-hint"><Crosshair size={14} /> Keep all four page edges visible</p>
             </div>
           </div>
         )}
-
-        {/* Document detected banner */}
-        {hasLiveQuad && autoCaptureCountdown === null && (
-          <div className="live-detect-banner live-detect-found">
-            ✓ Document detected
+        {!reviewBlob && !error && <div className="live-detect-banner live-detect-found" role="status">{isCapturing ? 'Taking photo…' : guidance}</div>}
+        {!reviewBlob && autoCaptureCountdown !== null && (
+          <div className="auto-capture-countdown" role="status">
+            <div className="countdown-ring"><span className="countdown-number">{autoCaptureCountdown}</span></div>
+            <p className="countdown-label">Hold steady · auto-capture</p>
           </div>
         )}
-
-        {/* Auto-capture countdown */}
-        {autoCaptureCountdown !== null && (
-          <div className="auto-capture-countdown">
-            <div className="countdown-ring">
-              <svg viewBox="0 0 64 64" className="countdown-svg">
-                <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
-                <circle
-                  cx="32" cy="32" r="28"
-                  fill="none" stroke="#00dc78" strokeWidth="4"
-                  strokeDasharray={`${2 * Math.PI * 28}`}
-                  strokeDashoffset={`${2 * Math.PI * 28 * (1 - (2 - autoCaptureCountdown) / 2)}`}
-                  strokeLinecap="round"
-                  style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 1s linear' }}
-                />
-              </svg>
-              <span className="countdown-number">{autoCaptureCountdown}</span>
+        {reviewBlob && (
+          <div className="camera-review">
+            <h2>Review your photo</h2>
+            <p>Check that the text is readable and all edges are visible. Cropping and enhancement apply when you keep it.</p>
+            {reviewUrl && <img src={reviewUrl} alt="Captured document before cropping" className="camera-review-image" />}
+            <div className="camera-review-actions">
+              <button ref={reviewButtonRef} type="button" className="btn btn-secondary" disabled={isSaving} onClick={() => { setReviewBlob(null); setCaptureError(null); resetAutoCapture() }}><RotateCcw size={16} /> Retake</button>
+              <button type="button" className="btn btn-primary" disabled={isSaving} onClick={() => void keepCapture(false)}>{isSaving ? <Loader2 size={16} className="spin-icon" /> : <Check size={16} />} Keep & scan next</button>
+              <button type="button" className="btn btn-secondary" disabled={isSaving} onClick={() => void keepCapture(true)}>Keep & finish</button>
             </div>
-            <p className="countdown-label">Auto-capturing…</p>
           </div>
         )}
-
-        {/* Top Floating Action Bar */}
         <div className="camera-top-bar">
-          <button
-            type="button"
-            className="btn-circle"
-            onClick={onClose}
-            title="Close camera"
-          >
-            <X size={20} />
-          </button>
-
-          <div className="camera-top-actions">
-            {/* Auto-capture toggle */}
-            <button
-              type="button"
-              className={`btn-circle auto-capture-toggle ${autoCaptureEnabled ? 'active' : ''}`}
-              onClick={() => {
-                setAutoCaptureEnabled(!autoCaptureEnabled)
-                setAutoCaptureCountdown(null)
-                if (autoCaptureTimerRef.current) clearTimeout(autoCaptureTimerRef.current)
-                if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
-              }}
-              title={autoCaptureEnabled ? 'Disable auto-capture' : 'Enable auto-capture'}
-            >
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '-0.5px' }}>AUTO</span>
-            </button>
-
-            {hasTorch && (
-              <button
-                type="button"
-                className={`btn-circle ${torchOn ? 'active' : ''}`}
-                onClick={toggleTorch}
-                title="Toggle torch"
-              >
-                {torchOn ? <Zap size={20} /> : <ZapOff size={20} />}
-              </button>
-            )}
-
-            {devices.length > 1 && (
-              <button
-                type="button"
-                className="btn-circle"
-                onClick={handleSwitchDevice}
-                title="Switch camera"
-              >
-                <SwitchCamera size={20} />
-              </button>
-            )}
-          </div>
+          <button ref={closeButtonRef} type="button" className="btn-circle" onClick={onClose} disabled={isSaving} aria-label="Close camera" title="Close camera"><X size={20} /></button>
+          {!reviewBlob && <div className="camera-top-actions">
+            <button type="button" className={`btn-circle auto-capture-toggle ${autoCaptureEnabled ? 'active' : ''}`} onClick={() => setAutoCaptureEnabled(!autoCaptureEnabled)} aria-pressed={autoCaptureEnabled} aria-label="Auto-capture" title={autoCaptureEnabled ? 'Disable auto-capture' : 'Enable auto-capture'}><span>AUTO</span></button>
+            {hasTorch && <button type="button" className={`btn-circle ${torchOn ? 'active' : ''}`} onClick={toggleTorch} aria-label="Toggle torch" aria-pressed={torchOn}>{torchOn ? <Zap size={20} /> : <ZapOff size={20} />}</button>}
+            {devices.length > 1 && <button type="button" className="btn-circle" disabled={isCapturing} onClick={handleSwitchDevice} aria-label="Switch camera"><SwitchCamera size={20} /></button>}
+          </div>}
         </div>
-
-        {/* Error notice */}
-        {error && (
-          <div className="camera-error-banner">
-            <p>{error}</p>
+        {(captureError || (!reviewBlob && error)) && (
+          <div className={`camera-feedback ${reviewBlob ? 'camera-feedback-review' : ''}`} role="alert">
+            <p>{captureError || error}</p>
+            {!reviewBlob && error && <button type="button" className="btn btn-secondary" onClick={() => void startCamera()}>Retry camera</button>}
           </div>
         )}
-
-        {/* Bottom Shutter & Burst Bar */}
-        <div className="camera-bottom-bar">
-          <div className="batch-counter-wrap">
-            {capturedCount > 0 && (
-              <span className="batch-pill">
-                {capturedCount} {capturedCount === 1 ? 'page' : 'pages'} scanned
-              </span>
-            )}
-          </div>
-
-          <button
-            type="button"
-            className="camera-shutter-btn"
-            disabled={!isActive || isCapturing}
-            onClick={triggerCapture}
-            title="Capture photo"
-          >
-            <div className="shutter-inner">
-              <Camera size={26} />
-            </div>
-          </button>
-
-          <div className="done-btn-wrap">
-            {capturedCount > 0 && (
-              <button
-                type="button"
-                className="btn btn-primary btn-done"
-                onClick={onClose}
-              >
-                <Check size={18} />
-                <span>Done</span>
-              </button>
-            )}
-          </div>
-        </div>
+        {!reviewBlob && <div className="camera-bottom-bar">
+          <div className="batch-counter-wrap">{capturedCount > 0 && <span className="batch-pill">{capturedCount} {capturedCount === 1 ? 'page' : 'pages'} kept</span>}</div>
+          <button ref={shutterButtonRef} type="button" className="camera-shutter-btn" disabled={!isActive || isCapturing} onClick={() => void triggerCapture()} aria-label="Capture photo" title="Capture photo"><div className="shutter-inner">{isCapturing ? <Loader2 size={26} className="spin-icon" /> : <Camera size={26} />}</div></button>
+          <div className="done-btn-wrap">{capturedCount > 0 && <button type="button" className="btn btn-primary btn-done" onClick={onClose}><Check size={18} /><span>Done</span></button>}</div>
+        </div>}
       </div>
     </div>
   )

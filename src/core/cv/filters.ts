@@ -241,7 +241,10 @@ export function applySmartDeblur(data: Uint8ClampedArray, width: number, height:
 export function applyMagicColor(data: Uint8ClampedArray, width: number, height: number): void {
   const numPixels = width * height
 
-  // 1. Compute histogram of luminance to find black point (1st percentile) and white point (96th percentile)
+  if (numPixels === 0) return
+
+  // Percentiles estimate exposure, but paper must never become the black point.
+  // Sparse text and blank pages can have almost identical percentile values.
   const hist = new Uint32Array(256)
   const lums = new Uint8Array(numPixels)
 
@@ -251,30 +254,20 @@ export function applyMagicColor(data: Uint8ClampedArray, width: number, height: 
     hist[l] += 1
   }
 
-  const p1Target = Math.floor(numPixels * 0.015)
-  const p96Target = Math.floor(numPixels * 0.95)
-
-  let accum = 0
-  let blackPoint = 15
-  let whitePoint = 235
-
-  for (let i = 0; i < 256; i += 1) {
-    accum += hist[i]
-    if (accum <= p1Target) {
-      blackPoint = i
+  const percentile = (fraction: number): number => {
+    const target = Math.max(1, Math.ceil(numPixels * fraction))
+    let count = 0
+    for (let i = 0; i < hist.length; i += 1) {
+      count += hist[i]
+      if (count >= target) return i
     }
-    if (accum <= p96Target) {
-      whitePoint = i
-    }
+    return 255
   }
 
-  // Ensure healthy spread
-  if (whitePoint - blackPoint < 60) {
-    blackPoint = Math.max(0, blackPoint - 20)
-    whitePoint = Math.min(255, whitePoint + 40)
-  }
-
-  const spread = Math.max(1, whitePoint - blackPoint)
+  // Bound the stretch to preserve faint pencil marks and colored signatures.
+  const blackPoint = Math.min(32, percentile(0.015))
+  const whitePoint = Math.max(180, percentile(0.95))
+  const spread = whitePoint - blackPoint
   const levelScale = 255.0 / spread
 
   // 2. Estimate gentle background illumination map (block-based low-pass)
@@ -303,13 +296,31 @@ export function applyMagicColor(data: Uint8ClampedArray, width: number, height: 
     }
   }
 
-  // 3. Apply balanced Auto-Levels + Gentle Shadow Lift (bounded between 0.95 and 1.25)
+  // Interpolate block-center samples so shadow correction has no tile seams.
+  const leftBlocks = new Uint32Array(width)
+  const rightBlocks = new Uint32Array(width)
+  const xWeights = new Float32Array(width)
+  for (let x = 0; x < width; x += 1) {
+    const gridX = clamp((x + 0.5) / blockSize - 0.5, 0, blocksX - 1)
+    leftBlocks[x] = Math.floor(gridX)
+    rightBlocks[x] = Math.min(blocksX - 1, leftBlocks[x] + 1)
+    xWeights[x] = gridX - leftBlocks[x]
+  }
+
+  // 3. Apply bounded auto-levels and smooth shadow compensation.
   for (let y = 0; y < height; y += 1) {
-    const by = Math.min(blocksY - 1, Math.floor(y / blockSize))
+    const gridY = clamp((y + 0.5) / blockSize - 0.5, 0, blocksY - 1)
+    const topRow = Math.floor(gridY) * blocksX
+    const bottomRow = Math.min(blocksY - 1, Math.floor(gridY) + 1) * blocksX
+    const yWeight = gridY - Math.floor(gridY)
 
     for (let x = 0; x < width; x += 1) {
-      const bx = Math.min(blocksX - 1, Math.floor(x / blockSize))
-      const bgLum = bgMap[by * blocksX + bx]
+      const left = leftBlocks[x]
+      const right = rightBlocks[x]
+      const xWeight = xWeights[x]
+      const top = bgMap[topRow + left] * (1 - xWeight) + bgMap[topRow + right] * xWeight
+      const bottom = bgMap[bottomRow + left] * (1 - xWeight) + bgMap[bottomRow + right] * xWeight
+      const bgLum = top * (1 - yWeight) + bottom * yWeight
 
       // Gentle shadow compensation factor: Never blow out highlights!
       const shadowCompensation = clamp(1.0 + 0.28 * ((220.0 - bgLum) / 220.0), 0.95, 1.22)
@@ -345,9 +356,7 @@ export function applyFilterToImageData(imageData: ImageData, mode: FilterMode): 
   const { data, width, height } = imageData
 
   if (mode === 'original') {
-    // Smart deblur then crisp HD sharpening
-    applySmartDeblur(data, width, height)
-    applyHDSharpening(data, width, height, 0.35)
+    // Preserve the unfiltered pixels; perspective correction is handled separately.
     return
   }
 

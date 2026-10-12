@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { EditorView, Point, Quad, ScanPage } from '../../core/cv/types'
 import { distance } from '../../core/cv/homography'
 import { CornerMagnifier } from './CornerMagnifier'
+import { cvWorker } from '../../core/workers/workerClient'
+import { Columns2, Loader2 } from 'lucide-react'
 
 interface DocumentCanvasProps {
   page: ScanPage | null
@@ -27,6 +29,60 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   const [magnifierPos, setMagnifierPos] = useState<Point | null>(null)
   const [rawImage, setRawImage] = useState<HTMLImageElement | null>(null)
   const [previewImage, setPreviewImage] = useState<HTMLImageElement | null>(null)
+  const [comparisonEnabled, setComparisonEnabled] = useState(false)
+  const [comparisonPosition, setComparisonPosition] = useState(50)
+  const [comparisonImage, setComparisonImage] = useState<HTMLImageElement | null>(null)
+  const [comparisonLoading, setComparisonLoading] = useState(false)
+  const [comparisonError, setComparisonError] = useState<string | null>(null)
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+  const comparisonCache = useRef<{ rawBlob: Blob; crop: string; image: HTMLImageElement } | null>(null)
+  const cropKey = page ? JSON.stringify(page.quad) : ''
+
+  useEffect(() => {
+    setComparisonEnabled(false)
+    setComparisonImage(null)
+    setComparisonError(null)
+    setComparisonPosition(50)
+  }, [page?.id, page?.rawBlob, cropKey, editMode])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const observer = new ResizeObserver(() => {
+      const rect = container.getBoundingClientRect()
+      setCanvasSize({ width: Math.floor(rect.width), height: Math.floor(rect.height) })
+    })
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [page?.id])
+
+  useEffect(() => {
+    if (!page || !comparisonEnabled || editMode) { setComparisonLoading(false); return }
+    let active = true
+    const cached = comparisonCache.current
+    if (cached?.rawBlob === page.rawBlob && cached.crop === cropKey) {
+      setComparisonImage(cached.image)
+      setComparisonLoading(false)
+      return
+    }
+    setComparisonLoading(true)
+    setComparisonError(null)
+    setComparisonImage(null)
+    void (async () => {
+      try {
+        const result = await cvWorker.warpAndFilter(page.rawBlob, page.quad, 'original')
+        const image = await cvWorker.blobToImage(result.blob)
+        if (!active) return
+        comparisonCache.current = { rawBlob: page.rawBlob, crop: cropKey, image }
+        setComparisonImage(image)
+      } catch {
+        if (active) setComparisonError('Could not prepare the comparison. Turn comparison off and try again.')
+      } finally {
+        if (active) setComparisonLoading(false)
+      }
+    })()
+    return () => { active = false }
+  }, [page?.id, page?.rawBlob, cropKey, comparisonEnabled, editMode])
 
   // Load raw image for corner edit
   useEffect(() => {
@@ -35,6 +91,7 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
       return
     }
     let active = true
+    setRawImage(null)
     const img = new Image()
     const url = URL.createObjectURL(page.rawBlob)
     img.onload = () => {
@@ -59,23 +116,28 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
       setPreviewImage(null)
       return
     }
+    let active = true
+    setPreviewImage(null)
     const img = new Image()
     img.onload = () => {
-      setPreviewImage(img)
+      if (active) setPreviewImage(img)
     }
     img.src = page.previewUrl
-  }, [page?.previewUrl, page])
+    return () => { active = false }
+  }, [page?.previewUrl])
 
   const calculateFit = useCallback(
     (imgW: number, imgH: number, canvasW: number, canvasH: number): EditorView => {
       const padding = 20
       const availW = Math.max(40, canvasW - padding * 2)
-      const availH = Math.max(40, canvasH - padding * 2)
+      const topPadding = editMode ? padding : 58
+      const bottomPadding = comparisonEnabled ? 72 : padding
+      const availH = Math.max(40, canvasH - topPadding - bottomPadding)
       const scale = Math.min(availW / imgW, availH / imgH)
       const drawWidth = imgW * scale
       const drawHeight = imgH * scale
       const offsetX = (canvasW - drawWidth) / 2
-      const offsetY = (canvasH - drawHeight) / 2
+      const offsetY = topPadding + (availH - drawHeight) / 2
 
       return {
         offsetX,
@@ -87,7 +149,7 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
         imageHeight: imgH,
       }
     },
-    [],
+    [editMode, comparisonEnabled],
   )
 
   // Main canvas redraw loop
@@ -98,8 +160,8 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
 
     const dpr = window.devicePixelRatio || 1
     const rect = container.getBoundingClientRect()
-    const width = Math.max(300, Math.floor(rect.width))
-    const height = Math.max(350, Math.floor(rect.height))
+    const width = Math.max(1, Math.floor(rect.width))
+    const height = Math.max(1, Math.floor(rect.height))
 
     canvas.width = width * dpr
     canvas.height = height * dpr
@@ -191,6 +253,22 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
 
       ctx.drawImage(previewImage, view.offsetX, view.offsetY, view.drawWidth, view.drawHeight)
       ctx.restore()
+
+      if (comparisonEnabled && comparisonImage) {
+        const split = view.offsetX + view.drawWidth * comparisonPosition / 100
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(view.offsetX, view.offsetY, split - view.offsetX, view.drawHeight)
+        ctx.clip()
+        ctx.drawImage(comparisonImage, view.offsetX, view.offsetY, view.drawWidth, view.drawHeight)
+        ctx.restore()
+        ctx.beginPath()
+        ctx.moveTo(split, view.offsetY)
+        ctx.lineTo(split, view.offsetY + view.drawHeight)
+        ctx.strokeStyle = '#059669'
+        ctx.lineWidth = 2
+        ctx.stroke()
+      }
     }
   }, [
     page,
@@ -200,6 +278,10 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
     editingQuad,
     activeHandleIndex,
     calculateFit,
+    comparisonEnabled,
+    comparisonImage,
+    comparisonPosition,
+    canvasSize,
   ])
 
   // Handle pointer interactions
@@ -289,6 +371,12 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
 
   return (
     <div ref={containerRef} className="document-canvas-container">
+      {!editMode && <div className="comparison-top-bar">
+        <button type="button" className="btn btn-secondary comparison-toggle" aria-pressed={comparisonEnabled} disabled={isProcessing} onClick={() => setComparisonEnabled(value => !value)}>
+          {comparisonLoading ? <Loader2 size={16} className="spin-icon" /> : <Columns2 size={16} />}<span>Before / After</span>
+        </button>
+        {comparisonEnabled && comparisonImage && <span className="comparison-caption">Before enhancement · After enhancement</span>}
+      </div>}
       <canvas
         ref={canvasRef}
         className={`interactive-canvas ${editMode ? 'edit-mode' : ''}`}
@@ -296,7 +384,14 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        aria-label={editMode ? 'Document crop editor' : comparisonEnabled ? 'Before and after document comparison' : 'Scanned document preview'}
       />
+
+      {comparisonEnabled && !editMode && <div className="comparison-controls">
+        {comparisonLoading ? <p role="status">Preparing the same crop without enhancement…</p>
+          : comparisonError ? <p role="alert">{comparisonError}</p>
+          : comparisonImage && <><label htmlFor="comparison-slider"><span>Before</span><span>After</span></label><input id="comparison-slider" type="range" min={0} max={100} value={comparisonPosition} disabled={isProcessing} aria-label="Before and after comparison" aria-valuetext={`${comparisonPosition}% before enhancement`} onChange={event => setComparisonPosition(Number(event.target.value))} /></>}
+      </div>}
 
       {/* Floating 2.5x Loupe Magnifier during corner dragging */}
       {editMode && activeHandleIndex !== null && editingQuad && magnifierPos && rawImage && (

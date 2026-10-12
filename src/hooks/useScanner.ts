@@ -129,6 +129,7 @@ export function useScanner() {
       } catch (err: unknown) {
         console.error(err)
         setStatus('Failed to process image. Try another file.', true)
+        throw new Error('Failed to process the captured image.')
       } finally {
         setIsProcessing(false)
       }

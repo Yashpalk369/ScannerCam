@@ -296,6 +296,63 @@ button {
   cursor: crosshair;
 }
 
+.comparison-top-bar {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.comparison-toggle {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.comparison-toggle[aria-pressed="true"] {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.comparison-caption {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-align: right;
+}
+
+.comparison-controls {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.comparison-controls label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.comparison-controls input {
+  display: block;
+  width: 100%;
+  accent-color: var(--brand);
+  touch-action: pan-y;
+}
+
+.document-canvas-container .interactive-canvas {
+  max-height: none;
+}
+
 .canvas-empty-state {
   flex: 1;
   display: flex;
@@ -643,7 +700,98 @@ button {
 .camera-video-stream {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+}
+
+/* Keep the full camera frame visible, with room for mobile capture controls. */
+.camera-viewport-wrap {
+  min-height: 0;
+}
+
+.camera-modal-overlay .btn-circle:disabled,
+.camera-shutter-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.camera-review {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: #0b1220;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: calc(5rem + env(safe-area-inset-top, 0px)) 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+
+.camera-review h2 {
+  font-size: 1.25rem;
+}
+
+.camera-review p {
+  max-width: 38rem;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.camera-review-image {
+  flex: 1;
+  min-height: 100px;
+  width: 100%;
+  max-width: 900px;
+  object-fit: contain;
+}
+
+.camera-review-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.camera-feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90%, 420px);
+  z-index: 25;
+  padding: 1rem;
+  border: 1px solid #f87171;
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.96);
+  text-align: center;
+}
+
+.camera-feedback p {
+  margin-bottom: 0.75rem;
+}
+
+.camera-feedback-review {
+  top: auto;
+  bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+}
+
+.camera-modal-overlay .live-detect-banner {
+  top: calc(5rem + env(safe-area-inset-top, 0px));
+  max-width: 90%;
+  white-space: normal;
+  text-align: center;
+}
+
+.camera-modal-overlay .guide-hint {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
 .camera-shutter-flash {
@@ -944,6 +1092,103 @@ button {
   padding: 1.25rem 1.5rem;
   background: #f8fafc;
   border-top: 1px solid var(--border-subtle);
+}
+
+.scanner-export-dialog {
+  width: min(100%, 560px);
+  max-width: 560px;
+  max-height: 94dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scanner-export-dialog .modal-header,
+.scanner-export-dialog .modal-footer {
+  flex-shrink: 0;
+}
+
+.scanner-export-dialog .modal-body {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.scanner-export-dialog .form-group {
+  min-width: 0;
+}
+
+.scanner-export-dialog select {
+  max-width: 100%;
+  width: 100%;
+  padding-left: 0.5rem;
+}
+
+.scanner-export-dialog .searchable-toggle-card {
+  text-align: left;
+}
+
+.pdf-quality-description {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pdf-size-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.pdf-size-preview small {
+  width: 100%;
+  color: var(--text-muted);
+}
+
+.pdf-export-error {
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.id-card-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.id-card-sheet-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+
+.id-card-sheet-preview figure {
+  width: 180px;
+  max-width: 100%;
+  margin: 0;
+}
+
+.id-card-sheet-preview figcaption {
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.id-card-sheet-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 85.6 / 54;
+  object-fit: contain;
 }
 
 /* Drag & Drop Fullscreen Overlay */

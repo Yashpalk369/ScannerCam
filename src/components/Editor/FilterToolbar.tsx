@@ -27,12 +27,12 @@ interface FilterToolbarProps {
   onAutoDetectCorners: () => void
 }
 
-const FILTERS: { id: FilterMode; label: string; icon: React.FC<{ size?: number }> }[] = [
-  { id: 'magic', label: 'Magic Color', icon: Sparkles },
-  { id: 'bw', label: 'Clean B/W', icon: Contrast },
-  { id: 'enhance', label: 'Enhance', icon: Sliders },
-  { id: 'grayscale', label: 'Gray', icon: Layers },
-  { id: 'original', label: 'Original', icon: ImageIcon },
+const FILTERS: { id: FilterMode; label: string; description: string; icon: React.FC<{ size?: number }> }[] = [
+  { id: 'magic', label: 'Magic Color', description: 'Brighten paper and soften shadows while keeping color', icon: Sparkles },
+  { id: 'bw', label: 'Clean B/W', description: 'Black text on white paper; may remove faint or colored details', icon: Contrast },
+  { id: 'enhance', label: 'Enhance', description: 'Boost contrast and sharpen detail', icon: Sliders },
+  { id: 'grayscale', label: 'Gray', description: 'Remove color and sharpen detail', icon: Layers },
+  { id: 'original', label: 'Original', description: 'Keep original colors without enhancement', icon: ImageIcon },
 ]
 
 export const FilterToolbar: React.FC<FilterToolbarProps> = ({
@@ -108,6 +108,8 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
                   key={f.id}
                   type="button"
                   className={`filter-pill ${isActive ? 'active' : ''}`}
+                  aria-pressed={isActive}
+                  title={f.description}
                   onClick={() => onUpdateFilter(f.id)}
                   disabled={!hasPage || isProcessing}
                 >

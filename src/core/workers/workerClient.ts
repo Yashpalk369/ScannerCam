@@ -37,6 +37,12 @@ class CVWorkerClient {
 
       this.worker.onerror = (err) => {
         console.error('CV Worker error:', err)
+        for (const handler of this.pendingRequests.values()) {
+          handler.reject(new Error('Image processing worker failed. Please try again.'))
+        }
+        this.pendingRequests.clear()
+        this.worker?.terminate()
+        this.worker = null
       }
     }
     return this.worker
@@ -46,7 +52,12 @@ class CVWorkerClient {
     const worker = this.getWorker()
     return new Promise((resolve, reject) => {
       this.pendingRequests.set(req.id, { resolve, reject })
-      worker.postMessage(req, transferList)
+      try {
+        worker.postMessage(req, transferList)
+      } catch (error) {
+        this.pendingRequests.delete(req.id)
+        reject(error)
+      }
     })
   }
 
@@ -76,6 +87,8 @@ class CVWorkerClient {
     imageData: ImageData
     width: number
     height: number
+    rawWidth: number
+    rawHeight: number
   }> {
     const img = await this.blobToImage(blob)
     let width = img.naturalWidth
@@ -96,7 +109,7 @@ class CVWorkerClient {
 
     ctx.drawImage(img, 0, 0, width, height)
     const imageData = ctx.getImageData(0, 0, width, height)
-    return { imageData, width, height }
+    return { imageData, width, height, rawWidth: img.naturalWidth, rawHeight: img.naturalHeight }
   }
 
   /**
@@ -130,7 +143,11 @@ class CVWorkerClient {
     quad: Quad,
     filter: FilterMode,
   ): Promise<{ blob: Blob; width: number; height: number }> {
-    const { imageData, width, height } = await this.blobToImageData(blob)
+    const { imageData, width, height, rawWidth, rawHeight } = await this.blobToImageData(blob)
+    const scaledQuad = quad.map(point => ({
+      x: point.x * width / rawWidth,
+      y: point.y * height / rawHeight,
+    })) as Quad
     const id = crypto.randomUUID()
 
     const res = await this.sendRequest(
@@ -140,7 +157,7 @@ class CVWorkerClient {
         srcBuffer: imageData.data.buffer,
         srcWidth: width,
         srcHeight: height,
-        quad,
+        quad: scaledQuad,
         filter,
       },
       [imageData.data.buffer],
@@ -202,6 +219,21 @@ class CVWorkerClient {
       width: res.dstWidth,
       height: res.dstHeight,
     }
+  }
+
+  /**
+   * Detects a small live-camera frame off the main thread. Keep its pixel buffer
+   * available to the caller for quality checks; postMessage copies it here.
+   */
+  async detectImageData(imageData: ImageData): Promise<Quad | null> {
+    const response = await this.sendRequest({
+      id: crypto.randomUUID(),
+      type: 'DETECT_QUAD',
+      srcBuffer: imageData.data.buffer,
+      srcWidth: imageData.width,
+      srcHeight: imageData.height,
+    })
+    return response.quad ?? null
   }
 
   /**
