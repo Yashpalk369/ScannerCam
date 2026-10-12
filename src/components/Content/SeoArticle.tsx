@@ -16,7 +16,6 @@ import {
   BookOpen,
   ArrowRight,
   CreditCard,
-  Receipt,
   FileStack,
 } from 'lucide-react'
 
