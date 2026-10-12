@@ -32,6 +32,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
   const [frontId, setFrontId] = useState(pages[0]?.id ?? '')
   const [backId, setBackId] = useState(pages[1]?.id ?? '')
   const [searchablePdf, setSearchablePdf] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isPreparing, setIsPreparing] = useState(true)
   const [exportProgress, setExportProgress] = useState('')
@@ -133,7 +134,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
 
   const trapFocus = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'Tab') return
-    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled)'))
+    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled)')).filter(control => control.getClientRects().length > 0)
     if (!controls.length) { event.preventDefault(); return }
     const first = controls[0]
     const last = controls[controls.length - 1]
@@ -158,7 +159,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
             <div className="form-group">
               <label htmlFor="pdfLayout" className="input-label">PDF Layout</label>
               <select id="pdfLayout" className="select-input" value={layout} disabled={isExporting} onChange={event => setLayout(event.target.value as PdfLayout)}>
-                <option value="document">Document pages</option><option value="id-card">ID card · front & back</option>
+                <option value="document">Documents</option><option value="id-card">ID card</option>
               </select>
             </div>
             <div className="form-group">
@@ -179,11 +180,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
               <div className="form-group"><label htmlFor="idFront" className="input-label">Front side</label><select id="idFront" className="select-input" value={frontId} disabled={isExporting} onChange={event => setFrontId(event.target.value)}>{pages.map((page, index) => <option key={page.id} value={page.id}>{index + 1}. {page.name}</option>)}</select></div>
               <div className="form-group"><label htmlFor="idBack" className="input-label">Back side</label><select id="idBack" className="select-input" value={backId} disabled={isExporting} onChange={event => setBackId(event.target.value)}><option value="">Front only</option>{pages.map((page, index) => <option key={page.id} value={page.id}>{index + 1}. {page.name}</option>)}</select></div>
             </div>
-            {!selectionError && <div className="id-card-sheet-preview" aria-label="ID card layout preview">
+            {!selectionError && <div className="id-card-sheet-preview" aria-label="Selected ID card sides">
               {[front, back].filter((page): page is ScanPage => Boolean(page)).map((page, index) => <figure key={page.id}><figcaption>{index === 0 ? 'Front' : 'Back'}</figcaption><img src={page.previewUrl} alt={`${index === 0 ? 'Front' : 'Back'} side preview`} /></figure>)}
             </div>}
-            <p className="pdf-quality-description">Only the selected sides are exported on one portrait sheet. Cards fit an 85.6 × 54 mm area. Print at 100% scale.</p>
+            <p className="pdf-quality-description">Selected sides are stacked on one portrait sheet. Cards fit an 85.6 × 54 mm area. Print at 100% scale.</p>
           </div>}
+          <button type="button" className="export-advanced-toggle" aria-expanded={advancedOpen} aria-controls="export-advanced-options" disabled={isExporting} onClick={() => setAdvancedOpen(value => !value)}>
+            <span>Advanced options</span><span aria-hidden="true">{advancedOpen ? '−' : '+'}</span>
+          </button>
+          <div id="export-advanced-options" className="export-advanced-options" hidden={!advancedOpen}>
           <div className="export-options-grid">
             <div className="form-group"><label htmlFor="paperSize" className="input-label">Paper Size</label><select id="paperSize" className="select-input" value={paperFormat} disabled={isExporting} onChange={event => setPaperFormat(event.target.value as 'a4' | 'letter')}><option value="a4">A4 (Standard ISO)</option><option value="letter">US Letter</option></select></div>
             <div className="form-group"><label htmlFor="pageMargins" className="input-label">Margins</label><select id="pageMargins" className="select-input" value={margin} disabled={isExporting} onChange={event => setMargin(Number(event.target.value))}><option value={20}>Standard (20 pt)</option><option value={0}>Borderless (0 pt)</option><option value={40}>Wide (40 pt)</option></select></div>
@@ -193,6 +198,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
             <span className="searchable-toggle-text"><strong>Searchable PDF (OCR)</strong><span className="pdf-quality-description">Add searchable text using local OCR. No document uploads.</span></span>
             <span className={`toggle-pill ${searchablePdf ? 'on' : 'off'}`}>{searchablePdf ? 'ON' : 'OFF'}</span>
           </button>
+            {layout === 'document' && <div className="export-image-options">
+              <p className="input-label">Image downloads</p>
+              <button type="button" className="btn btn-secondary" disabled={!activePage || isExporting} onClick={handleExportSingleJpg}><ImageIcon size={16} /><span>Download Current JPG</span></button>
+              {pages.length > 1 && <button type="button" className="btn btn-secondary" disabled={isExporting} onClick={handleExportAllJpgs}><ImageIcon size={16} /><span>Download All JPGs</span></button>}
+            </div>}
+          </div>
           <div className="export-summary-box">
             <CheckCircle2 size={18} className="summary-icon" />
             <div><strong>{layout === 'id-card' ? '1 sheet' : `${selectedPages.length} ${selectedPages.length === 1 ? 'page' : 'pages'}`} ready</strong><p>{layout === 'id-card' ? `${selectedPages.length} selected ${selectedPages.length === 1 ? 'side' : 'sides'}` : 'Auto-orientation matches each page.'}</p></div>
@@ -202,8 +213,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
           {isExporting && <div className="export-progress-row" role="status"><Loader2 size={15} className="spin-icon text-brand" /><span>{exportProgress}</span></div>}
         </div>
         <div className="modal-footer">
-          {layout === 'document' && <button type="button" className="btn btn-secondary" disabled={!activePage || isExporting} onClick={handleExportSingleJpg}><ImageIcon size={16} /><span>Download Current JPG</span></button>}
-          {layout === 'document' && pages.length > 1 && <button type="button" className="btn btn-secondary" disabled={isExporting} onClick={handleExportAllJpgs}><ImageIcon size={16} /><span>Download All JPGs</span></button>}
           <button type="button" className="btn btn-primary" disabled={!selectedPages.length || isExporting || isPreparing || Boolean(selectionError)} onClick={() => void handleExportPdf()}>
             {isExporting ? <Loader2 size={16} className="spin-icon" /> : <FileText size={16} />}<span>{isExporting ? exportProgress || 'Exporting…' : layout === 'id-card' ? 'Download ID Card PDF' : searchablePdf ? 'Download Searchable PDF' : 'Download Multi-Page PDF'}</span>
           </button>

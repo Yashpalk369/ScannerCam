@@ -24,6 +24,7 @@ export const PageStrip: React.FC<PageStripProps> = ({
   onAddFiles,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const dragIndexRef = useRef<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -33,6 +34,17 @@ export const PageStrip: React.FC<PageStripProps> = ({
       onAddFiles(e.target.files)
       e.target.value = ''
     }
+  }
+
+  const navigatePage = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const movement = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key]
+    if (movement === undefined && event.key !== 'Home' && event.key !== 'End') return
+    event.preventDefault()
+    event.stopPropagation()
+    if (isProcessing) return
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? pages.length - 1 : (index + movement! + pages.length) % pages.length
+    onSelectPage(pages[next].id)
+    listRef.current?.querySelectorAll<HTMLButtonElement>('.page-thumbnail-select')[next]?.focus()
   }
 
   // ── Drag and Drop handlers ──────────────────────────────────────────────────
@@ -87,7 +99,7 @@ export const PageStrip: React.FC<PageStripProps> = ({
         </span>
       </div>
 
-      <div className="thumbnails-scroll-container">
+      <div ref={listRef} className="thumbnails-scroll-container" role="list" aria-label="Scanned pages">
         {pages.map((page, index) => {
           const isActive = page.id === activePageId
           const isDropTarget = dragOverIndex === index
@@ -102,7 +114,7 @@ export const PageStrip: React.FC<PageStripProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
-              onClick={() => onSelectPage(page.id)}
+              role="listitem"
             >
               {/* Drag grip handle */}
               <div
@@ -113,8 +125,9 @@ export const PageStrip: React.FC<PageStripProps> = ({
                 <GripVertical size={14} />
               </div>
 
+              <button type="button" className="page-thumbnail-select" aria-label={`Select page ${index + 1}: ${page.name}`} aria-current={isActive ? 'page' : undefined} disabled={isProcessing} onClick={() => onSelectPage(page.id)} onKeyDown={event => navigatePage(event, index)}>
               <div className="thumbnail-preview-wrap">
-                <img src={page.previewUrl} alt={page.name} className="thumbnail-img" />
+                <img src={page.previewUrl} alt="" className="thumbnail-img" draggable={false} />
                 <span className="page-number-pill">{index + 1}</span>
               </div>
 
@@ -124,6 +137,8 @@ export const PageStrip: React.FC<PageStripProps> = ({
                   {page.width}×{page.height} • {page.filter}
                 </p>
               </div>
+
+              </button>
 
               <div className="thumbnail-actions" onClick={(e) => e.stopPropagation()}>
                 {pages.length > 1 && (
@@ -175,24 +190,11 @@ export const PageStrip: React.FC<PageStripProps> = ({
           />
         )}
 
-        {/* Add Page Button Tile */}
-        <div
-          className="add-page-tile"
-          onClick={() => fileInputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-          <Plus size={24} />
-          <span>Add Page</span>
+        <div className="add-page-slot" role="listitem">
+          <button type="button" className="add-page-tile" disabled={isProcessing} onClick={() => fileInputRef.current?.click()}>
+            <Plus size={24} /><span>Add Page</span>
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFileChange} />
         </div>
       </div>
     </aside>

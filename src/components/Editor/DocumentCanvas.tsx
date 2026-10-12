@@ -3,7 +3,9 @@ import type { EditorView, Point, Quad, ScanPage } from '../../core/cv/types'
 import { distance } from '../../core/cv/homography'
 import { CornerMagnifier } from './CornerMagnifier'
 import { cvWorker } from '../../core/workers/workerClient'
-import { Columns2, Loader2 } from 'lucide-react'
+import { Columns2, Loader2, Camera, Upload, ShieldCheck, ZoomIn, ZoomOut, Scan } from 'lucide-react'
+import { calculateImageView, clampZoom, zoomAtPoint } from '../../core/cv/viewerTransform'
+import type { ViewerTransform, ViewerViewport } from '../../core/cv/viewerTransform'
 
 interface DocumentCanvasProps {
   page: ScanPage | null
@@ -11,9 +13,14 @@ interface DocumentCanvasProps {
   editingQuad: Quad | null
   onUpdateQuadCorner: (index: number, pt: Point) => void
   isProcessing: boolean
+  onOpenCamera: () => void
+  onAddFiles: (files: FileList) => void
 }
 
 const CORNER_LABELS = ['TL', 'TR', 'BR', 'BL']
+const FIT_TRANSFORM: ViewerTransform = { zoom: 1, pan: { x: 0, y: 0 } }
+type ViewerGesture = { kind: 'pan'; start: Point; transform: ViewerTransform }
+  | { kind: 'pinch'; distance: number; midpoint: Point; transform: ViewerTransform }
 
 export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   page,
@@ -21,7 +28,10 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   editingQuad,
   onUpdateQuadCorner,
   isProcessing,
+  onOpenCamera,
+  onAddFiles,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [editorView, setEditorView] = useState<EditorView | null>(null)
@@ -36,7 +46,37 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   const [comparisonError, setComparisonError] = useState<string | null>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
   const comparisonCache = useRef<{ rawBlob: Blob; crop: string; image: HTMLImageElement } | null>(null)
+  const [transform, setTransform] = useState<ViewerTransform>(FIT_TRANSFORM)
+  const [isPanning, setIsPanning] = useState(false)
+  const transformRef = useRef<ViewerTransform>(FIT_TRANSFORM)
+  const viewRef = useRef<EditorView | null>(null)
+  const viewportRef = useRef<ViewerViewport>({ width: 0, height: 0, top: 62, bottom: 20 })
+  const fitScaleRef = useRef(1)
+  const centerRef = useRef<Point>({ x: 0, y: 0 })
+  const pointersRef = useRef(new Map<number, Point>())
+  const gestureRef = useRef<ViewerGesture | null>(null)
+  const handleRef = useRef<number | null>(null)
   const cropKey = page ? JSON.stringify(page.quad) : ''
+
+  const changeTransform = useCallback((requested: ViewerTransform) => {
+    const view = viewRef.current
+    const next = { ...requested, zoom: clampZoom(requested.zoom) }
+    if (view) next.pan = calculateImageView(view.imageWidth, view.imageHeight, viewportRef.current, next).pan
+    transformRef.current = next
+    setTransform(next)
+  }, [])
+
+  const resetViewer = useCallback(() => {
+    pointersRef.current.clear()
+    gestureRef.current = null
+    handleRef.current = null
+    setActiveHandleIndex(null)
+    setMagnifierPos(null)
+    setIsPanning(false)
+    changeTransform(FIT_TRANSFORM)
+  }, [changeTransform])
+
+  useEffect(() => { resetViewer() }, [page?.id, page?.rawBlob, cropKey, editMode, resetViewer])
 
   useEffect(() => {
     setComparisonEnabled(false)
@@ -128,28 +168,20 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
 
   const calculateFit = useCallback(
     (imgW: number, imgH: number, canvasW: number, canvasH: number): EditorView => {
-      const padding = 20
-      const availW = Math.max(40, canvasW - padding * 2)
-      const topPadding = editMode ? padding : 58
-      const bottomPadding = comparisonEnabled ? 72 : padding
-      const availH = Math.max(40, canvasH - topPadding - bottomPadding)
-      const scale = Math.min(availW / imgW, availH / imgH)
-      const drawWidth = imgW * scale
-      const drawHeight = imgH * scale
-      const offsetX = (canvasW - drawWidth) / 2
-      const offsetY = topPadding + (availH - drawHeight) / 2
-
-      return {
-        offsetX,
-        offsetY,
-        scale,
-        drawWidth,
-        drawHeight,
-        imageWidth: imgW,
-        imageHeight: imgH,
+      const viewport = { width: canvasW, height: canvasH, top: canvasW < 600 ? 112 : 62, bottom: comparisonEnabled ? 112 : 36 }
+      const layout = calculateImageView(imgW, imgH, viewport, transform)
+      viewportRef.current = viewport
+      fitScaleRef.current = layout.fitScale
+      centerRef.current = layout.center
+      viewRef.current = layout.view
+      if (layout.pan.x !== transform.pan.x || layout.pan.y !== transform.pan.y) {
+        const bounded = { ...transform, pan: layout.pan }
+        transformRef.current = bounded
+        setTransform(bounded)
       }
+      return layout.view
     },
-    [editMode, comparisonEnabled],
+    [comparisonEnabled, transform],
   )
 
   // Main canvas redraw loop
@@ -282,6 +314,7 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
     comparisonImage,
     comparisonPosition,
     canvasSize,
+    transform,
   ])
 
   // Handle pointer interactions
@@ -295,66 +328,130 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
     }
   }
 
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!editMode || !editingQuad || !editorView || isProcessing) return
+  const zoomViewer = useCallback((zoom: number, anchor = centerRef.current) => {
+    changeTransform(zoomAtPoint(transformRef.current, zoom, anchor, centerRef.current))
+  }, [changeTransform])
 
-    const pointer = getCanvasCoords(e)
-    let closestIndex = -1
-    let minDist = Number.POSITIVE_INFINITY
+  const toggleComparison = () => {
+    const enabled = !comparisonEnabled
+    const view = viewRef.current
+    // Keep inspected text at the same magnification when comparison adds a slider.
+    if (view && transformRef.current.zoom > 1) {
+      const viewport = { ...viewportRef.current, bottom: enabled ? 112 : 36 }
+      const fit = calculateImageView(view.imageWidth, view.imageHeight, viewport, FIT_TRANSFORM)
+      const zoom = clampZoom(view.scale / fit.fitScale)
+      const next = { zoom, pan: calculateImageView(view.imageWidth, view.imageHeight, viewport, { zoom, pan: transformRef.current.pan }).pan }
+      transformRef.current = next
+      setTransform(next)
+    }
+    setComparisonEnabled(enabled)
+  }
 
-    editingQuad.forEach((pt, idx) => {
-      const projX = editorView.offsetX + pt.x * editorView.scale
-      const projY = editorView.offsetY + pt.y * editorView.scale
-      const d = distance(pointer, { x: projX, y: projY })
-
-      if (d < 38 && d < minDist) {
-        closestIndex = idx
-        minDist = d
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const onWheel = (event: WheelEvent) => {
+      if (isProcessing) return
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault()
+        const rect = canvas.getBoundingClientRect()
+        zoomViewer(transformRef.current.zoom * Math.exp(-event.deltaY * 0.005), { x: event.clientX - rect.left, y: event.clientY - rect.top })
+      } else if (transformRef.current.zoom > 1) {
+        event.preventDefault()
+        const current = transformRef.current
+        changeTransform({ ...current, pan: { x: current.pan.x - (event.shiftKey ? event.deltaY : event.deltaX), y: current.pan.y - (event.shiftKey ? 0 : event.deltaY) } })
       }
-    })
+    }
+    canvas.addEventListener('wheel', onWheel, { passive: false })
+    return () => canvas.removeEventListener('wheel', onWheel)
+  }, [page?.id, isProcessing, zoomViewer, changeTransform])
 
-    if (closestIndex >= 0) {
-      setActiveHandleIndex(closestIndex)
+  const startPinch = () => {
+    const [a, b] = [...pointersRef.current.values()]
+    gestureRef.current = { kind: 'pinch', distance: Math.max(1, distance(a, b)), midpoint: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, transform: transformRef.current }
+    handleRef.current = null
+    setActiveHandleIndex(null)
+    setMagnifierPos(null)
+    setIsPanning(true)
+  }
+
+  const onPointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (isProcessing || !viewRef.current || (event.pointerType === 'mouse' && event.button !== 0)) return
+    const pointer = getCanvasCoords(event)
+    pointersRef.current.set(event.pointerId, pointer)
+    event.currentTarget.setPointerCapture(event.pointerId)
+    if (pointersRef.current.size === 2) { startPinch(); event.preventDefault(); return }
+    if (pointersRef.current.size > 2) return
+    if (editMode && editingQuad) {
+      const view = viewRef.current
+      let closest = -1
+      let minimum = 38
+      editingQuad.forEach((point, index) => {
+        const gap = distance(pointer, { x: view.offsetX + point.x * view.scale, y: view.offsetY + point.y * view.scale })
+        if (gap < minimum) { minimum = gap; closest = index }
+      })
+      if (closest >= 0) {
+        handleRef.current = closest
+        setActiveHandleIndex(closest)
+        setMagnifierPos(pointer)
+        event.preventDefault()
+        return
+      }
+    }
+    if (transformRef.current.zoom > 1) {
+      gestureRef.current = { kind: 'pan', start: pointer, transform: transformRef.current }
+      setIsPanning(true)
+      event.preventDefault()
+    }
+  }
+
+  const onPointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!pointersRef.current.has(event.pointerId) || isProcessing) return
+    const pointer = getCanvasCoords(event)
+    pointersRef.current.set(event.pointerId, pointer)
+    const gesture = gestureRef.current
+    if (gesture?.kind === 'pinch' && pointersRef.current.size >= 2) {
+      const [a, b] = [...pointersRef.current.values()]
+      const midpoint = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+      const next = zoomAtPoint(gesture.transform, gesture.transform.zoom * distance(a, b) / gesture.distance, gesture.midpoint, centerRef.current)
+      next.pan.x += midpoint.x - gesture.midpoint.x
+      next.pan.y += midpoint.y - gesture.midpoint.y
+      changeTransform(next)
+    } else if (handleRef.current !== null && editMode && editingQuad && viewRef.current) {
+      const view = viewRef.current
       setMagnifierPos(pointer)
-      e.currentTarget.setPointerCapture(e.pointerId)
-      e.preventDefault()
+      const x = Math.max(0, Math.min(view.imageWidth - 1, (pointer.x - view.offsetX) / view.scale))
+      const y = Math.max(0, Math.min(view.imageHeight - 1, (pointer.y - view.offsetY) / view.scale))
+      onUpdateQuadCorner(handleRef.current, { x: Math.round(x), y: Math.round(y) })
+    } else if (gesture?.kind === 'pan') {
+      changeTransform({ ...gesture.transform, pan: { x: gesture.transform.pan.x + pointer.x - gesture.start.x, y: gesture.transform.pan.y + pointer.y - gesture.start.y } })
     }
   }
 
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (
-      activeHandleIndex === null ||
-      !editMode ||
-      !editingQuad ||
-      !editorView ||
-      isProcessing
-    ) {
-      return
+  const onPointerUp = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    pointersRef.current.delete(event.pointerId)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    handleRef.current = null
+    setActiveHandleIndex(null)
+    setMagnifierPos(null)
+    gestureRef.current = null
+    setIsPanning(false)
+    if (pointersRef.current.size === 1 && transformRef.current.zoom > 1) {
+      gestureRef.current = { kind: 'pan', start: [...pointersRef.current.values()][0], transform: transformRef.current }
     }
-
-    const pointer = getCanvasCoords(e)
-    setMagnifierPos(pointer)
-
-    // Convert canvas coordinates back to raw image space
-    const rawX = Math.max(
-      0,
-      Math.min(editorView.imageWidth - 1, (pointer.x - editorView.offsetX) / editorView.scale),
-    )
-    const rawY = Math.max(
-      0,
-      Math.min(editorView.imageHeight - 1, (pointer.y - editorView.offsetY) / editorView.scale),
-    )
-
-    onUpdateQuadCorner(activeHandleIndex, { x: Math.round(rawX), y: Math.round(rawY) })
   }
 
-  const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (activeHandleIndex !== null) {
-      setActiveHandleIndex(null)
-      setMagnifierPos(null)
-      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-        e.currentTarget.releasePointerCapture(e.pointerId)
-      }
+  const onViewerKeyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (isProcessing || event.ctrlKey || event.metaKey || event.altKey) return
+    const movements: Record<string, Point> = { ArrowLeft: { x: 40, y: 0 }, ArrowRight: { x: -40, y: 0 }, ArrowUp: { x: 0, y: 40 }, ArrowDown: { x: 0, y: -40 } }
+    if (['+', '=', '-', '0'].includes(event.key) || movements[event.key]) {
+      event.preventDefault()
+      event.stopPropagation()
+      const current = transformRef.current
+      if (event.key === '0') resetViewer()
+      else if (event.key === '+' || event.key === '=') zoomViewer(current.zoom * 1.25)
+      else if (event.key === '-') zoomViewer(current.zoom / 1.25)
+      else if (current.zoom > 1) changeTransform({ ...current, pan: { x: current.pan.x + movements[event.key].x, y: current.pan.y + movements[event.key].y } })
     }
   }
 
@@ -362,8 +459,15 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
     return (
       <div className="canvas-empty-state">
         <div className="empty-content">
-          <p className="empty-title">No Document Selected</p>
-          <p className="empty-subtitle">Take a photo with your camera or drop image files here.</p>
+          <span className="scanner-start-icon" aria-hidden="true"><Camera size={32} /></span>
+          <p className="empty-title">Scan your first document</p>
+          <p className="empty-subtitle">Use your camera or upload photos to create a clean PDF.</p>
+          <div className="scanner-start-actions">
+            <button type="button" className="btn btn-primary" onClick={onOpenCamera} disabled={isProcessing}><Camera size={18} />Scan Document</button>
+            <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}><Upload size={18} />Upload Images</button>
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={event => { if (event.target.files?.length) onAddFiles(event.target.files); event.target.value = '' }} />
+          <p className="scanner-start-privacy"><ShieldCheck size={15} />Free · No signup · Documents stay on your device</p>
         </div>
       </div>
     )
@@ -371,15 +475,25 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
 
   return (
     <div ref={containerRef} className="document-canvas-container">
-      {!editMode && <div className="comparison-top-bar">
-        <button type="button" className="btn btn-secondary comparison-toggle" aria-pressed={comparisonEnabled} disabled={isProcessing} onClick={() => setComparisonEnabled(value => !value)}>
+      <div className="canvas-tools">
+        {!editMode && <button type="button" className="btn btn-secondary comparison-toggle" aria-pressed={comparisonEnabled} disabled={isProcessing} onClick={toggleComparison}>
           {comparisonLoading ? <Loader2 size={16} className="spin-icon" /> : <Columns2 size={16} />}<span>Before / After</span>
-        </button>
-        {comparisonEnabled && comparisonImage && <span className="comparison-caption">Before enhancement · After enhancement</span>}
-      </div>}
+        </button>}
+        <div className="viewer-zoom-controls" aria-label="Document zoom controls">
+          <button type="button" className="viewer-tool-button" aria-label="Zoom out" title="Zoom out" disabled={isProcessing || transform.zoom <= 1} onClick={() => zoomViewer(transform.zoom / 1.25)}><ZoomOut size={18} /></button>
+          <output aria-label="Zoom level" data-testid="viewer-transform" data-zoom={transform.zoom} data-pan-x={transform.pan.x} data-pan-y={transform.pan.y}>{Math.round((editorView?.scale ?? 1) * 100)}%</output>
+          <button type="button" className="viewer-tool-button" aria-label="Zoom in" title="Zoom in" disabled={isProcessing || transform.zoom >= 24} onClick={() => zoomViewer(transform.zoom * 1.25)}><ZoomIn size={18} /></button>
+          <button type="button" className="viewer-tool-button viewer-fit" disabled={isProcessing} aria-label="Fit document" onClick={resetViewer}><Scan size={16} />Fit</button>
+          <button type="button" className="viewer-tool-button" disabled={isProcessing} aria-label="Actual size" title="View at actual size" onClick={() => zoomViewer(1 / fitScaleRef.current)}>100%</button>
+        </div>
+      </div>
       <canvas
         ref={canvasRef}
-        className={`interactive-canvas ${editMode ? 'edit-mode' : ''}`}
+        className={`interactive-canvas ${editMode ? 'edit-mode' : ''} ${transform.zoom > 1 ? 'viewer-zoomed' : ''} ${isPanning ? 'viewer-panning' : ''}`}
+        tabIndex={0}
+        aria-describedby="viewer-help"
+        onKeyDown={onViewerKeyDown}
+        style={{ touchAction: editMode || transform.zoom > 1 ? 'none' : 'pan-y' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -392,6 +506,8 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
           : comparisonError ? <p role="alert">{comparisonError}</p>
           : comparisonImage && <><label htmlFor="comparison-slider"><span>Before</span><span>After</span></label><input id="comparison-slider" type="range" min={0} max={100} value={comparisonPosition} disabled={isProcessing} aria-label="Before and after comparison" aria-valuetext={`${comparisonPosition}% before enhancement`} onChange={event => setComparisonPosition(Number(event.target.value))} /></>}
       </div>}
+
+      <p id="viewer-help" className="viewer-help">Pinch to zoom · Drag to move<span className="viewer-keyboard-help"> · Ctrl+scroll or +/− to zoom · Arrows to pan · 0 to fit</span></p>
 
       {/* Floating 2.5x Loupe Magnifier during corner dragging */}
       {editMode && activeHandleIndex !== null && editingQuad && magnifierPos && rawImage && (

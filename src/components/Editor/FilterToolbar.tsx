@@ -11,6 +11,8 @@ import {
   X,
   Wand2,
   RotateCcw,
+  Undo2,
+  Redo2,
 } from 'lucide-react'
 import type { FilterMode, ScanPage } from '../../core/cv/types'
 
@@ -25,6 +27,10 @@ interface FilterToolbarProps {
   onApplyPerspective: () => void
   onResetCorners: () => void
   onAutoDetectCorners: () => void
+  canUndo: boolean
+  canRedo: boolean
+  onUndo: () => void
+  onRedo: () => void
 }
 
 const FILTERS: { id: FilterMode; label: string; description: string; icon: React.FC<{ size?: number }> }[] = [
@@ -46,13 +52,18 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   onApplyPerspective,
   onResetCorners,
   onAutoDetectCorners,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
 }) => {
   const hasPage = Boolean(activePage)
+  if (!hasPage && !canUndo && !canRedo) return null
 
   return (
     <div className="filter-toolbar">
       {/* Corner Editing Controls */}
-      {editMode ? (
+      {!hasPage ? null : editMode ? (
         <div className="toolbar-group edit-actions">
           <button
             type="button"
@@ -146,6 +157,10 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
           </div>
         </div>
       )}
+      <div className="history-controls" aria-label="Edit history">
+        <button type="button" className="btn btn-secondary" disabled={!canUndo || isProcessing || editMode} onClick={onUndo} title="Undo last change (Ctrl/Cmd+Z)"><Undo2 size={16} /><span>Undo</span></button>
+        <button type="button" className="btn btn-secondary" disabled={!canRedo || isProcessing || editMode} onClick={onRedo} title="Redo last change (Ctrl/Cmd+Shift+Z)"><Redo2 size={16} /><span>Redo</span></button>
+      </div>
     </div>
   )
 }

@@ -228,7 +228,7 @@ button {
 /* Workspace Layout */
 .scanner-workspace {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 1.25rem;
   padding: 1.25rem 1.5rem;
   min-height: 0;
@@ -236,13 +236,14 @@ button {
 
 @media (max-width: 1024px) {
   .scanner-workspace {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto;
   }
 }
 
 /* Main Area */
 .editor-main-area {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-surface);
@@ -457,6 +458,7 @@ button {
 
 /* Page Strip */
 .page-strip-panel {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-surface);
@@ -2194,5 +2196,278 @@ button {
 
   .interactive-canvas {
     max-height: 60vh;
+  }
+}
+
+/* Scanner controls: keep the workspace usable at narrow viewport widths. */
+.scanner-workspace .document-canvas-container,
+.scanner-workspace .toolbar-row,
+.scanner-workspace .toolbar-group {
+  min-width: 0;
+}
+
+.scanner-start-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 76px;
+  height: 76px;
+  color: var(--brand);
+  background: var(--brand-dim);
+  border-radius: 22px;
+  margin-bottom: 18px;
+}
+
+.scanner-start-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.scanner-start-actions .btn {
+  min-height: 48px;
+}
+
+.scanner-start-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.history-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.history-controls .btn {
+  min-height: 44px;
+}
+
+.page-thumbnail-card {
+  padding: 8px;
+}
+
+.page-thumbnail-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 80px;
+  color: var(--text-main);
+  background: transparent;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.page-strip-panel .btn-tiny {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-page-slot {
+  flex-shrink: 0;
+}
+
+.add-page-slot .add-page-tile {
+  width: 100%;
+}
+
+.canvas-tools {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  z-index: 2;
+}
+
+.canvas-tools .comparison-toggle {
+  min-height: 44px;
+}
+
+.viewer-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+}
+
+.viewer-tool-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 6px;
+  color: var(--text-main);
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.75rem;
+}
+
+.viewer-tool-button:hover:not(:disabled) {
+  background: var(--brand-dim);
+}
+
+.viewer-tool-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.viewer-zoom-controls output {
+  min-width: 46px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewer-help {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 7px;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.interactive-canvas.viewer-zoomed {
+  cursor: grab;
+}
+
+.interactive-canvas.viewer-panning {
+  cursor: grabbing;
+}
+
+.comparison-controls {
+  bottom: 32px;
+}
+
+.export-advanced-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--text-main);
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  text-align: left;
+}
+
+.export-advanced-options:not([hidden]),
+.export-image-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.export-advanced-options[hidden] {
+  display: none;
+}
+
+.scanner-export-dialog .id-card-sheet-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+
+.scanner-export-dialog .id-card-sheet-preview figure {
+  width: 100%;
+}
+
+:is(.header-actions, .filter-toolbar, .canvas-tools, .canvas-empty-state, .page-strip-panel, .scanner-export-dialog) button:focus-visible,
+.interactive-canvas:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .app-header .header-actions .btn,
+  .app-header .header-actions .header-guides-link {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .scanner-workspace .filter-pill,
+  .scanner-workspace .toolbar-group .btn {
+    min-height: 44px;
+  }
+
+  .history-controls .btn {
+    flex: 1;
+  }
+
+  .page-strip-panel .page-thumbnail-card {
+    flex-direction: column;
+    width: 210px;
+    min-width: 210px;
+    max-width: 210px;
+    gap: 8px;
+  }
+
+  .page-thumbnail-select {
+    width: 100%;
+    min-height: 90px;
+  }
+
+  .page-strip-panel .thumbnail-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .add-page-slot {
+    min-width: 120px;
+    align-self: stretch;
+    display: flex;
+  }
+
+  .scanner-start-actions {
+    flex-direction: column;
+  }
+
+  .scanner-start-privacy {
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 600px) {
+  .canvas-tools .viewer-zoom-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .viewer-keyboard-help {
+    display: none;
   }
 }

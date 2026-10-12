@@ -107,6 +107,7 @@ test('ID card mode selects distinct sides and exports both onto one portrait she
   await page.getByLabel('Back side', { exact: true }).selectOption(front)
   await expect(page.getByAltText('Front side preview')).toHaveAttribute('src', oldBackPreview!)
   await expect(page.getByAltText('Back side preview')).toHaveAttribute('src', oldFrontPreview!)
+  await page.getByRole('button', { name: 'Advanced options', exact: true }).click()
   await page.getByLabel('Paper Size', { exact: true }).selectOption('letter')
   const size = await sizeReady(page)
   await page.screenshot({ path: 'test-results/id-card-export.png' })

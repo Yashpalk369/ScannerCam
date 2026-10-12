@@ -129,6 +129,7 @@ export const App: React.FC = () => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return
       }
+      if (isProcessing) return
 
       // Undo: Ctrl+Z
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -168,6 +169,7 @@ export const App: React.FC = () => {
   }, [
     isCameraOpen,
     isExportOpen,
+    isProcessing,
     editMode,
     cancelEditCorners,
     pages,
@@ -215,6 +217,8 @@ export const App: React.FC = () => {
             editingQuad={editingQuad}
             onUpdateQuadCorner={updateQuadCorner}
             isProcessing={isProcessing}
+            onOpenCamera={() => setIsCameraOpen(true)}
+            onAddFiles={handleAddFiles}
           />
 
           {/* Bottom Filter & Actions Toolbar */}
@@ -229,6 +233,10 @@ export const App: React.FC = () => {
             onApplyPerspective={applyPerspective}
             onResetCorners={resetCorners}
             onAutoDetectCorners={autoDetectCorners}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={undoAction}
+            onRedo={redoAction}
           />
         </section>
 
