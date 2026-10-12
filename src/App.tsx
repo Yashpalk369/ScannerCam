@@ -283,13 +283,11 @@ export const App: React.FC = () => {
             <span>Zero Cloud Storage</span>
           </div>
           <div className="footer-tags">
-            <a href="/blog/how-to-scan-id-card-online" className="footer-tag">Scan ID Card Online</a>
-            <a href="/blog/how-to-scan-receipts-for-expenses" className="footer-tag">Scan Receipts for Expenses</a>
-            <a href="/blog/scan-multi-page-pdf-online-free" className="footer-tag">Multi-Page PDF Scanner</a>
-            <a href="/blog/camscanner-vs-free-online-alternatives" className="footer-tag">Free CamScanner Alternative</a>
-            <a href="/blog/how-to-scan-documents-iphone-without-app" className="footer-tag">Scan on iPhone (No App)</a>
-            <a href="/blog/how-to-scan-documents-android-without-app" className="footer-tag">Scan on Android (No App)</a>
-            <a href="/blog/is-it-safe-to-scan-documents-online" className="footer-tag">Private Document Scanner</a>
+            <a href="/blog" className="footer-tag">All Guides</a>
+            <a href="/about" className="footer-tag">About</a>
+            <a href="/privacy" className="footer-tag">Privacy Policy</a>
+            <a href="/terms" className="footer-tag">Terms</a>
+            <a href="/contact" className="footer-tag">Contact</a>
           </div>
         </div>
       </footer>

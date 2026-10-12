@@ -1671,6 +1671,19 @@ button {
   margin-bottom: 2rem;
 }
 
+.guide-view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  text-decoration: none;
+}
+.guide-view-all-btn:hover { filter: brightness(0.94); }
+
 .guides-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
