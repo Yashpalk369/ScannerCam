@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ShieldCheck,
   Zap,
@@ -21,6 +21,12 @@ import {
 
 export const SeoArticle: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (window.location.hash !== '#faq') return
+    const frame = requestAnimationFrame(() => document.getElementById('faq')?.scrollIntoView())
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
@@ -450,7 +456,7 @@ export const SeoArticle: React.FC = () => {
       </section>
 
       {/* Frequently Asked Questions (AEO & FAQPage) */}
-      <section className="article-section">
+      <section className="article-section" id="faq">
         <h3 className="section-heading">Frequently Asked Questions (FAQ)</h3>
         <p className="section-text">
           Direct answers to common questions about using an online cam scanner:
@@ -463,16 +469,17 @@ export const SeoArticle: React.FC = () => {
               <div
                 key={faq.q}
                 className={`faq-item ${isOpen ? 'open' : ''}`}
-                onClick={() => toggleFaq(index)}
               >
-                <div className="faq-question">
-                  <h4>{faq.q}</h4>
-                  <span className="faq-toggle-icon">
-                    {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </span>
-                </div>
+                <h4>
+                  <button type="button" className="faq-question" aria-expanded={isOpen} aria-controls={`faq-answer-${index}`} onClick={() => toggleFaq(index)}>
+                    <span>{faq.q}</span>
+                    <span className="faq-toggle-icon" aria-hidden="true">
+                      {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </span>
+                  </button>
+                </h4>
                 {isOpen && (
-                  <div className="faq-answer">
+                  <div className="faq-answer" id={`faq-answer-${index}`}>
                     <p>{faq.a}</p>
                   </div>
                 )}

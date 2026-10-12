@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="brand-section">
         <div className="brand-logo-wrap">
           <div className="brand-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.2" fill="#fff"/><path d="M14.2 2.5 L18 6.3 L14.2 6.3 Z" fill="#cbd5e1"/><rect x="8.6" y="9.2" width="6.8" height="1.5" rx="0.75" fill="#059669"/><rect x="8.6" y="12" width="6.8" height="1.5" rx="0.75" fill="#94a3b8"/><line x1="6.6" y1="15.2" x2="17.4" y2="15.2" stroke="#047857" strokeWidth="1.4" strokeLinecap="round"/></svg>
+            <img src="/favicon.svg" width="40" height="40" alt="" />
           </div>
           <div>
             <h1 className="brand-name">Scanner.cam</h1>

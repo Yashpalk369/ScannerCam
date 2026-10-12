@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#059669">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>How to Scan Documents on Android Without an App | Scanner.cam</title>
 <meta name="description" content="Scan documents on Android without installing an app. Use Chrome to capture, crop and export clean PDFs free — no account, no watermark.">
 <meta name="keywords" content="scan documents android without app, android scanner no app, scan to pdf android chrome">
@@ -30,14 +31,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,
 .site-header{background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;backdrop-filter:blur(8px)}
 .site-header .wrap{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.25rem;max-width:1100px}
 .brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink)}
-.brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#059669,#047857);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(5,150,105,.35)}
+.brand-icon img{display:block;width:100%;height:100%}
+.brand-icon{flex-shrink:0;width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#059669,#047857);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(5,150,105,.35)}
 .brand-name{font-size:1.2rem;font-weight:800;letter-spacing:-.02em}
 .brand-name span{color:var(--brand)}
 .brand-tag{font-size:.7rem;color:var(--muted);display:block;line-height:1.2}
 .site-nav{display:flex;gap:1.25rem;align-items:center}
 .site-nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.92rem}
 .site-nav a:hover{color:var(--brand-dark)}
-.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--brand);color:#fff!important;padding:.55rem 1.1rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:.9rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--brand-dark);color:#fff!important;padding:.55rem 1.1rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:.9rem}
 .btn:hover{background:var(--brand-dark)}
 @media(max-width:640px){.site-nav a:not(.btn){display:none}}
 /* article */
@@ -50,15 +52,15 @@ h1{font-size:2rem;line-height:1.25;letter-spacing:-.02em;margin-bottom:.6rem}
 .quick-answer{background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(5,150,105,.03));border-left:4px solid var(--brand);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin:0 0 1.75rem}
 .quick-answer .qa-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);display:block;margin-bottom:.35rem}
 .quick-answer p{margin:0}
-article h2{font-size:1.35rem;letter-spacing:-.01em;margin:2rem 0 .75rem;color:var(--ink)}
+article h2{scroll-margin-top:6rem;font-size:1.35rem;letter-spacing:-.01em;margin:2rem 0 .75rem;color:var(--ink)}
 article p{margin:0 0 1rem;color:#1f2937}
 article ul,article ol{margin:0 0 1.25rem 1.4rem;color:#1f2937}
 article li{margin-bottom:.5rem}
 article a{color:var(--brand-dark);font-weight:600}
 article strong{color:var(--ink)}
-.cta-card{background:linear-gradient(135deg,#059669,#047857);border-radius:16px;padding:2rem;text-align:center;color:#fff;margin:2.5rem 0 0}
+.cta-card{background:linear-gradient(135deg,#047857,#065f46);border-radius:16px;padding:2rem;text-align:center;color:#fff;margin:2.5rem 0 0}
 .cta-card h3{font-size:1.4rem;margin-bottom:.5rem}
-.cta-card p{opacity:.92;margin-bottom:1.25rem}
+.cta-card p{color:#fff;opacity:.92;margin-bottom:1.25rem}
 .cta-card .btn{background:#fff;color:#047857!important;font-size:1rem;padding:.7rem 1.6rem}
 .prevnext{display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
 .prevnext a{text-decoration:none;color:var(--brand-dark);font-weight:600;font-size:.92rem;max-width:45%}
@@ -83,15 +85,16 @@ article strong{color:var(--ink)}
 .sticky-cta{display:none}
 @media(max-width:640px){
 .sticky-cta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(15,23,42,.97);color:#fff;padding:.7rem 1rem;font-size:.85rem;backdrop-filter:blur(8px)}
-.sticky-cta a{background:var(--brand);color:#fff!important;font-weight:700;padding:.5rem 1.1rem;border-radius:9px;text-decoration:none;white-space:nowrap}
+.sticky-cta a{background:var(--brand-dark);color:#fff!important;font-weight:700;padding:.5rem 1.1rem;border-radius:9px;text-decoration:none;white-space:nowrap}
 body{padding-bottom:64px}
 }
 /* footer */
 .site-footer{background:var(--ink);color:#cbd5e1;margin-top:3rem}
-.site-footer .wrap{max-width:1100px;padding:2.5rem 1.25rem 1.5rem;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:2rem}
+.site-footer .wrap{max-width:1100px;padding:2.5rem 1.25rem 1.5rem;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:2rem}
 .site-footer h4{color:#fff;font-size:.95rem;margin-bottom:.9rem}
 .site-footer a{color:#cbd5e1;text-decoration:none;font-size:.9rem;display:block;margin-bottom:.5rem}
 .site-footer a:hover{color:#fff}
+.site-footer .brand{display:flex;align-items:center;gap:.65rem}
 .site-footer .brand-name{color:#fff}
 .footer-note{font-size:.85rem;color:#94a3b8;max-width:300px;margin-top:.6rem}
 .footer-bottom{border-top:1px solid #1e293b;text-align:center;padding:1.1rem;font-size:.82rem;color:#94a3b8}
@@ -112,7 +115,7 @@ body{padding-bottom:64px}
 </head>
 <body>
 <header class="site-header"><div class="wrap">
-<a class="brand" href="https://www.scanner.cam/"><span class="brand-icon"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.2" fill="#fff"/><path d="M14.2 2.5 L18 6.3 L14.2 6.3 Z" fill="#cbd5e1"/><rect x="8.6" y="9.2" width="6.8" height="1.5" rx="0.75" fill="#059669"/><rect x="8.6" y="12" width="6.8" height="1.5" rx="0.75" fill="#94a3b8"/><line x1="6.6" y1="15.2" x2="17.4" y2="15.2" stroke="#047857" stroke-width="1.4" stroke-linecap="round"/></svg></span><span><span class="brand-name">Scanner<span>.cam</span></span><span class="brand-tag">Free online document scanner</span></span></a>
+<a class="brand" href="https://www.scanner.cam/"><span class="brand-icon"><img src="/favicon.svg" width="36" height="36" alt=""></span><span><span class="brand-name">Scanner<span>.cam</span></span><span class="brand-tag">Free online document scanner</span></span></a>
 <nav class="site-nav"><a href="https://www.scanner.cam/">Scanner</a><a href="https://www.scanner.cam/blog">Guides</a><a href="https://www.scanner.cam/#faq">FAQ</a><a class="btn" href="https://www.scanner.cam/">Open Scanner</a></nav>
 </div></header>
 <main class="wrap">
@@ -173,23 +176,16 @@ body{padding-bottom:64px}
 </ul>
 
 <a class="cta" href="https://www.scanner.cam/">Scan a Document Now — Free, No Signup</a>
-<p>Also see: <a href="/blog/how-to-scan-documents-iphone-without-app">how to scan on iPhone without an app</a> &nbsp;•&nbsp; <a href="/blog">Browse All Guides &rarr;</a> &nbsp;•&nbsp; <a href="https://www.scanner.cam/">
+<p>Also see: <a href="/blog/how-to-scan-documents-iphone-without-app">how to scan on iPhone without an app</a> &nbsp;•&nbsp; <a href="/blog">Browse All Guides &rarr;</a></p>
 <nav class="prevnext"><a href="/blog/how-to-scan-documents-iphone-without-app"><span>← Previous guide</span>How to Scan Documents on iPhone Without Downloading an App</a><a href="/blog/camscanner-vs-free-online-alternatives" style="text-align:right"><span>Next guide →</span>CamScanner vs Free Online Alternatives (No Watermark, No Signup)</a></nav>
 <div class="cta-card"><h3>Try it right now — free</h3><p>Open Scanner.cam in your browser, scan, and download. No signup, no watermark, nothing uploads.</p><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
 </article>
 </main>
 <div class="sticky-cta"><span>Scan documents free — no app, no signup</span><a href="https://www.scanner.cam/">Scan Now</a></div>
 <footer class="site-footer"><div class="wrap">
-<div><a class="brand" href="https://www.scanner.cam/"><span class="brand-icon"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.2" fill="#fff"/><path d="M14.2 2.5 L18 6.3 L14.2 6.3 Z" fill="#cbd5e1"/><rect x="8.6" y="9.2" width="6.8" height="1.5" rx="0.75" fill="#059669"/><rect x="8.6" y="12" width="6.8" height="1.5" rx="0.75" fill="#94a3b8"/><line x1="6.6" y1="15.2" x2="17.4" y2="15.2" stroke="#047857" stroke-width="1.4" stroke-linecap="round"/></svg></span><span class="brand-name">Scanner<span>.cam</span></span></a>
+<div><a class="brand" href="https://www.scanner.cam/"><span class="brand-icon"><img src="/favicon.svg" width="36" height="36" alt=""></span><span class="brand-name">Scanner<span>.cam</span></span></a>
 <p class="footer-note">100% free, 100% private. Your documents are processed in your browser and never uploaded to any server.</p></div>
-<div><h4>Guides</h4><a href="https://www.scanner.cam/blog/how-to-scan-documents-iphone-without-app">How to Scan Documents on iPhone Without Downloading an App</a>
-<a href="https://www.scanner.cam/blog/how-to-scan-documents-android-without-app">How to Scan Documents on Android Without an App</a>
-<a href="https://www.scanner.cam/blog/camscanner-vs-free-online-alternatives">CamScanner vs Free Online Alternatives (No Watermark, No Signup)</a>
-<a href="https://www.scanner.cam/blog/scan-multi-page-pdf-online-free">How to Scan Multi-Page PDFs Online Free</a>
-<a href="https://www.scanner.cam/blog/how-to-scan-id-card-online">How to Scan an ID Card Online (Front &amp; Back, Free)</a>
-<a href="https://www.scanner.cam/blog/best-free-scanner-app-without-watermark">Best Free Scanner App Without Watermark (2026)</a>
-<a href="https://www.scanner.cam/blog" style="font-weight:700">View all 9 guides &rarr;</a></div>
-<div><h4>Product</h4><a href="https://www.scanner.cam/">Open Scanner</a><a href="https://www.scanner.cam/blog/is-it-safe-to-scan-documents-online">Privacy &amp; Safety</a><a href="https://www.scanner.cam/blog/camscanner-vs-free-online-alternatives">CamScanner Alternatives</a><a href="https://www.scanner.cam/blog">All Guides</a></div>
+<div><h4>Product</h4><a href="https://www.scanner.cam/">Open Scanner</a></div>
 <div><h4>Company</h4><a href="https://www.scanner.cam/about">About</a><a href="https://www.scanner.cam/privacy">Privacy Policy</a><a href="https://www.scanner.cam/terms">Terms of Service</a><a href="https://www.scanner.cam/contact">Contact</a></div>
 </div><div class="footer-bottom"><div class="wrap">© 2026 Scanner.cam — Free online document scanner. No signup, no watermark, no uploads.</div></div></footer>
 </body>

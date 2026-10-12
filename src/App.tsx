@@ -282,8 +282,6 @@ export const App: React.FC = () => {
             No server uploads, no watermarks, no accounts required.
           </p>
           <div className="footer-links">
-            <a href="/blog" className="footer-nav-link">Guides & Tutorials</a>
-            <span>•</span>
             <span>100% Free & Open Web Tool</span>
             <span>•</span>
             <span>Client-Side Web Workers</span>
@@ -291,7 +289,6 @@ export const App: React.FC = () => {
             <span>Zero Cloud Storage</span>
           </div>
           <div className="footer-tags">
-            <a href="/blog" className="footer-tag">All Guides</a>
             <a href="/about" className="footer-tag">About</a>
             <a href="/privacy" className="footer-tag">Privacy Policy</a>
             <a href="/terms" className="footer-tag">Terms</a>

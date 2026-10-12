@@ -82,6 +82,12 @@ body {
   gap: 0.75rem;
 }
 
+.brand-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .brand-icon {
   width: 40px;
   height: 40px;
@@ -1535,13 +1541,19 @@ button {
 }
 
 .faq-question {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.1rem 1.4rem;
 }
 
-.faq-question h4 {
+.faq-question > span:first-child {
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-main);

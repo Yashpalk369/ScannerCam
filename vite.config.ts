@@ -1,10 +1,35 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin, type Connect } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import deployment from './vercel.json'
+
+// Serve the same extensionless public pages locally as the Vercel deployment.
+function publicPageRoutes(): Plugin {
+  const routes = deployment.rewrites.map(route => ({
+    pattern: new RegExp(`^${route.source.replace(':slug', '([^/.]+)')}$`),
+    destination: route.destination,
+  }))
+  const middleware: Connect.NextHandleFunction = (request, _response, next) => {
+    const url = new URL(request.url ?? '/', 'http://localhost')
+    for (const route of routes) {
+      const match = url.pathname.match(route.pattern)
+      if (!match) continue
+      request.url = route.destination.replace(':slug', match[1] ?? '') + url.search
+      break
+    }
+    next()
+  }
+  return {
+    name: 'public-page-routes',
+    configureServer(server) { server.middlewares.use(middleware) },
+    configurePreviewServer(server) { server.middlewares.use(middleware) },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    publicPageRoutes(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -43,7 +68,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Network-first for HTML (always fresh app shell)
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/\/api\//, /\/blog/],
+        navigateFallbackDenylist: [/\/api\//, /^\/blog(?:\/|$)/, /^\/(?:about|privacy|terms|contact)(?:\/|\.html|$)/],
         runtimeCaching: [
           {
             // Google Fonts
