@@ -122,7 +122,7 @@ export const SeoArticle: React.FC = () => {
         <div className="aeo-answer-box" itemProp="description">
           <div className="aeo-answer-label">
             <Zap size={18} />
-            <strong>Quick Answer (AEO Definition):</strong>
+            <strong>Quick Answer:</strong>
           </div>
           <p>
             An <strong>online scanner</strong> (also known as a <em>browser CamScanner</em>) is a
