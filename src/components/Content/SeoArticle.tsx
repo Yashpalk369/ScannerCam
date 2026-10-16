@@ -93,11 +93,14 @@ export const SeoArticle: React.FC = () => {
           <span>Complete Guide & Free Web Tool</span>
         </div>
         <h2 className="article-title" itemProp="headline">
-          Online Scanner: The Complete Guide to Free, Private CamScanner in Your Browser
+          A Free, Private CamScanner Alternative
         </h2>
         <p className="article-subtitle">
-          Learn how modern client-side computer vision lets you digitize documents, remove shadows,
-          and export high-resolution PDFs directly in your web browser—with zero server uploads and no watermarks.
+          Scan documents in your browser without installing an app or creating an account. Crop and
+          enhance pages, then download a watermark-free PDF while your document images stay on your
+          device. Read our{' '}
+          <a href="/blog/camscanner-vs-free-online-alternatives">CamScanner alternative comparison</a>
+          {' '}to see how browser scanning fits your needs.
         </p>
       </header>
 
