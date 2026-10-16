@@ -45,15 +45,15 @@ let tesseractWorkerPromise: Promise<{
 
 async function getTesseract(lang: string) {
   // Dynamically import Tesseract from CDN (avoids bundling in main chunk)
-  const { createWorker } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js' as string) as {
-    createWorker: (lang: string, oem?: number, opts?: unknown) => Promise<unknown>
+  const { default: { createWorker } } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.esm.min.js' as string) as {
+    default: { createWorker: (lang: string, oem?: number, opts?: unknown) => Promise<unknown> }
   }
 
   const worker = await createWorker(lang, 1, {
-    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
-    langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-    cacheMethod: 'refresh',
+    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
+    langPath: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int',
+    cacheMethod: 'write',
   }) as {
     recognize: (img: string, opts?: unknown) => Promise<{ data: { text: string; hocr: string } }>
     terminate: () => Promise<void>
@@ -84,6 +84,7 @@ workerScope.onmessage = async (event: MessageEvent<OcrRequest>) => {
 
     workerScope.postMessage(response)
   } catch (err: unknown) {
+    tesseractWorkerPromise = null
     const errorMsg = err instanceof Error ? err.message : String(err)
     const response: OcrErrorResponse = {
       id: req.id,

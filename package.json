@@ -8,7 +8,10 @@
     "test": "node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:layout": "node scripts/sync-site-shell.mjs",
+    "predev": "npm run sync:layout",
+    "prebuild": "npm run sync:layout"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0",

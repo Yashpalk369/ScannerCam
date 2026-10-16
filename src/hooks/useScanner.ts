@@ -9,9 +9,12 @@ export function useScanner() {
   const [pages, setPages] = useState<ScanPage[]>([])
   const [activePageId, setActivePageId] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isRestoring, setIsRestoring] = useState(true)
   const [statusMessage, setStatusMessage] = useState('Ready.')
   const [isError, setIsError] = useState(false)
+  const [storageWarning, setStorageWarning] = useState<string | null>(null)
   const hasInitializedDbRef = useRef(false)
+  const hasRestoredStorageRef = useRef(false)
   const pagesRef = useRef<ScanPage[]>([])
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export function useScanner() {
   const [editMode, setEditMode] = useState(false)
   const [editingQuad, setEditingQuad] = useState<Quad | null>(null)
 
-  const { pushHistory, undo, redo, canUndo, canRedo } = useHistory([], null)
+  const { pushHistory, resetHistory, undo, redo, canUndo, canRedo } = useHistory([], null)
 
   const setStatus = useCallback((msg: string, error = false) => {
     setStatusMessage(msg)
@@ -32,6 +35,7 @@ export function useScanner() {
   // Helper: update pages + sync to history + IndexedDB
   const commitPages = useCallback(
     (newPages: ScanPage[], newActiveId: string | null, skipHistory = false) => {
+      pagesRef.current = newPages
       setPages(newPages)
       setActivePageId(newActiveId)
       if (!skipHistory) {
@@ -47,40 +51,55 @@ export function useScanner() {
     scanDb
       .loadAllPages()
       .then((restored) => {
-        if (!mounted) return
+        if (!mounted) {
+          restored.forEach(page => URL.revokeObjectURL(page.previewUrl))
+          return
+        }
+        hasRestoredStorageRef.current = true
         if (restored.length > 0) {
           setPages(restored)
           setActivePageId(restored[0].id)
-          pushHistory(restored, restored[0].id)
+          resetHistory(restored, restored[0].id)
           setStatus(`Restored ${restored.length} page${restored.length > 1 ? 's' : ''} from session.`)
         }
       })
       .catch((err) => {
         console.warn('Failed to restore pages from IndexedDB:', err)
+        if (mounted) setStorageWarning('Saved scans could not be restored. New scans will stay in this tab only; download them before closing. Reload to retry recovery.')
       })
       .finally(() => {
         if (mounted) {
           hasInitializedDbRef.current = true
+          setIsRestoring(false)
         }
       })
     return () => {
       mounted = false
     }
-  }, [setStatus, pushHistory])
+  }, [setStatus, resetHistory])
 
   // Sync state changes to IndexedDB (only after initial load has completed)
   useEffect(() => {
-    if (!hasInitializedDbRef.current) return
-    if (pages.length > 0) {
-      scanDb.saveAllPages(pages).catch(console.error)
-    } else {
-      scanDb.clearAll().catch(console.error)
-    }
+    if (!hasInitializedDbRef.current || !hasRestoredStorageRef.current) return
+    let current = true
+    const update = pages.length > 0 ? scanDb.saveAllPages(pages) : scanDb.clearAll()
+    update.then(() => { if (current) setStorageWarning(null) }).catch(error => {
+      console.warn('Could not update saved scans:', error)
+      if (current) setStorageWarning(pages.length > 0
+        ? 'These scans could not be saved for recovery. Download them before closing this tab.'
+        : 'Saved scans could not be cleared and may reappear after reload. Clear this site’s browser storage to remove them.')
+    })
+    return () => { current = false }
   }, [pages])
 
   const activePage = useMemo(() => {
     return pages.find((p) => p.id === activePageId)
   }, [pages, activePageId])
+
+  useEffect(() => {
+    setEditMode(false)
+    setEditingQuad(null)
+  }, [activePageId])
 
   const addBlobAsPage = useCallback(
     async (blob: Blob, customName?: string, defaultFilter: FilterMode = 'magic') => {
@@ -144,52 +163,58 @@ export function useScanner() {
       setStatus(`Processing 1 of ${blobs.length} images...`)
 
       const newPagesList: ScanPage[] = []
+      let failedImages = 0
 
       try {
         for (let i = 0; i < blobs.length; i += 1) {
           const blob = blobs[i]
           setStatus(`Processing image ${i + 1} of ${blobs.length}...`)
-
-          const rawImg = await cvWorker.blobToImage(blob)
-          const rawWidth = rawImg.naturalWidth
-          const rawHeight = rawImg.naturalHeight
-
-          let initialQuad: Quad
           try {
-            initialQuad = await cvWorker.detectQuad(blob)
-          } catch {
-            initialQuad = defaultQuad(rawWidth, rawHeight)
+            const rawImg = await cvWorker.blobToImage(blob)
+            const rawWidth = rawImg.naturalWidth
+            const rawHeight = rawImg.naturalHeight
+
+            let initialQuad: Quad
+            try {
+              initialQuad = await cvWorker.detectQuad(blob)
+            } catch {
+              initialQuad = defaultQuad(rawWidth, rawHeight)
+            }
+
+            const warped = await cvWorker.warpAndFilter(blob, initialQuad, defaultFilter)
+            const currentTotal = pagesRef.current.length + newPagesList.length
+            const pageName = `Page ${currentTotal + 1}`
+
+            const newPage: ScanPage = {
+              id: crypto.randomUUID(),
+              name: pageName,
+              blob: warped.blob,
+              previewUrl: URL.createObjectURL(warped.blob),
+              width: warped.width,
+              height: warped.height,
+              filter: defaultFilter,
+              quad: initialQuad,
+              rawBlob: blob,
+              rawWidth,
+              rawHeight,
+              createdAt: Date.now(),
+            }
+
+            newPagesList.push(newPage)
+          } catch (error) {
+            console.warn('Could not read image:', error)
+            failedImages += 1
           }
-
-          const warped = await cvWorker.warpAndFilter(blob, initialQuad, defaultFilter)
-          const currentTotal = pagesRef.current.length + newPagesList.length
-          const pageName = `Page ${currentTotal + 1}`
-
-          const newPage: ScanPage = {
-            id: crypto.randomUUID(),
-            name: pageName,
-            blob: warped.blob,
-            previewUrl: URL.createObjectURL(warped.blob),
-            width: warped.width,
-            height: warped.height,
-            filter: defaultFilter,
-            quad: initialQuad,
-            rawBlob: blob,
-            rawWidth,
-            rawHeight,
-            createdAt: Date.now(),
-          }
-
-          newPagesList.push(newPage)
         }
 
         const combinedPages = [...pagesRef.current, ...newPagesList]
         pagesRef.current = combinedPages
         const lastPage = newPagesList[newPagesList.length - 1]
-        commitPages(combinedPages, lastPage?.id || null)
+        if (newPagesList.length) commitPages(combinedPages, lastPage!.id)
         setEditMode(false)
         setEditingQuad(null)
-        setStatus(`Added ${newPagesList.length} page${newPagesList.length > 1 ? 's' : ''}.`)
+        const warning = failedImages ? ` ${failedImages} image${failedImages === 1 ? ' could' : 's could'} not be read. Try JPG, PNG, or WebP files.` : ''
+        setStatus(`Added ${newPagesList.length} page${newPagesList.length > 1 ? 's' : ''}.${warning}`, failedImages > 0)
       } catch (err: unknown) {
         console.error(err)
         setStatus('Failed to process some images. Try another file.', true)
@@ -246,8 +271,12 @@ export function useScanner() {
       const rotatedWidth = rawImg.naturalWidth
       const rotatedHeight = rawImg.naturalHeight
 
-      // Reset quad for rotated coordinates
-      const newQuad = defaultQuad(rotatedWidth, rotatedHeight)
+      // Rotate the selected boundary along with the source, preserving its crop.
+      const quad = activePage.quad
+      const newQuad = [quad[3], quad[0], quad[1], quad[2]].map(point => ({
+        x: activePage.rawHeight - 1 - point.y,
+        y: point.x,
+      })) as Quad
       const warped = await cvWorker.warpAndFilter(rotatedRaw, newQuad, activePage.filter)
 
       const newPages = pages.map((p) => {
@@ -416,52 +445,62 @@ export function useScanner() {
     [pages, activePageId, setStatus, commitPages],
   )
 
-  const clearAllPages = useCallback(() => {
-    pages.forEach((p) => URL.revokeObjectURL(p.previewUrl))
-    setEditMode(false)
-    setEditingQuad(null)
-    commitPages([], null)
-    setStatus('All pages cleared.')
-  }, [pages, setStatus, commitPages])
+  const clearAllPages = useCallback(async () => {
+    setIsProcessing(true)
+    try {
+      if (hasRestoredStorageRef.current) await scanDb.clearAll()
+      pagesRef.current.forEach(page => URL.revokeObjectURL(page.previewUrl))
+      setEditMode(false)
+      setEditingQuad(null)
+      commitPages([], null, true)
+      resetHistory([], null)
+      setStatus(hasRestoredStorageRef.current ? 'All pages cleared.' : 'Current pages cleared. Saved session recovery remains unavailable.')
+    } catch (error) {
+      console.warn('Could not clear saved scans:', error)
+      setStorageWarning('Saved scans could not be cleared. Your pages are unchanged. Retry clearing, or clear this site’s browser storage.')
+      setStatus('Could not clear saved scans. Your pages are unchanged.', true)
+    } finally { setIsProcessing(false) }
+  }, [setStatus, commitPages, resetHistory])
 
   /** Undo last page operation */
   const undoAction = useCallback(() => {
     const entry = undo()
     if (!entry) return
+    pagesRef.current.forEach(page => URL.revokeObjectURL(page.previewUrl))
     // Re-create object URLs for any pages that might have had their previous URLs revoked
     const restoredPages = entry.pages.map((p) => ({
       ...p,
       previewUrl: URL.createObjectURL(p.blob),
     }))
-    setPages(restoredPages)
-    setActivePageId(entry.activePageId)
+    commitPages(restoredPages, entry.activePageId, true)
     setEditMode(false)
     setEditingQuad(null)
     setStatus('Undone.')
-  }, [undo, setStatus])
+  }, [undo, setStatus, commitPages])
 
   /** Redo last undone operation */
   const redoAction = useCallback(() => {
     const entry = redo()
     if (!entry) return
+    pagesRef.current.forEach(page => URL.revokeObjectURL(page.previewUrl))
     const restoredPages = entry.pages.map((p) => ({
       ...p,
       previewUrl: URL.createObjectURL(p.blob),
     }))
-    setPages(restoredPages)
-    setActivePageId(entry.activePageId)
+    commitPages(restoredPages, entry.activePageId, true)
     setEditMode(false)
     setEditingQuad(null)
     setStatus('Redone.')
-  }, [redo, setStatus])
+  }, [redo, setStatus, commitPages])
 
   return {
     pages,
     activePageId,
     activePage,
-    isProcessing,
+    isProcessing: isProcessing || isRestoring,
     statusMessage,
     isError,
+    storageWarning,
     editMode,
     editingQuad,
     canUndo,

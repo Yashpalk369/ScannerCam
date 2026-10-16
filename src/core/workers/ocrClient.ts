@@ -30,6 +30,7 @@ class OcrWorkerClient {
   private pending = new Map<string, {
     resolve: (r: OcrSuccessResponse) => void
     reject: (e: Error) => void
+    timeout: ReturnType<typeof setTimeout>
   }>()
 
   private getWorker(): Worker {
@@ -43,6 +44,7 @@ class OcrWorkerClient {
         const handler = this.pending.get(res.id)
         if (!handler) return
         this.pending.delete(res.id)
+        clearTimeout(handler.timeout)
         if (res.success) {
           handler.resolve(res)
         } else {
@@ -51,7 +53,9 @@ class OcrWorkerClient {
       }
       this.worker.onerror = (err) => {
         console.error('OCR Worker error:', err)
+        this.terminate(new Error('OCR worker failed. Retry or download a PDF with OCR turned off.'))
       }
+      this.worker.onmessageerror = () => this.terminate(new Error('Could not read the OCR result. Please retry.'))
     }
     return this.worker
   }
@@ -65,17 +69,23 @@ class OcrWorkerClient {
     const id = crypto.randomUUID()
 
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject })
+      const timeout = setTimeout(() => this.terminate(new Error('OCR timed out. Please retry with fewer pages or turn OCR off.')), 120000)
+      this.pending.set(id, { resolve, reject, timeout })
       const req: OcrRequest = { id, type: 'OCR_PAGE', imageDataUrl, lang }
-      worker.postMessage(req)
+      try { worker.postMessage(req) }
+      catch (error) { this.terminate(error instanceof Error ? error : new Error('Could not start OCR.')) }
     })
   }
 
   /** Terminate the OCR worker to free memory. */
-  terminate() {
+  terminate(reason: Error = new DOMException('OCR cancelled.', 'AbortError')) {
     if (this.worker) {
       this.worker.terminate()
       this.worker = null
+    }
+    for (const request of this.pending.values()) {
+      clearTimeout(request.timeout)
+      request.reject(reason)
     }
     this.pending.clear()
   }

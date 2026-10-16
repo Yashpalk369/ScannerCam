@@ -92,7 +92,7 @@ export const PageStrip: React.FC<PageStripProps> = ({
       <div className="strip-header">
         <div className="strip-title">
           <FileText size={16} />
-          <h3>Pages</h3>
+          <h2>Pages</h2>
         </div>
         <span className="page-count-badge">
           {pages.length} {pages.length === 1 ? 'page' : 'pages'}

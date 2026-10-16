@@ -123,6 +123,10 @@ class CVWorkerClient {
     if (!ctx) throw new Error('Could not get 2D canvas context')
 
     ctx.putImageData(imageData, 0, 0)
+    // JPEG has no alpha channel; composite transparent uploads onto white paper.
+    ctx.globalCompositeOperation = 'destination-over'
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
     return new Promise((resolve, reject) => {
       canvas.toBlob(
         (blob) => {
@@ -282,6 +286,8 @@ class CVWorkerClient {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Could not get 2D canvas context')
 
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.translate(canvas.width / 2, canvas.height / 2)
     ctx.rotate(Math.PI / 2)
     ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2)

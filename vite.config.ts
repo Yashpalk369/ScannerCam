@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin, type Connect } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import deployment from './vercel.json'
+import deployment from './vercel.json' with { type: 'json' }
 
 // Serve the same extensionless public pages locally as the Vercel deployment.
 function publicPageRoutes(): Plugin {
@@ -92,7 +92,7 @@ export default defineConfig({
           },
           {
             // Tesseract language data
-            urlPattern: /^https:\/\/tessdata\.projectnaptha\.com\/.*/i,
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/@tesseract\.js-data\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'tessdata-cache',

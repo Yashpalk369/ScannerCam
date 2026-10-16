@@ -59,7 +59,7 @@ async function prepareImage(page: ScanPage, placement: ImageBox, options: PdfExp
 
 /**
  * Embeds an invisible OCR text overlay over a PDF page.
- * Text is rendered at font-size 1 with white color (invisible but selectable/searchable).
+ * PDF rendering mode 3 keeps text searchable without painting over the scan.
  */
 function embedTextLayer(
   doc: jsPDF,
@@ -71,8 +71,6 @@ function embedTextLayer(
 ): void {
   if (!text || !text.trim()) return
 
-  // Save state, set invisible white text
-  doc.setTextColor(255, 255, 255)
   doc.setFontSize(1)
 
   // Split text into lines and distribute them proportionally across the page
@@ -84,7 +82,7 @@ function embedTextLayer(
   lines.forEach((line, i) => {
     const y = pageY + (i + 0.5) * lineHeight
     if (y > pageY + pageH) return
-    doc.text(line.trim(), pageX, y, { baseline: 'middle' })
+    doc.text(line.trim(), pageX, y, { baseline: 'middle', renderingMode: 'invisible' })
   })
 
   // Reset to default black

@@ -32,6 +32,9 @@ class ScanDatabase {
             store.createIndex('by-order', 'order')
           }
         },
+      }).catch(error => {
+        this.dbPromise = null
+        throw error
       })
     }
     return this.dbPromise

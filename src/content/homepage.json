@@ -1,0 +1,56 @@
+{
+  "heading": "Free Online Document Scanner — Scan to PDF in Your Browser",
+  "faqs": [
+    {
+      "q": "What is an online scanner and how does it work?",
+      "a": "An online scanner is a browser-based tool that uses your device camera or uploaded photos to digitize paper documents. It detects document edges, straightens perspective, enhances text contrast, and exports multi-page PDFs locally on your device without uploading your documents."
+    },
+    {
+      "q": "Is Scanner.cam a free CamScanner alternative without watermark?",
+      "a": "Yes. Scanner.cam is free, with no watermarks, no account signup, no app downloads, and no imposed page quota. The number of scans you can process depends on your device and browser.",
+      "links": [{ "href": "/blog/camscanner-vs-free-online-alternatives", "label": "CamScanner vs free online alternatives (no watermark, no signup)" }]
+    },
+    {
+      "q": "Are my scanned documents private and secure?",
+      "a": "Your documents are processed locally in your browser using Web Workers and are not uploaded to our servers. Saved scan sessions stay in your browser storage. On a shared device, export your documents and clear the saved scans when you finish.",
+      "links": [{ "href": "/blog/is-it-safe-to-scan-documents-online", "label": "Is it safe to scan documents online? Privacy explained" }]
+    },
+    {
+      "q": "Can I scan multiple pages into a single PDF?",
+      "a": "Yes. Capture multiple photos or upload multiple images, reorder and rotate pages, then export one consolidated A4 or US Letter PDF. Use the PDF quality setting to balance file size and image detail.",
+      "links": [{ "href": "/blog/scan-multi-page-pdf-online-free", "label": "How to scan multi-page PDFs online free" }]
+    },
+    {
+      "q": "Can I use it on iPhone and Android without installing an app?",
+      "a": "Yes. Open Scanner.cam in Safari on iPhone or iPad, or Chrome on Android. Grant camera permission to capture documents, or upload existing photos. Camera availability and performance depend on your device and browser."
+    },
+    {
+      "q": "Will my exported scans have a watermark?",
+      "a": "No. PDFs and JPGs exported from Scanner.cam are watermark-free."
+    },
+    {
+      "q": "Does Scanner.cam upload my files to a cloud server?",
+      "a": "No. Capture, document enhancement, OCR, and PDF generation run locally in your browser. The first use of OCR needs internet access to download recognition files; your document images are not uploaded."
+    },
+    {
+      "q": "How can I avoid shadows in my scans?",
+      "a": "Use even, diffused light and avoid casting your own shadow or phone shadow over the page. Magic Color helps even out lighting while retaining color; Clean B/W improves contrast for printed text. Strong shadows and faint text may still require better lighting or a new photo."
+    },
+    {
+      "q": "Does Scanner.cam have OCR or text extraction?",
+      "a": "Yes. Open Export, expand Advanced options, and enable Searchable PDF (OCR). English text recognition runs locally in your browser and adds a searchable, selectable text layer to the exported PDF. First use needs internet access to download recognition files. Recognition accuracy depends on scan quality, and text selection positions are approximate."
+    },
+    {
+      "q": "Is there a limit on how large my scanned files can be?",
+      "a": "There is no account quota or imposed page cap. Available device memory, browser storage, and browser limits constrain how many scans you can process at once. For large documents, work in smaller batches. PDF quality settings reduce exported file size while your saved scans retain their detail."
+    },
+    {
+      "q": "How does the perspective correction and corner magnifier work?",
+      "a": "Adjust the four document corners to straighten an angled photo into a rectangle. The 2.5× corner magnifier helps place each handle accurately. Apply the crop when the corners match the document edges."
+    },
+    {
+      "q": "What document filters are available and which should I choose?",
+      "a": "Choose Magic Color to brighten paper and soften uneven lighting while retaining color, Clean B/W for high-contrast printed text, Enhance to boost contrast, Gray to remove color, or Original to keep source colors without enhancement. Clean B/W can remove faint or colored details, so check the preview before exporting."
+    }
+  ]
+}

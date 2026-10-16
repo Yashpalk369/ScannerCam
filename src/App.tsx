@@ -1,5 +1,7 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react'
+import { heading } from './content/homepage.json'
 import { Header } from './components/Layout/Header'
+import { SiteFooter } from './components/Layout/SiteShell'
 import { DocumentCanvas } from './components/Editor/DocumentCanvas'
 import { FilterToolbar } from './components/Editor/FilterToolbar'
 import { PageStrip } from './components/Pages/PageStrip'
@@ -23,6 +25,7 @@ export const App: React.FC = () => {
     isProcessing,
     statusMessage,
     isError,
+    storageWarning,
     editMode,
     editingQuad,
     canUndo,
@@ -53,6 +56,7 @@ export const App: React.FC = () => {
 
   // Handle file uploads (batch multi-image support)
   const handleAddFiles = async (files: FileList) => {
+    if (isProcessing || isCameraOpen || isExportOpen) return
     const validImages: Blob[] = []
     for (let i = 0; i < files.length; i += 1) {
       const file = files[i]
@@ -62,6 +66,8 @@ export const App: React.FC = () => {
     }
     if (validImages.length > 0) {
       await addBlobsAsPages(validImages, 'magic')
+    } else {
+      setStatus('Choose image files such as JPG, PNG, or WebP. PDF import is not supported.', true)
     }
   }
 
@@ -79,6 +85,7 @@ export const App: React.FC = () => {
       if (!hasFiles) return
 
       e.preventDefault()
+      if (isProcessing || isCameraOpen || isExportOpen) return
       setIsDraggingOver(true)
     }
     const onDragLeave = (e: DragEvent) => {
@@ -108,7 +115,7 @@ export const App: React.FC = () => {
       window.removeEventListener('dragleave', onDragLeave)
       window.removeEventListener('drop', onDrop)
     }
-  }, [pages.length])
+  }, [isProcessing, isCameraOpen, isExportOpen])
 
   // Keyboard navigation + undo/redo
   useEffect(() => {
@@ -126,31 +133,36 @@ export const App: React.FC = () => {
         return
       }
 
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (e.defaultPrevented || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement || (e.target instanceof HTMLElement && e.target.isContentEditable)) {
         return
       }
       if (isProcessing) return
+      const key = e.key.toLowerCase()
 
       // Undo: Ctrl+Z
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) {
         e.preventDefault()
         if (canUndo) undoAction()
         return
       }
 
       // Redo: Ctrl+Y or Ctrl+Shift+Z
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
         e.preventDefault()
         if (canRedo) redoAction()
         return
       }
 
-      if (pages.length > 1) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+
+      if (pages.length > 1 && !editMode) {
         const currentIdx = pages.findIndex((p) => p.id === activePageId)
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault()
           const next = pages[(currentIdx + 1) % pages.length]
           setActivePageId(next.id)
         } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault()
           const prev = pages[(currentIdx - 1 + pages.length) % pages.length]
           setActivePageId(prev.id)
         }
@@ -186,6 +198,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="scanner-app-shell">
+      <div className="scanner-app-content" inert={isCameraOpen || isExportOpen}>
       {/* Top Header */}
       <Header
         pageCount={pages.length}
@@ -195,6 +208,11 @@ export const App: React.FC = () => {
         onAddFiles={handleAddFiles}
         onClearAll={clearAllPages}
       />
+
+      <div role="region" aria-labelledby="scanner-page-title">
+      <h1 className="scanner-page-title" id="scanner-page-title">{heading}</h1>
+      {storageWarning && <p className="scanner-storage-warning" role="alert">{storageWarning}</p>}
+      </div>
 
       {/* Main Workspace Layout */}
       <main className="scanner-workspace">
@@ -254,7 +272,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Global Status Bar */}
-      <footer className="scanner-status-bar">
+      <div className="scanner-status-bar" role="region" aria-label="Scanner status">
         <div className="status-indicator">
           {isProcessing ? (
             <Loader2 size={15} className="spin-icon text-brand" />
@@ -269,33 +287,13 @@ export const App: React.FC = () => {
         <div className="status-shortcuts">
           <span>Ctrl+Z (Undo) • Ctrl+Y (Redo) • R (Rotate) • E (Crop) • Arrows (Nav) • Esc (Cancel)</span>
         </div>
-      </footer>
+      </div>
 
       {/* SEO, GEO & AEO Content Section */}
       <SeoArticle />
 
-      {/* Modern Accessible Light Footer */}
-      <footer className="app-footer">
-        <div className="footer-content">
-          <p className="footer-copy">
-            <strong>Scanner.cam</strong> — 100% Client-Side Private Online Document Scanner & CamScanner Alternative.
-            No server uploads, no watermarks, no accounts required.
-          </p>
-          <div className="footer-links">
-            <span>100% Free & Open Web Tool</span>
-            <span>•</span>
-            <span>Client-Side Web Workers</span>
-            <span>•</span>
-            <span>Zero Cloud Storage</span>
-          </div>
-          <div className="footer-tags">
-            <a href="/about" className="footer-tag">About</a>
-            <a href="/privacy" className="footer-tag">Privacy Policy</a>
-            <a href="/terms" className="footer-tag">Terms</a>
-            <a href="/contact" className="footer-tag">Contact</a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
+      </div>
 
       {/* Camera Capture Modal */}
       {isCameraOpen && (

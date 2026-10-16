@@ -28,6 +28,12 @@ export function useHistory(
     setCanRedo(cursorRef.current < historyRef.current.length - 1)
   }, [])
 
+  const resetHistory = useCallback((pages: ScanPage[], activePageId: string | null) => {
+    historyRef.current = [{ pages: [...pages], activePageId }]
+    cursorRef.current = 0
+    syncFlags()
+  }, [syncFlags])
+
   /** Push a new snapshot onto the history stack (clears any forward redo history). */
   const pushHistory = useCallback(
     (pages: ScanPage[], activePageId: string | null) => {
@@ -63,5 +69,5 @@ export function useHistory(
     return historyRef.current[cursorRef.current]
   }, [syncFlags])
 
-  return { pushHistory, undo, redo, canUndo, canRedo }
+  return { pushHistory, resetHistory, undo, redo, canUndo, canRedo }
 }

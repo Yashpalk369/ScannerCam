@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { faqs } from '../../content/homepage.json'
 import {
   ShieldCheck,
   Zap,
@@ -31,29 +32,6 @@ export const SeoArticle: React.FC = () => {
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
   }
-
-  const faqs = [
-    {
-      q: 'What is an online scanner and how does it work without cloud uploads?',
-      a: 'An online scanner is a browser-based application that digitizes physical paper documents using your smartphone or webcam. Unlike cloud-dependent tools, Scanner.cam processes every pixel locally on your device via client-side Web Workers and HTML5 Canvas. Image de-skewing, perspective correction, and PDF compilation take place in your browser memory, ensuring your sensitive files are never transmitted to any external server.',
-    },
-    {
-      q: 'Is Scanner.cam a free CamScanner alternative with no watermark?',
-      a: 'Yes. Scanner.cam is a completely free, watermark-free web alternative to mobile CamScanner. There are no page limitations, no forced premium subscriptions, no account registrations, and no watermarks branded onto your exported PDFs or JPGs.',
-    },
-    {
-      q: 'Can I use this online cam scanner on iPhone, iPad, and Android without installing an app?',
-      a: 'Yes. Scanner.cam works seamlessly inside Safari on iOS/iPadOS and Chrome on Android. Simply visit the website, grant camera permissions, frame your paper document, and capture high-resolution scans directly from your mobile browser without visiting an app store.',
-    },
-    {
-      q: 'How does the perspective correction and corner magnifier work?',
-      a: 'When you photograph a document at an angle, it appears trapezoidal. Scanner.cam calculates an 8-parameter homography projective matrix to map the four corners of your document back into a perfect flat rectangle. During manual corner adjustments, an integrated 2.5x magnifier loupe displays a zoomed crosshair above your finger, providing sub-millimeter precision.',
-    },
-    {
-      q: 'What document filters are available and which should I choose?',
-      a: 'We offer five specialized filters: "Magic Color" (flattens background illumination and removes uneven shadows while keeping color photos vibrant), "Clean B/W" (uses local adaptive thresholding to convert documents into crisp, high-contrast monochrome text), "Enhance" (boosts contrast and ink saturation), "Grayscale", and "Original" raw capture.',
-    },
-  ]
 
   const guides = [
     {
@@ -107,7 +85,7 @@ export const SeoArticle: React.FC = () => {
   ]
 
   return (
-    <article className="seo-article-container" itemScope itemType="https://schema.org/Article">
+    <article className="seo-article-container" role="region" aria-label="Document scanning information" itemScope itemType="https://schema.org/Article">
       {/* Article Header */}
       <header className="article-hero-header">
         <div className="article-badge">
@@ -198,7 +176,7 @@ export const SeoArticle: React.FC = () => {
           privacy, feature, and pricing metrics:
         </p>
 
-        <div className="table-responsive">
+        <div className="table-responsive" role="region" aria-label="Scanner feature comparison" tabIndex={0}>
           <table className="comparison-table">
             <thead>
               <tr>
@@ -478,11 +456,10 @@ export const SeoArticle: React.FC = () => {
                     </span>
                   </button>
                 </h4>
-                {isOpen && (
-                  <div className="faq-answer" id={`faq-answer-${index}`}>
+                  <div className="faq-answer" id={`faq-answer-${index}`} hidden={!isOpen}>
                     <p>{faq.a}</p>
+                    {faq.links && <p className="faq-related-links">Learn more: {faq.links.map((link, index) => <React.Fragment key={link.href}>{index > 0 && ' · '}<a href={link.href}>{link.label}</a></React.Fragment>)}</p>}
                   </div>
-                )}
               </div>
             )
           })}

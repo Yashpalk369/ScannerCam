@@ -28,23 +28,11 @@
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
 .wrap{max-width:860px;margin:0 auto;padding:0 1.25rem}
 /* header */
-.site-header{background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;backdrop-filter:blur(8px)}
-.site-header .wrap{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.25rem;max-width:1100px}
-.brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink)}
-.brand-icon img{display:block;width:100%;height:100%}
-.brand-icon{flex-shrink:0;width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#059669,#047857);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(5,150,105,.35)}
-.brand-name{font-size:1.2rem;font-weight:800;letter-spacing:-.02em}
-.brand-name span{color:var(--brand)}
-.brand-tag{font-size:.7rem;color:var(--muted);display:block;line-height:1.2}
-.site-nav{display:flex;gap:1.25rem;align-items:center}
-.site-nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.92rem}
-.site-nav a:hover{color:var(--brand-dark)}
 .btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--brand-dark);color:#fff!important;padding:.55rem 1.1rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:.9rem}
 .btn:hover{background:var(--brand-dark)}
-@media(max-width:640px){.site-nav a:not(.btn){display:none}}
 /* article */
 .crumbs{font-size:.82rem;color:var(--muted);margin:1.25rem 0 .5rem}
-.crumbs a{color:var(--brand-dark);text-decoration:none}
+.crumbs a{color:var(--brand-dark);text-decoration:underline;text-underline-offset:2px}
 article{background:#fff;border:1px solid var(--border);border-radius:18px;padding:2.25rem 2rem;margin:.5rem 0 2rem;box-shadow:0 8px 30px rgba(15,23,42,.05)}
 .eyebrow{display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);padding:.25rem .7rem;border-radius:999px;margin-bottom:1rem}
 h1{font-size:2rem;line-height:1.25;letter-spacing:-.02em;margin-bottom:.6rem}
@@ -85,7 +73,7 @@ article strong{color:var(--ink)}
 /* mid-article CTA */
 .mid-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(5,150,105,.07);border:1px solid rgba(5,150,105,.3);border-radius:14px;padding:1.1rem 1.35rem;margin:1.75rem 0}
 .mid-cta strong{display:block;font-size:1rem}
-.mid-cta span{font-size:.88rem;color:var(--muted)}
+.mid-cta span{font-size:.88rem;color:#475569}
 @media(max-width:640px){.mid-cta{flex-direction:column;text-align:center}}
 /* sticky mobile CTA */
 .sticky-cta{display:none}
@@ -95,17 +83,7 @@ article strong{color:var(--ink)}
 body{padding-bottom:64px}
 }
 /* footer */
-.site-footer{background:var(--ink);color:#cbd5e1;margin-top:3rem}
-.site-footer .wrap{max-width:1100px;padding:2.5rem 1.25rem 1.5rem;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:2rem}
-.site-footer h4{color:#fff;font-size:.95rem;margin-bottom:.9rem}
-.site-footer a{color:#cbd5e1;text-decoration:none;font-size:.9rem;display:block;margin-bottom:.5rem}
-.site-footer a:hover{color:#fff}
-.site-footer .brand{display:flex;align-items:center;gap:.65rem}
-.site-footer .brand-name{color:#fff}
-.footer-note{font-size:.85rem;color:#94a3b8;max-width:300px;margin-top:.6rem}
-.footer-bottom{border-top:1px solid #1e293b;text-align:center;padding:1.1rem;font-size:.82rem;color:#94a3b8}
-.footer-bottom .wrap{display:block;padding:0 1.25rem}
-@media(max-width:720px){.site-footer .wrap{grid-template-columns:1fr}article{padding:1.5rem 1.15rem}h1{font-size:1.6rem}}
+@media(max-width:720px){article{padding:1.5rem 1.15rem}h1{font-size:1.6rem}}
 /* hub cards */
 .hub-hero{text-align:center;padding:2.5rem 0 1rem}
 .hub-hero h1{font-size:2.1rem}
@@ -118,12 +96,26 @@ body{padding-bottom:64px}
 .card p{font-size:.9rem;color:var(--muted);flex:1}
 .card .go{color:var(--brand-dark);font-weight:700;font-size:.9rem;margin-top:.9rem}
 </style>
+<link rel="stylesheet" href="/site-shell.css">
 </head>
 <body>
-<header class="site-header"><div class="wrap">
-<a class="brand" href="https://www.scanner.cam/"><span class="brand-icon"><img src="/favicon.svg" width="36" height="36" alt=""></span><span><span class="brand-name">Scanner<span>.cam</span></span><span class="brand-tag">Free online document scanner</span></span></a>
-<nav class="site-nav"><a href="https://www.scanner.cam/">Scanner</a><a href="https://www.scanner.cam/blog">Guides</a><a href="https://www.scanner.cam/#faq">FAQ</a><a class="btn" href="https://www.scanner.cam/">Open Scanner</a></nav>
-</div></header>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="/" aria-label="Scanner.cam home">
+      <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+      <div class="site-brand-text">
+        <span class="brand-name">Scanner<span>.cam</span></span>
+        <span class="brand-tagline">Free online document scanner</span>
+      </div>
+    </a>
+    <nav class="site-navigation" aria-label="Main navigation">
+      <a href="/">Scanner</a>
+      <a href="/blog" aria-current="page">Guides</a>
+      <a href="/#faq">FAQ</a>
+      <a class="site-open-scanner" href="/">Open Scanner</a>
+    </nav>
+  </div>
+</header>
 <main class="wrap">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="https://www.scanner.cam/">Home</a> &rsaquo; <a href="https://www.scanner.cam/blog">Guides</a> &rsaquo; CamScanner vs Free Online Alternatives (No Watermark, No Signup)</nav>
 <article>
@@ -179,16 +171,34 @@ body{padding-bottom:64px}
 </ul>
 
 <a class="cta" href="https://www.scanner.cam/">Try the Free Alternative — No Signup</a>
-<nav class="prevnext"><a href="/blog/how-to-scan-documents-android-without-app"><span>← Previous guide</span>How to Scan Documents on Android Without an App</a><a href="/blog/scan-multi-page-pdf-online-free" style="text-align:right"><span>Next guide →</span>How to Scan Multi-Page PDFs Online Free</a></nav>
+<nav class="prevnext" aria-label="Guide navigation"><a href="/blog/how-to-scan-documents-android-without-app"><span>← Previous guide</span>How to Scan Documents on Android Without an App</a><a href="/blog/scan-multi-page-pdf-online-free" style="text-align:right"><span>Next guide →</span>How to Scan Multi-Page PDFs Online Free</a></nav>
 <div class="cta-card"><h3>Try it right now — free</h3><p>Open Scanner.cam in your browser, scan, and download. No signup, no watermark, nothing uploads.</p><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
 </article>
 </main>
-<div class="sticky-cta"><span>Scan documents free — no app, no signup</span><a href="https://www.scanner.cam/">Scan Now</a></div>
-<footer class="site-footer"><div class="wrap">
-<div><a class="brand" href="https://www.scanner.cam/"><span class="brand-icon"><img src="/favicon.svg" width="36" height="36" alt=""></span><span class="brand-name">Scanner<span>.cam</span></span></a>
-<p class="footer-note">100% free, 100% private. Your documents are processed in your browser and never uploaded to any server.</p></div>
-<div><h4>Product</h4><a href="https://www.scanner.cam/">Open Scanner</a></div>
-<div><h4>Company</h4><a href="https://www.scanner.cam/about">About</a><a href="https://www.scanner.cam/privacy">Privacy Policy</a><a href="https://www.scanner.cam/terms">Terms of Service</a><a href="https://www.scanner.cam/contact">Contact</a></div>
-</div><div class="footer-bottom"><div class="wrap">© 2026 Scanner.cam — Free online document scanner. No signup, no watermark, no uploads.</div></div></footer>
+<div class="sticky-cta" role="region" aria-label="Quick scanner access"><span>Scan documents free — no app, no signup</span><a href="https://www.scanner.cam/">Scan Now</a></div>
+<footer class="site-footer app-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <a class="site-brand" href="/" aria-label="Scanner.cam home">
+        <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+        <span class="brand-name">Scanner<span>.cam</span></span>
+      </a>
+      <p class="site-footer-note">Free, private document scanning in your browser. No signup, no watermark, no uploads.</p>
+    </div>
+    <nav class="site-footer-navigation" aria-label="Product">
+      <h2>Product</h2>
+      <a href="/">Open Scanner</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+    <nav class="site-footer-navigation" aria-label="Company">
+      <h2>Company</h2>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+  <div class="site-footer-bottom">© 2026 Scanner.cam — Free online document scanner.</div>
+</footer>
 </body>
 </html>

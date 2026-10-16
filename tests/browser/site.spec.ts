@@ -19,8 +19,8 @@ test('every sitemap page has one branded footer, working images and no mobile ov
     await expect(footer.locator('a[href*="/blog"]'), path).toHaveCount(0)
     await expect(page.locator('header .brand-icon img'), path).toHaveAttribute('src', '/favicon.svg')
     if (path !== '/') {
-      await expect(footer.locator('.brand'), path).toHaveCount(1)
-      await expect(footer.locator('.footer-note'), path).toHaveCount(1)
+      await expect(footer.locator('.site-brand'), path).toHaveCount(1)
+      await expect(footer.locator('.site-footer-note'), path).toHaveCount(1)
       await expect(page.locator('h1'), path).toHaveCount(1)
       expect(await page.locator('link[rel=canonical]').getAttribute('href')).toBe(site + path)
     }
@@ -64,7 +64,7 @@ test('all internal link destinations and fragments resolve to the intended pages
 
 test('footer navigation reaches company pages and FAQ controls work with the keyboard', async ({ page }) => {
   await page.goto('/')
-  await page.locator('.app-footer').getByRole('link', { name: 'Terms', exact: true }).click()
+  await page.locator('.app-footer').getByRole('link', { name: 'Terms of Service', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Terms of Service', exact: true })).toBeVisible()
   await page.goto('/#faq')
   const question = page.locator('.faq-question').first()
@@ -75,7 +75,7 @@ test('footer navigation reaches company pages and FAQ controls work with the key
   await expect(page.locator('#faq-answer-0')).toBeVisible()
   await question.press('Space')
   await expect(question).toHaveAttribute('aria-expanded', 'false')
-  await expect(page.locator('#faq-answer-0')).toHaveCount(0)
+  await expect(page.locator('#faq-answer-0')).toBeHidden()
   await page.goto('/contact')
   await expect(page.getByRole('link', { name: 'Hello@scanner.cam', exact: true })).toHaveAttribute('href', 'mailto:Hello@scanner.cam')
 })

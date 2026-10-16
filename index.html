@@ -42,167 +42,191 @@
 
     <!-- Structured Data: WebApplication with Wikidata Entities (AEO & GEO) -->
     <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@context": "https://schema.org",
-      "@graph": [
+      "@type": "WebApplication",
+      "@id": "https://www.scanner.cam/#webapp",
+      "name": "Scanner.cam Online Document Scanner",
+      "url": "https://www.scanner.cam/",
+      "applicationCategory": "BusinessApplication, UtilityApplication",
+      "operatingSystem": "All (Web Browser, iOS, Android, macOS, Windows, Linux)",
+      "browserRequirements": "Requires HTML5 Canvas and WebAssembly/Web Worker support",
+      "description": "A 100% client-side, private online document scanner and CamScanner alternative. Detects document edges, performs perspective correction, cleans shadows with adaptive binarization, and compiles multi-page PDFs without uploading files to any server.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "100% client-side processing (zero cloud uploads)",
+        "Webcam and mobile camera document scanning",
+        "Automatic 4-corner document edge detection",
+        "Interactive perspective rectification with 2.5x magnifying loupe",
+        "Sauvola local adaptive thresholding (shadow-free B/W)",
+        "Magic Color illumination equalization",
+        "Multi-page PDF compiler with auto-orientation",
+        "Offline IndexedDB scan session recovery"
+      ],
+      "about": [
         {
-          "@type": "WebApplication",
-          "@id": "https://www.scanner.cam/#webapp",
-          "name": "Scanner.cam Online Document Scanner",
-          "url": "https://www.scanner.cam/",
-          "applicationCategory": "BusinessApplication, UtilityApplication",
-          "operatingSystem": "All (Web Browser, iOS, Android, macOS, Windows, Linux)",
-          "browserRequirements": "Requires HTML5 Canvas and WebAssembly/Web Worker support",
-          "description": "A 100% client-side, private online document scanner and CamScanner alternative. Detects document edges, performs perspective correction, cleans shadows with adaptive binarization, and compiles multi-page PDFs without uploading files to any server.",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-          },
-          "featureList": [
-            "100% client-side processing (zero cloud uploads)",
-            "Webcam and mobile camera document scanning",
-            "Automatic 4-corner document edge detection",
-            "Interactive perspective rectification with 2.5x magnifying loupe",
-            "Sauvola local adaptive thresholding (shadow-free B/W)",
-            "Magic Color illumination equalization",
-            "Multi-page PDF compiler with auto-orientation",
-            "Offline IndexedDB scan session recovery"
-          ],
-          "about": [
-            {
-              "@type": "Thing",
-              "name": "Image scanner",
-              "sameAs": "https://en.wikipedia.org/wiki/Image_scanner"
-            },
-            {
-              "@type": "Thing",
-              "name": "CamScanner",
-              "sameAs": "https://en.wikipedia.org/wiki/CamScanner"
-            }
-          ],
-          "mentions": [
-            {
-              "@type": "Thing",
-              "name": "Computer vision",
-              "sameAs": "https://www.wikidata.org/wiki/Q844240"
-            },
-            {
-              "@type": "Thing",
-              "name": "PDF",
-              "sameAs": "https://www.wikidata.org/wiki/Q42332"
-            }
-          ]
+          "@type": "Thing",
+          "name": "Image scanner",
+          "sameAs": "https://en.wikipedia.org/wiki/Image_scanner"
         },
         {
-          "@type": "HowTo",
-          "@id": "https://www.scanner.cam/#howto",
-          "name": "How to Scan Documents Online Using Your Phone or Computer Camera",
-          "description": "Step-by-step guide to scanning paper documents, receipts, contracts, and IDs into clean PDF files directly inside your web browser.",
-          "step": [
-            {
-              "@type": "HowToStep",
-              "name": "Capture or Upload Document",
-              "text": "Click 'Scan Camera' to use your smartphone or webcam with live framing guidelines, or drag-and-drop existing photos."
-            },
-            {
-              "@type": "HowToStep",
-              "name": "Adjust Perspective Corners",
-              "text": "Click 'Edit Corners' and drag the 4 corner handles with the 2.5x precision magnifying loupe to crop out backgrounds and straighten skewed documents."
-            },
-            {
-              "@type": "HowToStep",
-              "name": "Apply Document Enhancement Filters",
-              "text": "Select 'Magic Color' to remove uneven room lighting and finger shadows, or 'Clean B/W' for crisp printed text."
-            },
-            {
-              "@type": "HowToStep",
-              "name": "Export Multi-Page PDF",
-              "text": "Click 'Export' to download a multi-page PDF or individual high-resolution JPG images with no watermark."
-            }
-          ]
+          "@type": "Thing",
+          "name": "CamScanner",
+          "sameAs": "https://en.wikipedia.org/wiki/CamScanner"
+        }
+      ],
+      "mentions": [
+        {
+          "@type": "Thing",
+          "name": "Computer vision",
+          "sameAs": "https://www.wikidata.org/wiki/Q844240"
         },
         {
-          "@type": "FAQPage",
-          "@id": "https://www.scanner.cam/#faq",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "What is an online scanner and how does it work?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "An online document scanner is a browser-based tool that uses your device's camera or uploaded photos to digitize paper documents. Using computer vision algorithms (homography perspective transformation and adaptive binarization), it detects edges, flattens tilted angles, enhances text contrast, and exports multi-page PDFs directly on your device without server uploads."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Is Scanner.cam a free CamScanner alternative without watermark?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. Scanner.cam is a 100% free web alternative to mobile CamScanner. It does not add any watermarks, does not require account signup or app store downloads, and allows unlimited multi-page PDF exports."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Are my scanned documents private and secure?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes, absolutely. Unlike traditional mobile scanning apps that upload your sensitive documents, contracts, and IDs to cloud servers, Scanner.cam executes all image processing locally in your browser using client-side Web Workers. Your images never leave your device."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I scan multiple pages into a single PDF document?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. You can snap multiple photos in sequence using the camera burst mode or upload multiple image files simultaneously. You can reorder, rotate, and enhance each page, then export them all into a single consolidated A4 or US Letter PDF file."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Will my exported scans have a watermark?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "No. Every PDF and JPG you export from Scanner.cam is completely watermark-free — unlike CamScanner's free tier, which stamps a watermark on scans."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Does Scanner.cam upload my files to a cloud server?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "No. Scanner.cam does zero cloud uploads: all capture and image processing happens locally in your browser (via Web Workers), so your documents never leave your device."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "How can I avoid shadows in my scans?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Use even, diffused light and avoid casting shadows over the page. Then apply the Magic Color filter, which evens out uneven room lighting and finger shadows, or Clean B/W for crisp printed text."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Does Scanner.cam have OCR or text extraction?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "No. Scanner.cam is a high-quality image scanner, not an OCR app: it exports clean, high-contrast PDFs and JPGs. If you need searchable text, run the exported PDF through any free OCR tool afterwards."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Is there a limit on how large my scanned files can be?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "No. There is no signup, no quota, and no page cap — export as many pages as you need. The resulting file size simply scales with the number of pages and the resolution of your photos."
-              }
-            }
-          ]
+          "@type": "Thing",
+          "name": "PDF",
+          "sameAs": "https://www.wikidata.org/wiki/Q42332"
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://www.scanner.cam/#howto",
+      "name": "How to Scan Documents Online Using Your Phone or Computer Camera",
+      "description": "Step-by-step guide to scanning paper documents, receipts, contracts, and IDs into clean PDF files directly inside your web browser.",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Capture or Upload Document",
+          "text": "Click 'Scan Camera' to use your smartphone or webcam with live framing guidelines, or drag-and-drop existing photos."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Adjust Perspective Corners",
+          "text": "Click 'Edit Corners' and drag the 4 corner handles with the 2.5x precision magnifying loupe to crop out backgrounds and straighten skewed documents."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Apply Document Enhancement Filters",
+          "text": "Select 'Magic Color' to remove uneven room lighting and finger shadows, or 'Clean B/W' for crisp printed text."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Export Multi-Page PDF",
+          "text": "Click 'Export' to download a multi-page PDF or individual high-resolution JPG images with no watermark."
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.scanner.cam/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is an online scanner and how does it work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An online scanner is a browser-based tool that uses your device camera or uploaded photos to digitize paper documents. It detects document edges, straightens perspective, enhances text contrast, and exports multi-page PDFs locally on your device without uploading your documents."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Scanner.cam a free CamScanner alternative without watermark?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Scanner.cam is free, with no watermarks, no account signup, no app downloads, and no imposed page quota. The number of scans you can process depends on your device and browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are my scanned documents private and secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Your documents are processed locally in your browser using Web Workers and are not uploaded to our servers. Saved scan sessions stay in your browser storage. On a shared device, export your documents and clear the saved scans when you finish."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I scan multiple pages into a single PDF?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Capture multiple photos or upload multiple images, reorder and rotate pages, then export one consolidated A4 or US Letter PDF. Use the PDF quality setting to balance file size and image detail."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use it on iPhone and Android without installing an app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open Scanner.cam in Safari on iPhone or iPad, or Chrome on Android. Grant camera permission to capture documents, or upload existing photos. Camera availability and performance depend on your device and browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will my exported scans have a watermark?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. PDFs and JPGs exported from Scanner.cam are watermark-free."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Scanner.cam upload my files to a cloud server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Capture, document enhancement, OCR, and PDF generation run locally in your browser. The first use of OCR needs internet access to download recognition files; your document images are not uploaded."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I avoid shadows in my scans?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use even, diffused light and avoid casting your own shadow or phone shadow over the page. Magic Color helps even out lighting while retaining color; Clean B/W improves contrast for printed text. Strong shadows and faint text may still require better lighting or a new photo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Scanner.cam have OCR or text extraction?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open Export, expand Advanced options, and enable Searchable PDF (OCR). English text recognition runs locally in your browser and adds a searchable, selectable text layer to the exported PDF. First use needs internet access to download recognition files. Recognition accuracy depends on scan quality, and text selection positions are approximate."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a limit on how large my scanned files can be?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "There is no account quota or imposed page cap. Available device memory, browser storage, and browser limits constrain how many scans you can process at once. For large documents, work in smaller batches. PDF quality settings reduce exported file size while your saved scans retain their detail."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the perspective correction and corner magnifier work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Adjust the four document corners to straighten an angled photo into a rectangle. The 2.5× corner magnifier helps place each handle accurately. Apply the crop when the corners match the document edges."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What document filters are available and which should I choose?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choose Magic Color to brighten paper and soften uneven lighting while retaining color, Clean B/W for high-contrast printed text, Enhance to boost contrast, Gray to remove color, or Original to keep source colors without enhancement. Clean B/W can remove faint or colored details, so check the preview before exporting."
+          }
         }
       ]
     }
-    </script>
+  ]
+}
+</script>
     <style>
       /* Pre-rendered App Shell & SEO Fallback Typography */
       :root {
@@ -400,43 +424,29 @@
 {"@type":"WebSite","@id":"https://www.scanner.cam/#site","name":"Scanner.cam","url":"https://www.scanner.cam/","publisher":{"@id":"https://www.scanner.cam/#org"}}
 ]}
 </script>
+<link rel="stylesheet" href="/site-shell.css">
 </head>
   <body>
     <div id="app">
       <!-- Pre-rendered App Shell: Displays instantly on first paint while React boots -->
       <div class="app-shell-pre">
-        <header class="header-pre">
-          <div class="brand-pre">
-            <div class="brand-icon-pre">
-              <img src="/favicon.svg" width="38" height="38" alt="">
-            </div>
-            <div>
-              <div class="brand-text-pre">Scanner<span>.cam</span></div>
-              <div class="brand-tagline-pre">Free Private Online Document Scanner</div>
-            </div>
-            <div class="privacy-badge-pre">
-              <span class="privacy-dot-pre"></span>
-              <span>100% Client-Side & Private</span>
-            </div>
-          </div>
-          <div class="header-actions-pre">
-            <div class="btn-pre btn-pre-camera">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span>Scan Camera</span>
-            </div>
-            <div class="btn-pre btn-pre-upload">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <span>Add Files</span>
-            </div>
-          </div>
-        </header>
+        <header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="/" aria-label="Scanner.cam home">
+      <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+      <div class="site-brand-text">
+        <span class="brand-name">Scanner<span>.cam</span></span>
+        <span class="brand-tagline">Free online document scanner</span>
+      </div>
+    </a>
+    <nav class="site-navigation" aria-label="Main navigation">
+      <a href="/" aria-current="page">Scanner</a>
+      <a href="/blog">Guides</a>
+      <a href="/#faq">FAQ</a>
+      <a class="site-open-scanner" href="/">Open Scanner</a>
+    </nav>
+  </div>
+</header>
 
         <main class="workspace-pre">
           <section class="canvas-pre">
@@ -523,44 +533,19 @@
 </ul>
 <p style="text-align:center;margin-top:1.25rem"><a href="/blog" style="display:inline-block;background:#059669;color:#fff!important;font-weight:700;padding:.65rem 1.4rem;border-radius:10px;text-decoration:none">View all 9 guides &rarr;</a></p>
 
-        <h2>Frequently asked questions</h2>
-        <p><strong>What is an online scanner and how does it work?</strong><br>
-        A browser-based tool that uses your device camera or uploaded photos to digitize paper documents —
-        detecting edges, flattening tilted angles, enhancing text contrast, and exporting multi-page PDFs
-        directly on your device without server uploads.</p>
-        <p><strong>Is Scanner.cam a free CamScanner alternative without watermark?</strong><br>
-        Yes — 100% free, no watermarks, no account signup, no app downloads, unlimited multi-page PDF exports.
-        Compare: <a href="/blog/camscanner-vs-free-online-alternatives">CamScanner vs free online alternatives (no watermark, no signup)</a>.</p>
-        <p><strong>Are my scanned documents private and secure?</strong><br>
-        Yes. All image processing runs locally in your browser via Web Workers. Your images never leave your device.
-        Read more: <a href="/blog/is-it-safe-to-scan-documents-online">is it safe to scan documents online? Privacy explained</a>.</p>
-        <p><strong>Can I scan multiple pages into a single PDF?</strong><br>
-        Yes. Capture multiple photos or upload multiple images, reorder and rotate pages, then export one
-        consolidated A4 or US Letter PDF.
-        Step-by-step: <a href="/blog/scan-multi-page-pdf-online-free">how to scan multi-page PDFs online free</a>.</p>
-        <p><strong>Can I use it on iPhone and Android without installing an app?</strong><br>
-        Yes. It works in Safari on iOS/iPadOS and Chrome on Android — just visit the site and grant camera permission.</p>
-        <p><strong>Will my exported scans have a watermark?</strong><br>
-        No. Every PDF and JPG you export from Scanner.cam is completely watermark-free — unlike
-        CamScanner's free tier, which stamps a watermark on scans.</p>
-        <p><strong>Does Scanner.cam upload my files to a cloud server?</strong><br>
-        No. Scanner.cam does zero cloud uploads: all capture and image processing happens locally
-        in your browser (via Web Workers), so your documents never leave your device. It even
-        works through offline scan sessions saved in your browser.</p>
-        <p><strong>How can I avoid shadows in my scans?</strong><br>
-        Use even, diffused light and avoid casting your own shadow or phone shadow over the page.
-        Then apply the Magic Color filter, which evens out uneven room lighting and finger shadows,
-        or Clean B/W for crisp printed text.</p>
-        <p><strong>Does Scanner.cam have OCR or text extraction?</strong><br>
-        No. Scanner.cam is a high-quality image scanner, not an OCR app: it exports clean,
-        high-contrast PDFs and JPGs of your pages. If you need searchable text, run the exported
-        PDF through any free OCR tool afterwards.</p>
-        <p><strong>Is there a limit on how large my scanned files can be?</strong><br>
-        No. There is no signup, no quota, and no page cap — export as many pages as you need. The
-        resulting file size simply scales with the number of pages and the resolution of your
-        photos, and every page exports at high resolution.</p>
-
-        
+        <h2 id="faq">Frequently asked questions</h2>
+<div class="fallback-faq"><p><strong>What is an online scanner and how does it work?</strong></p><p class="fallback-faq-answer">An online scanner is a browser-based tool that uses your device camera or uploaded photos to digitize paper documents. It detects document edges, straightens perspective, enhances text contrast, and exports multi-page PDFs locally on your device without uploading your documents.</p></div>
+<div class="fallback-faq"><p><strong>Is Scanner.cam a free CamScanner alternative without watermark?</strong></p><p class="fallback-faq-answer">Yes. Scanner.cam is free, with no watermarks, no account signup, no app downloads, and no imposed page quota. The number of scans you can process depends on your device and browser.</p><p>Learn more: <a href="/blog/camscanner-vs-free-online-alternatives">CamScanner vs free online alternatives (no watermark, no signup)</a></p></div>
+<div class="fallback-faq"><p><strong>Are my scanned documents private and secure?</strong></p><p class="fallback-faq-answer">Your documents are processed locally in your browser using Web Workers and are not uploaded to our servers. Saved scan sessions stay in your browser storage. On a shared device, export your documents and clear the saved scans when you finish.</p><p>Learn more: <a href="/blog/is-it-safe-to-scan-documents-online">Is it safe to scan documents online? Privacy explained</a></p></div>
+<div class="fallback-faq"><p><strong>Can I scan multiple pages into a single PDF?</strong></p><p class="fallback-faq-answer">Yes. Capture multiple photos or upload multiple images, reorder and rotate pages, then export one consolidated A4 or US Letter PDF. Use the PDF quality setting to balance file size and image detail.</p><p>Learn more: <a href="/blog/scan-multi-page-pdf-online-free">How to scan multi-page PDFs online free</a></p></div>
+<div class="fallback-faq"><p><strong>Can I use it on iPhone and Android without installing an app?</strong></p><p class="fallback-faq-answer">Yes. Open Scanner.cam in Safari on iPhone or iPad, or Chrome on Android. Grant camera permission to capture documents, or upload existing photos. Camera availability and performance depend on your device and browser.</p></div>
+<div class="fallback-faq"><p><strong>Will my exported scans have a watermark?</strong></p><p class="fallback-faq-answer">No. PDFs and JPGs exported from Scanner.cam are watermark-free.</p></div>
+<div class="fallback-faq"><p><strong>Does Scanner.cam upload my files to a cloud server?</strong></p><p class="fallback-faq-answer">No. Capture, document enhancement, OCR, and PDF generation run locally in your browser. The first use of OCR needs internet access to download recognition files; your document images are not uploaded.</p></div>
+<div class="fallback-faq"><p><strong>How can I avoid shadows in my scans?</strong></p><p class="fallback-faq-answer">Use even, diffused light and avoid casting your own shadow or phone shadow over the page. Magic Color helps even out lighting while retaining color; Clean B/W improves contrast for printed text. Strong shadows and faint text may still require better lighting or a new photo.</p></div>
+<div class="fallback-faq"><p><strong>Does Scanner.cam have OCR or text extraction?</strong></p><p class="fallback-faq-answer">Yes. Open Export, expand Advanced options, and enable Searchable PDF (OCR). English text recognition runs locally in your browser and adds a searchable, selectable text layer to the exported PDF. First use needs internet access to download recognition files. Recognition accuracy depends on scan quality, and text selection positions are approximate.</p></div>
+<div class="fallback-faq"><p><strong>Is there a limit on how large my scanned files can be?</strong></p><p class="fallback-faq-answer">There is no account quota or imposed page cap. Available device memory, browser storage, and browser limits constrain how many scans you can process at once. For large documents, work in smaller batches. PDF quality settings reduce exported file size while your saved scans retain their detail.</p></div>
+<div class="fallback-faq"><p><strong>How does the perspective correction and corner magnifier work?</strong></p><p class="fallback-faq-answer">Adjust the four document corners to straighten an angled photo into a rectangle. The 2.5× corner magnifier helps place each handle accurately. Apply the crop when the corners match the document edges.</p></div>
+<div class="fallback-faq"><p><strong>What document filters are available and which should I choose?</strong></p><p class="fallback-faq-answer">Choose Magic Color to brighten paper and soften uneven lighting while retaining color, Clean B/W for high-contrast printed text, Enhance to boost contrast, Gray to remove color, or Original to keep source colors without enhancement. Clean B/W can remove faint or colored details, so check the preview before exporting.</p></div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

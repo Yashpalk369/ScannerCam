@@ -42,6 +42,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
   const exportLock = useRef(false)
   const filenameRef = useRef<HTMLInputElement>(null)
   const mountedRef = useRef(false)
+  const exportController = useRef<AbortController | null>(null)
 
   const front = pages.find(page => page.id === frontId)
   const back = pages.find(page => page.id === backId)
@@ -56,8 +57,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
   useEffect(() => {
     mountedRef.current = true
     const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     filenameRef.current?.focus()
-    return () => { mountedRef.current = false; previousFocus?.focus() }
+    return () => {
+      mountedRef.current = false
+      exportController.current?.abort()
+      if (exportController.current) ocrWorker.terminate()
+      document.body.style.overflow = previousOverflow
+      previousFocus?.focus()
+    }
   }, [])
 
   // Prepare and retain the actual image-only PDF, rather than guessing its size.
@@ -85,6 +94,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
   const handleExportPdf = async () => {
     if (!selectedPages.length || selectionError || exportLock.current) return
     exportLock.current = true
+    const controller = new AbortController()
+    exportController.current = controller
     setIsExporting(true)
     setExportError(null)
     setExportProgress('Preparing…')
@@ -97,23 +108,30 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
           updateProgress(`OCR: ${layout === 'id-card' ? 'side' : 'page'} ${i + 1} of ${selectedPages.length}…`)
           try {
             const result = await ocrWorker.recognizePage(await blobToDataUrl(selectedPages[i].blob))
+            controller.signal.throwIfAborted()
             ocrTexts[i] = result.text
             if (result.text.trim()) recognizedPages += 1
-          } catch { ocrTexts[i] = '' }
+          } catch (error) {
+            controller.signal.throwIfAborted()
+            throw new Error(`OCR failed on ${layout === 'id-card' ? 'side' : 'page'} ${i + 1}. Retry or turn OCR off to download an image-only PDF.`, { cause: error })
+          }
         }
       }
       updateProgress('Building PDF…')
-      const blob = !searchablePdf && readyPdf ? readyPdf : await createPdfBlob(selectedPages, { ...options, searchable: searchablePdf, ocrTexts, onProgress: (_current, _total, message) => updateProgress(message) })
+      const blob = !searchablePdf && readyPdf ? readyPdf : await createPdfBlob(selectedPages, { ...options, signal: controller.signal, searchable: searchablePdf, ocrTexts, onProgress: (_current, _total, message) => updateProgress(message) })
+      controller.signal.throwIfAborted()
       const name = filename.trim() || 'ScannerCam-Doc'
       downloadBlob(blob, name.endsWith('.pdf') ? name : `${name}.pdf`)
       const textStatus = searchablePdf ? ` Text recognized on ${recognizedPages} of ${selectedPages.length} scans.` : ''
       setStatus(`PDF exported successfully.${textStatus}`)
       onClose()
-    } catch {
-      if (mountedRef.current) setExportError('Could not export the PDF. Your scans are unchanged; please try again.')
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (mountedRef.current) setExportError(error instanceof Error ? error.message : 'Could not export the PDF. Your scans are unchanged; please try again.')
       setStatus('Failed to export PDF.', true)
     } finally {
       exportLock.current = false
+      exportController.current = null
       if (mountedRef.current) { setIsExporting(false); setExportProgress('') }
       if (searchablePdf) ocrWorker.terminate()
     }
@@ -148,7 +166,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
       <div className="modal-dialog scanner-export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-title" onClick={event => event.stopPropagation()} onKeyDown={trapFocus}>
         <div className="modal-header">
           <div className="modal-title"><Download size={20} /><h3 id="export-title">Export Documents</h3></div>
-          <button type="button" className="btn-circle-subtle" onClick={onClose} disabled={isExporting} aria-label="Close export"><X size={18} /></button>
+          <button type="button" className="btn-circle-subtle" onClick={onClose} aria-label={isExporting ? 'Cancel export' : 'Close export'}><X size={18} /></button>
         </div>
         <div className="modal-body">
           <div className="form-group">
@@ -195,7 +213,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, pages
           </div>
           <button type="button" className={`searchable-toggle-card ${searchablePdf ? 'enabled' : ''}`} role="checkbox" aria-checked={searchablePdf} disabled={isExporting} onClick={() => setSearchablePdf(value => !value)}>
             <span className="searchable-toggle-icon"><Search size={18} /></span>
-            <span className="searchable-toggle-text"><strong>Searchable PDF (OCR)</strong><span className="pdf-quality-description">Add searchable text using local OCR. No document uploads.</span></span>
+            <span className="searchable-toggle-text"><strong>Searchable PDF (OCR)</strong><span className="pdf-quality-description">Add searchable English text locally. First use needs internet to download recognition files. No document uploads.</span></span>
             <span className={`toggle-pill ${searchablePdf ? 'on' : 'off'}`}>{searchablePdf ? 'ON' : 'OFF'}</span>
           </button>
             {layout === 'document' && <div className="export-image-options">

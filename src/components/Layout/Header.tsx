@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
-import { Camera, Upload, Download, Trash2, BookOpen } from 'lucide-react'
+import { SiteHeader } from './SiteShell'
+import { Camera, Upload, Download, Trash2 } from 'lucide-react'
 
 interface HeaderProps {
   pageCount: number
@@ -35,34 +36,14 @@ export const Header: React.FC<HeaderProps> = ({
   }
 
   return (
-    <header className="app-header">
-      <div className="brand-section">
-        <div className="brand-logo-wrap">
-          <div className="brand-icon">
-            <img src="/favicon.svg" width="40" height="40" alt="" />
-          </div>
-          <div>
-            <h1 className="brand-name">Scanner.cam</h1>
-            <p className="brand-tagline">Client-Side Private Scanner</p>
-          </div>
-        </div>
-
+    <>
+      <SiteHeader />
+      <div className="scanner-toolbar" role="region" aria-label="Scanner tools">
         <div className="privacy-pill">
           <span className="privacy-dot" />
           <span>Zero Server Uploads</span>
         </div>
-      </div>
-
-      <div className="header-actions">
-        <a
-          href="/blog"
-          className="btn btn-ghost header-guides-link"
-          title="Document Scanning Guides & Tutorials"
-        >
-          <BookOpen size={15} />
-          <span>Guides</span>
-        </a>
-
+        <div className="header-actions">
         <input
           ref={fileInputRef}
           type="file"
@@ -117,6 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
       </div>
-    </header>
+      </div>
+    </>
   )
 }

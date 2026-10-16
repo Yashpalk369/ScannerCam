@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+
+body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+:root { --site-header-offset: 96px; }
+.article-section[id], article h2[id] { scroll-margin-top: var(--site-header-offset); }
+.site-shell-fragment { display: contents; }
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, .96);
+  border-bottom: 1px solid #e2e8f0;
+  backdrop-filter: blur(16px);
+  line-height: 1.5;
+}
+.site-header-inner {
+  max-width: 1440px;
+  min-height: 80px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+:is(.site-header, .site-footer) .site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #0f172a;
+  text-decoration: none;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+:is(.site-header, .site-footer) .brand-icon {
+  display: block;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  color: #0f172a;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, .2);
+}
+:is(.site-header, .site-footer) .brand-icon img { display: block; width: 100%; height: 100%; }
+.site-brand-text { display: block; }
+:is(.site-header, .site-footer) .brand-name {
+  display: block;
+  margin: 0;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -.4px;
+  color: #0f172a;
+}
+:is(.site-header, .site-footer) .brand-name > span { color: #047857; }
+.site-header .brand-tagline {
+  display: block;
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #475569;
+}
+.site-navigation { display: flex; align-items: center; gap: 12px; }
+.site-navigation > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-navigation > a:hover, .site-navigation > a[aria-current="page"] { background: #ecfdf5; color: #065f46; }
+.site-navigation > .site-open-scanner { background: #047857; color: #fff; padding: 8px 16px; }
+.site-navigation > .site-open-scanner:hover { background: #065f46; color: #fff; }
+.site-footer.app-footer {
+  padding: 0;
+  margin-top: 48px;
+  background: #f1f5f9;
+  color: #475569;
+  border-top: 1px solid #e2e8f0;
+  line-height: 1.6;
+  text-align: left;
+}
+.site-footer-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+}
+.site-footer .site-footer-note { max-width: 340px; margin: 16px 0 0; color: #475569; font-size: 13px; }
+.site-footer .site-footer-navigation h2 { margin: 0 0 12px; color: #0f172a; font-size: 14px; line-height: 1.5; font-weight: 700; }
+.site-footer .site-footer-navigation a { display: flex; align-items: center; min-height: 40px; margin: 0; color: #475569; font-size: 13px; text-decoration: none; }
+.site-footer .site-footer-navigation a:hover { color: #065f46; text-decoration: underline; }
+.site-footer .site-footer-bottom { padding: 18px 24px; border-top: 1px solid #e2e8f0; color: #475569; text-align: center; font-size: 12px; }
+:is(.site-header, .site-footer) a:focus-visible { outline: 2px solid #047857; outline-offset: 3px; }
+@media (max-width: 720px) {
+  :root { --site-header-offset: 136px; }
+  .site-header-inner { padding: 12px 16px; gap: 8px; }
+  .site-navigation { width: 100%; gap: 4px; justify-content: space-between; }
+  .site-navigation > a { padding: 8px; font-size: 13px; }
+  .site-navigation > .site-open-scanner { padding: 8px 12px; }
+  :is(.site-header, .site-footer) .brand-icon { flex-basis: 32px; width: 32px; height: 32px; border-radius: 8px; }
+  :is(.site-header, .site-footer) .brand-name { font-size: 18px; }
+  .site-footer-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 28px 16px; gap: 24px; }
+  .site-footer-brand { grid-column: 1 / -1; }
+  .site-footer .site-footer-navigation a { min-height: 44px; }
+}
