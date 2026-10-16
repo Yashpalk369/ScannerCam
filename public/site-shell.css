@@ -4,6 +4,11 @@ body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
 :root { --site-header-offset: 96px; }
 .article-section[id], article h2[id] { scroll-margin-top: var(--site-header-offset); }
 .site-shell-fragment { display: contents; }
+.table-scroll { max-width: 100%; overflow-x: auto; margin: 0 0 24px; border: 1px solid #e2e8f0; border-radius: 10px; }
+.table-scroll table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .9rem; text-align: left; }
+.table-scroll th, .table-scroll td { padding: .7rem .8rem; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+.table-scroll th { background: #f1f5f9; }
+.table-scroll tr:last-child td { border-bottom: 0; }
 .site-header {
   position: sticky;
   top: 0;
