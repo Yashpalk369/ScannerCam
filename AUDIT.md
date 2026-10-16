@@ -63,3 +63,7 @@ Unavailable recovery and failed saves now display persistent warnings while in-m
 ## Release integration
 
 Merged the newer main-branch SEO commits, preserving both new contract/whiteboard guides, their images, the updated sitemap, and corrected FAQ schemas on existing guides. Build-time shell normalization also repairs legacy generated markup and reapplies accessibility styling, branding, and the supplied support email, so regenerated pages retain the shared UI. Final coverage includes 17 sitemap pages.
+
+## Empty-screen control cleanup
+
+Removed the redundant Scanner navigation item. The Open Scanner header CTA appears only away from the tool. The scanner toolbar stays hidden until a page is present, leaving the central Scan Document and Upload Images controls as the starting actions. Regression checks verify toolbar visibility and that camera, upload, and export actions remain available after adding a page.

@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <SiteHeader />
-      <div className="scanner-toolbar" role="region" aria-label="Scanner tools">
+      <div className="scanner-toolbar" role="region" aria-label="Scanner tools" hidden={pageCount === 0}>
         <div className="privacy-pill">
           <span className="privacy-dot" />
           <span>Zero Server Uploads</span>

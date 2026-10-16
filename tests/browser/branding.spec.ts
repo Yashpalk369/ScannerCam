@@ -13,7 +13,7 @@ async function branding(page: Page) {
     return Object.fromEntries(selectors.map(selector => {
       const element = document.querySelector<HTMLElement>(selector)!
       const css = getComputedStyle(element)
-      return [selector, { font: css.fontFamily, size: css.fontSize, weight: css.fontWeight, lineHeight: css.lineHeight, color: css.color, background: css.backgroundColor, display: css.display, margin: css.margin, padding: css.padding, height: element.getBoundingClientRect().height, width: element.getBoundingClientRect().width }]
+      return [selector, { font: css.fontFamily, size: css.fontSize, weight: css.fontWeight, lineHeight: css.lineHeight, color: css.color, background: css.backgroundColor, display: css.display, margin: css.margin, padding: css.padding, height: element.getBoundingClientRect().height, width: selector === '.site-navigation' ? undefined : element.getBoundingClientRect().width }]
     }))
   })
 }
@@ -23,7 +23,7 @@ test('all pages share the same header, logo, typography and footer on mobile and
   for (const width of [390, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
-    await page.locator('.scanner-toolbar').waitFor()
+    await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
     const expected = await branding(page)
     const footer = await page.locator('.site-footer').innerText()
     for (const path of paths.filter(path => path !== '/')) {
@@ -40,8 +40,8 @@ test('all pages share the same header, logo, typography and footer on mobile and
 
 test('navigation between scanner, guides, an article and a company page keeps branding consistent', async ({ page }) => {
   await page.goto('/')
-  await page.locator('.scanner-toolbar').waitFor()
-  await expect(page.locator('.site-navigation a[aria-current=page]')).toHaveText('Scanner')
+  await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
+  await expect(page.locator('.site-navigation a[aria-current=page]')).toHaveCount(0)
   const before = await branding(page)
   await page.locator('.site-navigation').getByRole('link', { name: 'Guides', exact: true }).click()
   await expect(page).toHaveURL(/\/blog$/)

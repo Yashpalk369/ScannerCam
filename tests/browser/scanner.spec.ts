@@ -41,7 +41,7 @@ async function cameraFixture(page: Page, options: { denied?: boolean; delayed?: 
     ], configurable: true })
   }, options)
   await page.goto('/')
-  await page.getByRole('button', { name: 'Scan Camera', exact: true }).click()
+  await page.getByRole('button', { name: 'Scan Document', exact: true }).click()
 }
 
 async function manualMode(page: Page) {

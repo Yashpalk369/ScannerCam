@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 
 test('the rendered homepage, initial HTML and FAQ schema use the same factual answers', async ({ page }) => {
   await page.goto('/')
-  await page.locator('.scanner-toolbar').waitFor()
+  await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
   await expect(page.locator('h1')).toHaveCount(1)
   await expect(page.locator('h1')).toHaveText(content.heading)
   const source = readFileSync('index.html', 'utf8')

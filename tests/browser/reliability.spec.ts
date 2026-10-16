@@ -162,7 +162,7 @@ test('unsupported files show upload guidance without creating an empty scan', as
   await image(page)
   await page.locator('input[type=file]').first().setInputFiles({ name: 'document.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.7') })
   await expect(page.locator('.status-text')).toContainText('PDF import is not supported')
-  await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Export', exact: true })).toHaveCount(0)
 })
 
 test('transparent PNG paper stays white in JPG processing', async ({ page }) => {
@@ -251,9 +251,9 @@ test('confirmed clear removes the saved session and its undo history', async ({ 
   await expect.poll(() => record(page)).not.toBeNull()
   page.once('dialog', dialog => dialog.accept())
   await page.getByRole('button', { name: 'Clear all pages', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Export', exact: true })).toHaveCount(0)
   await page.keyboard.press('Control+z')
-  await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Export', exact: true })).toHaveCount(0)
   await page.reload()
   await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
   expect(await record(page)).toBeNull()
