@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#059669">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>How to Scan Documents on Linux | Scanner.cam</title>
+<meta name="description" content="Scan documents on Linux with your browser: Firefox and Chrome camera setup, the Snap/Flatpak camera gotcha, permission fixes, and the full scanning workflow.">
+<meta name="keywords" content="scan documents on linux, linux document scanner, scan documents ubuntu browser">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.scanner.cam/blog/how-to-scan-documents-on-linux">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.scanner.cam/blog/how-to-scan-documents-on-linux">
+<meta property="og:title" content="How to Scan Documents on Linux">
+<meta property="og:description" content="Scan documents on Linux with your browser: Firefox and Chrome camera setup, the Snap/Flatpak camera gotcha, permission fixes, and the full scanning workflow.">
+<meta property="og:image" content="https://www.scanner.cam/blog/og-how-to-scan-documents-on-linux.png">
+<meta property="article:published_time" content="2026-10-22">
+<meta property="article:modified_time" content="2026-10-22">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to Scan Documents on Linux">
+<meta name="twitter:description" content="Scan documents on Linux with your browser: Firefox and Chrome camera setup, the Snap/Flatpak camera gotcha, permission fixes, and the full scanning workflow.">
+<meta name="twitter:image" content="https://www.scanner.cam/blog/og-how-to-scan-documents-on-linux.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-on-linux#article", "headline": "How to Scan Documents on Linux", "description": "Scan documents on Linux with your browser: Firefox and Chrome camera setup, the Snap/Flatpak camera gotcha, permission fixes, and the full scanning workflow.", "image": "https://www.scanner.cam/blog/og-how-to-scan-documents-on-linux.png", "author": {"@type": "Organization", "name": "Scanner.cam Team", "url": "https://www.scanner.cam"}, "publisher": {"@type": "Organization", "name": "Scanner.cam", "url": "https://www.scanner.cam"}, "datePublished": "2026-10-22", "dateModified": "2026-10-22", "mainEntityOfPage": {"@type": "WebPage", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-on-linux"}}, {"@type": "FAQPage", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-on-linux#faq", "mainEntity": [{"@type": "Question", "name": "Does Scanner.cam work on Linux?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. It runs entirely in the browser, so the operating system does not matter — Firefox and Chrome/Chromium on Ubuntu, Debian, Fedora, Arch, and other distributions all support the camera APIs it uses. All processing happens on your machine; nothing uploads."}}, {"@type": "Question", "name": "My camera does not appear in Firefox on Ubuntu. What should I check?", "acceptedAnswer": {"@type": "Answer", "text": "First, check whether Firefox is the Snap build — sandboxed browsers frequently fail to see cameras on some hardware. Switching to the native .deb package (or granting the camera permission through the portal) fixes most cases. Then verify the site has camera permission under Settings > Privacy & Security > Permissions > Camera."}}, {"@type": "Question", "name": "Can I use a USB webcam instead of the built-in camera?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Linux exposes USB webcams as standard video devices, and browsers list them alongside the built-in camera. In Chrome, open chrome://settings/content/camera to choose the default device; in Firefox, the permission prompt lets you pick which camera the site may use."}}, {"@type": "Question", "name": "Do I need to install anything to scan documents on Linux?", "acceptedAnswer": {"@type": "Answer", "text": "No — that is the point. A browser-based scanner needs no installation, no Wine, and no proprietary Linux client. If your browser can access your camera and the page loads over HTTPS, you can scan."}}, {"@type": "Question", "name": "Which distro and browser combination works best?", "acceptedAnswer": {"@type": "Answer", "text": "Any mainstream combination works: Firefox on Ubuntu/Debian/Fedora, Chrome/Chromium on Arch and derivatives. The variable that matters is not the distro but how the browser is packaged — native packages have the fewest camera-permission surprises."}}]}, {"@type": "BreadcrumbList", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-on-linux#breadcrumbs", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.scanner.cam/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://www.scanner.cam/blog"}, {"@type": "ListItem", "position": 3, "name": "How to Scan Documents on Linux", "item": "https://www.scanner.cam/blog/how-to-scan-documents-on-linux"}]}]}</script>
+<style>
+:root{--brand:#059669;--brand-dark:#047857;--ink:#0f172a;--muted:#64748b;--bg:#f8fafc;--border:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:0 1.25rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--brand-dark);color:#fff!important;padding:.55rem 1.1rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:.9rem}
+.btn:hover{background:var(--brand-dark)}
+/* article */
+.crumbs{font-size:.82rem;color:var(--muted);margin:1.25rem 0 .5rem}
+.crumbs a{color:var(--brand-dark);text-decoration:underline;text-underline-offset:2px}
+article{background:#fff;border:1px solid var(--border);border-radius:18px;padding:2.25rem 2rem;margin:.5rem 0 2rem;box-shadow:0 8px 30px rgba(15,23,42,.05)}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);padding:.25rem .7rem;border-radius:999px;margin-bottom:1rem}
+h1{font-size:2rem;line-height:1.25;letter-spacing:-.02em;margin-bottom:.6rem}
+.byline{color:var(--muted);font-size:.88rem;margin-bottom:1.5rem}
+.quick-answer{background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(5,150,105,.03));border-left:4px solid var(--brand);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin:0 0 1.75rem}
+.quick-answer .qa-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);display:block;margin-bottom:.35rem}
+.quick-answer p{margin:0}
+article h2{font-size:1.35rem;letter-spacing:-.01em;margin:2rem 0 .75rem;color:var(--ink)}
+article p{margin:0 0 1rem;color:#1f2937}
+article ul,article ol{margin:0 0 1.25rem 1.4rem;color:#1f2937}
+article li{margin-bottom:.5rem}
+article a{color:var(--brand-dark);font-weight:600}
+article strong{color:var(--ink)}
+.cta-card{background:linear-gradient(135deg,#047857,#065f46);border-radius:16px;padding:2rem;text-align:center;color:#fff;margin:2.5rem 0 0}
+.cta-card h3{font-size:1.4rem;margin-bottom:.5rem}
+.cta-card p{color:#fff;opacity:.92;margin-bottom:1.25rem}
+.cta-card .btn{background:#fff;color:#047857!important;font-size:1rem;padding:.7rem 1.6rem}
+.prevnext{display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.prevnext a{text-decoration:none;color:var(--brand-dark);font-weight:600;font-size:.92rem;max-width:45%}
+.prevnext a span{display:block;font-size:.75rem;color:var(--muted);font-weight:400}
+/* hero figure */
+.hero-figure{margin:0 0 1.5rem}
+.hero-figure img{width:100%;height:auto;border-radius:14px;border:1px solid var(--border);display:block}
+/* toc */
+.toc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin:0 0 1.75rem}
+.toc .toc-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem}
+.toc ul{list-style:none;margin:0;padding:0;columns:2;column-gap:1.5rem}
+.toc li{margin-bottom:.35rem;break-inside:avoid}
+.toc a{color:var(--brand-dark);text-decoration:none;font-size:.9rem;font-weight:500}
+.toc a:hover{text-decoration:underline}
+@media(max-width:640px){.toc ul{columns:1}}
+/* mid-article CTA */
+.mid-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(5,150,105,.07);border:1px solid rgba(5,150,105,.3);border-radius:14px;padding:1.1rem 1.35rem;margin:1.75rem 0}
+.mid-cta strong{display:block;font-size:1rem}
+.mid-cta span{font-size:.88rem;color:#475569}
+@media(max-width:640px){.mid-cta{flex-direction:column;text-align:center}}
+/* sticky mobile CTA */
+.sticky-cta{display:none}
+@media(max-width:640px){
+.sticky-cta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(15,23,42,.97);color:#fff;padding:.7rem 1rem;font-size:.85rem;backdrop-filter:blur(8px)}
+.sticky-cta a{background:var(--brand-dark);color:#fff!important;font-weight:700;padding:.5rem 1.1rem;border-radius:9px;text-decoration:none;white-space:nowrap}
+body{padding-bottom:64px}
+}
+@media(max-width:720px){article{padding:1.5rem 1.15rem}h1{font-size:1.6rem}}
+/* hub cards */
+.hub-hero{text-align:center;padding:2.5rem 0 1rem}
+.hub-hero h1{font-size:2.1rem}
+.hub-hero p{color:var(--muted);max-width:640px;margin:.75rem auto 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;padding:1.5rem 0 3rem}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.4rem;text-decoration:none;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,23,42,.1)}
+.card .eyebrow{margin-bottom:.7rem;align-self:flex-start}
+.card h3{font-size:1.08rem;color:var(--ink);margin-bottom:.5rem;line-height:1.4}
+.card p{font-size:.9rem;color:var(--muted);flex:1}
+.card .go{color:var(--brand-dark);font-weight:700;font-size:.9rem;margin-top:.9rem}
+</style>
+<link rel="stylesheet" href="/site-shell.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="/" aria-label="Scanner.cam home">
+      <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+      <div class="site-brand-text">
+        <span class="brand-name">Scanner<span>.cam</span></span>
+        <span class="brand-tagline">Free online document scanner</span>
+      </div>
+    </a>
+    <nav class="site-navigation" aria-label="Main navigation">
+      <a href="/blog" aria-current="page">Guides</a>
+      <a href="/#faq">FAQ</a>
+      <a class="site-open-scanner" href="/">Open Scanner</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="https://www.scanner.cam/">Home</a> &rsaquo; <a href="https://www.scanner.cam/blog">Guides</a> &rsaquo; How to Scan Documents on Linux</nav>
+<article>
+<div class="eyebrow">Device How-Tos</div>
+<h1>How to Scan Documents on Linux</h1>
+<div class="byline">By Scanner.cam Team &middot; Updated 22 Oct 2026 &middot; 7 min read</div>
+<div class="quick-answer"><span class="qa-label">Quick answer</span><p>Scanning documents on Linux does not require a Linux scanner app at all. Your browser — the Firefox or Chrome/Chromium already on your Ubuntu, Debian, Fedora, or Arch system — can act as the scanner: it accesses your webcam, captures each page, cleans up the image, and assembles a multi-page PDF, all in a web page.</p></div>
+<figure class="hero-figure"><img src="/blog/og-how-to-scan-documents-on-linux.png" alt="How to Scan Documents on Linux — Scanner.cam guide" width="1200" height="630" loading="eager"></figure>
+<nav class="toc" aria-label="Table of contents"><span class="toc-label">On this page</span><ul>
+<li><a href="#step-1-pick-your-browser">Step 1: pick your browser</a></li>
+<li><a href="#step-2-the-snap-flatpak-camera-gotcha-read-this-first">Step 2: the Snap/Flatpak camera gotcha (read this first)</a></li>
+<li><a href="#step-3-grant-the-browser-camera-permission">Step 3: grant the browser camera permission</a></li>
+<li><a href="#step-4-check-the-camera-itself">Step 4: check the camera itself</a></li>
+<li><a href="#step-5-the-scanning-workflow">Step 5: the scanning workflow</a></li>
+<li><a href="#what-about-usb-webcams-and-document-cameras">What about USB webcams and document cameras?</a></li>
+<li><a href="#if-you-have-a-usb-flatbed-scanner">If you have a USB flatbed scanner</a></li>
+<li><a href="#no-camera-on-the-linux-machine">No camera on the Linux machine?</a></li>
+</ul></nav>
+<p>There is no proprietary Linux client to hunt down, no Wine wrapper, no Flatpak with half-broken hardware access. If your browser can see your camera, you can scan. This guide walks through the browser setup, the Linux-specific gotchas (sandboxed packages are the big one), and the full scanning workflow on the distros most people actually run.</p>
+
+
+<p>The reason the browser route works so well on Linux is that everything is built on open web standards. WebRTC's <em>getUserMedia</em> — the API that lets a web page request your camera — is supported identically in Firefox and Chromium-based browsers regardless of distribution. The operating system differences that matter are all one layer down: whether your camera device is visible, whether your browser package is sandboxed away from it, and whether the desktop portal hands the permission through. Get those three right and the rest is the same on Ubuntu 24.04 and Arch.</p>
+
+<h2 id="step-1-pick-your-browser">Step 1: pick your browser</h2>
+<p>Both major browser families work. Firefox ships by default on Ubuntu, Debian, and Fedora; Chrome or Chromium covers the rest. Either can reach a browser-based scanner such as <a href="https://www.scanner.cam/">Scanner.cam</a> and request camera access the same way. If you already have one of them installed from your distribution's native package manager (apt, dnf, pacman), you are most of the way there. There is no advantage to installing a second browser just for scanning — use whichever one you already trust.</p>
+<p>What you want is the <strong>native package</strong> version. The reason matters and deserves its own section, because it is the single most common cause of "my camera doesn't work in the browser" on modern Linux desktops.</p>
+
+<h2 id="step-2-the-snap-flatpak-camera-gotcha-read-this-first">Step 2: the Snap/Flatpak camera gotcha (read this first)</h2>
+<p>On Ubuntu 22.04 and later, Firefox is installed as a Snap by default; on many distributions, browsers are also available as Flatpaks. Sandboxed packages run in a container that mediates hardware access, and camera access through that sandbox fails on some hardware — the browser simply never sees the webcam, no matter what you allow in the site settings. This is a well-documented pain point: Snap-based browsers in particular have a reputation for camera problems on certain machines.</p>
+<p>Before you troubleshoot anything else, check how your browser is installed:</p>
+<ul>
+<li><strong>Ubuntu/Debian:</strong> run <code>which firefox</code> (or <code>which chromium</code>). If the path contains <code>snap</code>, you are running the sandboxed build.</li>
+<li><strong>Any distro:</strong> <code>flatpak list | grep -i -E "firefox|chrome|chromium"</code> tells you if you have a Flatpak browser.</li>
+</ul><div class="mid-cta"><div><strong>Try it as you read</strong><span>Open the scanner in a new tab and follow along — free, no signup.</span></div><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
+<p>If you are on a sandboxed build and the camera does not appear, the reliable fix is to switch to the native package — for example, on Ubuntu/Debian remove the Snap and <code>sudo apt install firefox</code>, or install Google Chrome's official .deb from Google. If you prefer to keep the sandboxed browser, you can work through the portal permissions (Flatpak's permission store can be inspected with <code>flatpak permissions devices camera</code> and reset so the browser prompts again), but on some hardware the native package is simply the path of least resistance.</p>
+
+<h2 id="step-3-grant-the-browser-camera-permission">Step 3: grant the browser camera permission</h2>
+<p>Once the browser can see the camera at the system level, the website still needs your explicit permission. The flows differ slightly:</p>
+<ul>
+<li><strong>Firefox:</strong> open the scanner page and click capture — Firefox prompts for camera access on first use, and the permission is per-site. If you previously blocked it, go to Settings → Privacy &amp; Security → Permissions → Camera → Settings…, remove the blocked entry for the site, reload, and allow it when prompted.</li>
+<li><strong>Chrome/Chromium:</strong> allow the prompt when it appears, or visit the page and use the site-information icon in the address bar → Site settings → Camera → Allow. You can also check <code>chrome://settings/content/camera</code> to see which camera the browser detects and set the default device.</li>
+</ul>
+<p>One rule is absolute on both: the page must be loaded over <strong>HTTPS</strong>. Browsers refuse camera access to insecure (plain HTTP) pages entirely — a secure context is required for <em>getUserMedia</em>. If a scanner tool ever asks you to use an http:// address, that is a red flag; use the https:// version.</p>
+
+<h2 id="step-4-check-the-camera-itself">Step 4: check the camera itself</h2>
+<p>If the browser still cannot find a camera, verify the hardware layer before blaming the website. On GNOME systems, the <strong>Cheese</strong> photo app is the standard baseline test — and the same sandbox warning applies: make sure Cheese itself is the native package, not a Snap/Flatpak, or a working camera can still look broken. If Cheese (native) shows your camera, the hardware is fine and the problem is permissions.</p>
+<p>On newer desktops that route cameras through PipeWire (common on Wayland sessions), also make sure <code>xdg-desktop-portal</code> is installed with the backend for your desktop environment — <code>xdg-desktop-portal-gnome</code> for GNOME, <code>xdg-desktop-portal-kde</code> for Plasma. Launching the browser from a terminal is a useful diagnostic: permission and device errors often print to the console where you can actually read them.</p>
+
+<h2 id="step-5-the-scanning-workflow">Step 5: the scanning workflow</h2>
+<p>With permission granted, scanning on Linux is identical to scanning anywhere else:</p>
+<ol>
+<li><strong>Set up the page.</strong> Lay the document on a flat surface in good, even light. A dark backing behind light paper helps automatic edge detection.</li>
+<li><strong>Position the camera.</strong> A laptop's built-in webcam works; hold the page up to it, or tilt the screen back so the camera looks down at the desk. A USB webcam gives you more freedom — Chrome's camera settings page lets you choose which device the site uses.</li>
+<li><strong>Capture each page.</strong> Keep the page parallel to the camera and hold still for a beat before capturing. For curled pages, weigh the corners down.</li>
+<li><strong>Clean up and compile.</strong> Crop to the page edges, straighten perspective, boost contrast if the text looks grey, then compile all pages into one PDF and download it.</li>
+</ol>
+
+<h2 id="what-about-usb-webcams-and-document-cameras">What about USB webcams and document cameras?</h2>
+<p>USB webcams work through the same browser pipeline — Linux exposes them as video devices (typically <code>/dev/video0</code> and friends), and the browser enumerates them the same way it enumerates a built-in camera. If you own a dedicated USB document camera, plug it in, select it in the browser's camera settings, and scan. A document camera — essentially a webcam on a stand pointing straight down — is the closest thing to a flatbed experience you can get without one, and it works entirely through the browser with no drivers to install on most distributions.</p>
+
+<h2 id="if-you-have-a-usb-flatbed-scanner">If you have a USB flatbed scanner</h2>
+<p>This guide is about camera scanning, but if you own a USB flatbed scanner, Linux has you covered natively: GNOME's <strong>Document Scanner</strong> app (also known as Simple Scan) ships with Ubuntu and most GNOME-based distributions and drives many common flatbed and all-in-one scanners directly. For network scanners, check your manufacturer's Linux support — but for camera-based capture of the occasional page, the browser route is faster than configuring SANE drivers.</p>
+
+<h2 id="no-camera-on-the-linux-machine">No camera on the Linux machine?</h2>
+<p>Some Linux boxes are desktops with no webcam at all. The simplest workaround: scan with your phone's camera and move the files over — USB cable, Bluetooth, or your local network share all work, and the transfer never needs the cloud. If you prefer to keep everything on the desktop, a basic USB webcam is inexpensive and works plug-and-play with the browser approach above.</p>
+
+<p><strong>Does Scanner.cam work on Linux?</strong><br>
+Yes. It runs entirely in the browser, so the operating system does not matter — Firefox and Chrome/Chromium on Ubuntu, Debian, Fedora, Arch, and other distributions all support the camera APIs it uses. All processing happens on your machine; nothing uploads.</p>
+<p><strong>My camera does not appear in Firefox on Ubuntu. What should I check?</strong><br>
+First, check whether Firefox is the Snap build — sandboxed browsers frequently fail to see cameras on some hardware. Switching to the native .deb package (or granting the camera permission through the Flatpak/Snap portal) fixes most cases. Then verify the site has camera permission under Settings → Privacy &amp; Security → Permissions → Camera.</p>
+<p><strong>Can I use a USB webcam instead of the built-in camera?</strong><br>
+Yes. Linux exposes USB webcams as standard video devices, and browsers list them alongside the built-in camera. In Chrome, open chrome://settings/content/camera to choose the default device; in Firefox, the permission prompt lets you pick which camera the site may use.</p>
+<p><strong>Do I need to install anything to scan documents on Linux?</strong><br>
+No — that is the point. A browser-based scanner needs no installation, no Wine, and no proprietary Linux client. If your browser can access your camera and the page loads over HTTPS, you can scan.</p>
+<p><strong>Which distro and browser combination works best?</strong><br>
+Any mainstream combination works: Firefox on Ubuntu/Debian/Fedora, Chrome/Chromium on Arch and derivatives. The variable that matters is not the distro but how the browser is packaged — native packages have the fewest camera-permission surprises.</p>
+
+<h2 id="related-guides">Related guides</h2>
+<ul>
+<li><a href="https://www.scanner.cam/blog/scan-documents-with-laptop-webcam/">Can I Scan Documents With My Laptop Webcam?</a></li>
+<li><a href="https://www.scanner.cam/blog/scan-documents-without-a-phone/">How to Scan Documents Without a Phone (PC Only)</a></li>
+<li><a href="https://www.scanner.cam/blog/how-to-scan-documents-on-chromebook/">How to Scan Documents on a Chromebook</a></li>
+<li><a href="https://www.scanner.cam/blog/how-to-scan-documents-on-mac-without-a-scanner/">How to Scan Documents on Mac Without a Scanner</a></li>
+<li><a href="https://www.scanner.cam/blog/how-to-scan-documents-on-windows-11-camera-app/">How to Scan Documents on Windows 11 With the Camera App</a></li>
+<li><a href="https://www.scanner.cam/blog/scan-multi-page-pdf-online-free/">How to Scan Multi-Page PDFs Online Free</a></li>
+<li><a href="https://www.scanner.cam/blog/is-it-safe-to-scan-documents-online/">Is It Safe to Scan Documents Online? Privacy Explained</a></li>
+</ul>
+
+<a class="cta" href="https://www.scanner.cam/">Try Scanner.cam — Free, Private, On-Device Scanning</a>
+<p><a href="https://www.scanner.cam/">
+<nav class="prevnext" aria-label="Guide navigation"><a href="/blog/how-to-scan-documents-while-traveling"><span>← Previous guide</span>How to Scan Documents While Traveling (Hotel &amp; Airport)</a><a href="/blog/how-to-scan-documents-with-chrome-or-firefox" style="text-align:right"><span>Next guide →</span>How to Scan Documents With Chrome or Firefox on Desktop</a></nav>
+<div class="cta-card"><h3>Try it right now — free</h3><p>Open Scanner.cam in your browser, scan, and download. No signup, no watermark, nothing uploads.</p><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
+</article>
+</main>
+<div class="sticky-cta" role="region" aria-label="Quick scanner access"><span>Scan documents free — no app, no signup</span><a href="https://www.scanner.cam/">Scan Now</a></div>
+<footer class="site-footer app-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <a class="site-brand" href="/" aria-label="Scanner.cam home">
+        <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+        <span class="brand-name">Scanner<span>.cam</span></span>
+      </a>
+      <p class="site-footer-note">Free, private document scanning in your browser. No signup, no watermark, no uploads.</p>
+    </div>
+    <nav class="site-footer-navigation" aria-label="Product">
+      <h2>Product</h2>
+      <a href="/">Open Scanner</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+    <nav class="site-footer-navigation" aria-label="Company">
+      <h2>Company</h2>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+  <div class="site-footer-bottom">© 2026 Scanner.cam — Free online document scanner.</div>
+</footer>
+</body>
+</html>

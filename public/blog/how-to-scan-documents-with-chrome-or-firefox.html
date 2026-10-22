@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#059669">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>How to Scan Documents With Chrome or Firefox on Desktop | Scanner.cam</title>
+<meta name="description" content="Scan documents with Chrome or Firefox on desktop: exact camera-permission steps for both browsers, OS-level checks, troubleshooting, and desktop capture technique.">
+<meta name="keywords" content="scan documents with chrome or firefox on desktop, browser camera permission scanner, scan documents desktop webcam browser">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox">
+<meta property="og:title" content="How to Scan Documents With Chrome or Firefox on Desktop">
+<meta property="og:description" content="Scan documents with Chrome or Firefox on desktop: exact camera-permission steps for both browsers, OS-level checks, troubleshooting, and desktop capture technique.">
+<meta property="og:image" content="https://www.scanner.cam/blog/og-how-to-scan-documents-with-chrome-or-firefox.png">
+<meta property="article:published_time" content="2026-10-22">
+<meta property="article:modified_time" content="2026-10-22">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to Scan Documents With Chrome or Firefox on Desktop">
+<meta name="twitter:description" content="Scan documents with Chrome or Firefox on desktop: exact camera-permission steps for both browsers, OS-level checks, troubleshooting, and desktop capture technique.">
+<meta name="twitter:image" content="https://www.scanner.cam/blog/og-how-to-scan-documents-with-chrome-or-firefox.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox#article", "headline": "How to Scan Documents With Chrome or Firefox on Desktop", "description": "Scan documents with Chrome or Firefox on desktop: exact camera-permission steps for both browsers, OS-level checks, troubleshooting, and desktop capture technique.", "image": "https://www.scanner.cam/blog/og-how-to-scan-documents-with-chrome-or-firefox.png", "author": {"@type": "Organization", "name": "Scanner.cam Team", "url": "https://www.scanner.cam"}, "publisher": {"@type": "Organization", "name": "Scanner.cam", "url": "https://www.scanner.cam"}, "datePublished": "2026-10-22", "dateModified": "2026-10-22", "mainEntityOfPage": {"@type": "WebPage", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox"}}, {"@type": "FAQPage", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox#faq", "mainEntity": [{"@type": "Question", "name": "Why is my browser not asking for camera permission?", "acceptedAnswer": {"@type": "Answer", "text": "Usually because a decision was already made: the site is on your Blocked list, or Firefox's 'Block new requests asking to access your camera' checkbox is checked. Clear the old decision in the browser's site-permission settings, reload, and the prompt will appear. Also confirm the page is loaded over HTTPS — insecure pages never get a prompt at all."}}, {"@type": "Question", "name": "How do I unblock camera access for a site in Chrome?", "acceptedAnswer": {"@type": "Answer", "text": "Open the site, click the site-information (padlock/tune) icon in the address bar > Site settings > Camera > Allow, then reload. Or go to Settings > Privacy and security > Site settings > Camera and move the site from the Blocked list to Allowed."}}, {"@type": "Question", "name": "How do I unblock camera access for a site in Firefox?", "acceptedAnswer": {"@type": "Answer", "text": "Click the camera icon in the address bar, remove the blocked permission, and reload so Firefox prompts again. Alternatively, Settings > Privacy & Security > Permissions > Camera > Settings… and delete the site's Blocked entry."}}, {"@type": "Question", "name": "Can a website turn on my camera without asking?", "acceptedAnswer": {"@type": "Answer", "text": "No — not in Chrome or Firefox. Camera access always requires your explicit grant, shown as a visible prompt or an indicator while the camera is active. Keeping the default 'ask' behavior (rather than blanket-allow) is the safe setting, and you can revoke a site's permission from the same settings pages at any time."}}, {"@type": "Question", "name": "My company laptop blocks the camera setting. Can I still scan?", "acceptedAnswer": {"@type": "Answer", "text": "If your browser is managed by your employer and the camera permission is greyed out, only your IT administrator can change it. As a workaround, scan on your personal phone's browser and transfer the PDFs — the phone route needs no permissions on the laptop at all."}}]}, {"@type": "BreadcrumbList", "@id": "https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox#breadcrumbs", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.scanner.cam/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://www.scanner.cam/blog"}, {"@type": "ListItem", "position": 3, "name": "How to Scan Documents With Chrome or Firefox on Desktop", "item": "https://www.scanner.cam/blog/how-to-scan-documents-with-chrome-or-firefox"}]}]}</script>
+<style>
+:root{--brand:#059669;--brand-dark:#047857;--ink:#0f172a;--muted:#64748b;--bg:#f8fafc;--border:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:0 1.25rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--brand-dark);color:#fff!important;padding:.55rem 1.1rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:.9rem}
+.btn:hover{background:var(--brand-dark)}
+/* article */
+.crumbs{font-size:.82rem;color:var(--muted);margin:1.25rem 0 .5rem}
+.crumbs a{color:var(--brand-dark);text-decoration:underline;text-underline-offset:2px}
+article{background:#fff;border:1px solid var(--border);border-radius:18px;padding:2.25rem 2rem;margin:.5rem 0 2rem;box-shadow:0 8px 30px rgba(15,23,42,.05)}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);padding:.25rem .7rem;border-radius:999px;margin-bottom:1rem}
+h1{font-size:2rem;line-height:1.25;letter-spacing:-.02em;margin-bottom:.6rem}
+.byline{color:var(--muted);font-size:.88rem;margin-bottom:1.5rem}
+.quick-answer{background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(5,150,105,.03));border-left:4px solid var(--brand);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin:0 0 1.75rem}
+.quick-answer .qa-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);display:block;margin-bottom:.35rem}
+.quick-answer p{margin:0}
+article h2{font-size:1.35rem;letter-spacing:-.01em;margin:2rem 0 .75rem;color:var(--ink)}
+article p{margin:0 0 1rem;color:#1f2937}
+article ul,article ol{margin:0 0 1.25rem 1.4rem;color:#1f2937}
+article li{margin-bottom:.5rem}
+article a{color:var(--brand-dark);font-weight:600}
+article strong{color:var(--ink)}
+.cta-card{background:linear-gradient(135deg,#047857,#065f46);border-radius:16px;padding:2rem;text-align:center;color:#fff;margin:2.5rem 0 0}
+.cta-card h3{font-size:1.4rem;margin-bottom:.5rem}
+.cta-card p{color:#fff;opacity:.92;margin-bottom:1.25rem}
+.cta-card .btn{background:#fff;color:#047857!important;font-size:1rem;padding:.7rem 1.6rem}
+.prevnext{display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.prevnext a{text-decoration:none;color:var(--brand-dark);font-weight:600;font-size:.92rem;max-width:45%}
+.prevnext a span{display:block;font-size:.75rem;color:var(--muted);font-weight:400}
+/* hero figure */
+.hero-figure{margin:0 0 1.5rem}
+.hero-figure img{width:100%;height:auto;border-radius:14px;border:1px solid var(--border);display:block}
+/* toc */
+.toc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin:0 0 1.75rem}
+.toc .toc-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem}
+.toc ul{list-style:none;margin:0;padding:0;columns:2;column-gap:1.5rem}
+.toc li{margin-bottom:.35rem;break-inside:avoid}
+.toc a{color:var(--brand-dark);text-decoration:none;font-size:.9rem;font-weight:500}
+.toc a:hover{text-decoration:underline}
+@media(max-width:640px){.toc ul{columns:1}}
+/* mid-article CTA */
+.mid-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(5,150,105,.07);border:1px solid rgba(5,150,105,.3);border-radius:14px;padding:1.1rem 1.35rem;margin:1.75rem 0}
+.mid-cta strong{display:block;font-size:1rem}
+.mid-cta span{font-size:.88rem;color:#475569}
+@media(max-width:640px){.mid-cta{flex-direction:column;text-align:center}}
+/* sticky mobile CTA */
+.sticky-cta{display:none}
+@media(max-width:640px){
+.sticky-cta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(15,23,42,.97);color:#fff;padding:.7rem 1rem;font-size:.85rem;backdrop-filter:blur(8px)}
+.sticky-cta a{background:var(--brand-dark);color:#fff!important;font-weight:700;padding:.5rem 1.1rem;border-radius:9px;text-decoration:none;white-space:nowrap}
+body{padding-bottom:64px}
+}
+@media(max-width:720px){article{padding:1.5rem 1.15rem}h1{font-size:1.6rem}}
+/* hub cards */
+.hub-hero{text-align:center;padding:2.5rem 0 1rem}
+.hub-hero h1{font-size:2.1rem}
+.hub-hero p{color:var(--muted);max-width:640px;margin:.75rem auto 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;padding:1.5rem 0 3rem}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.4rem;text-decoration:none;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,23,42,.1)}
+.card .eyebrow{margin-bottom:.7rem;align-self:flex-start}
+.card h3{font-size:1.08rem;color:var(--ink);margin-bottom:.5rem;line-height:1.4}
+.card p{font-size:.9rem;color:var(--muted);flex:1}
+.card .go{color:var(--brand-dark);font-weight:700;font-size:.9rem;margin-top:.9rem}
+</style>
+<link rel="stylesheet" href="/site-shell.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="/" aria-label="Scanner.cam home">
+      <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+      <div class="site-brand-text">
+        <span class="brand-name">Scanner<span>.cam</span></span>
+        <span class="brand-tagline">Free online document scanner</span>
+      </div>
+    </a>
+    <nav class="site-navigation" aria-label="Main navigation">
+      <a href="/blog" aria-current="page">Guides</a>
+      <a href="/#faq">FAQ</a>
+      <a class="site-open-scanner" href="/">Open Scanner</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="https://www.scanner.cam/">Home</a> &rsaquo; <a href="https://www.scanner.cam/blog">Guides</a> &rsaquo; How to Scan Documents With Chrome or Firefox on Desktop</nav>
+<article>
+<div class="eyebrow">Device How-Tos</div>
+<h1>How to Scan Documents With Chrome or Firefox on Desktop</h1>
+<div class="byline">By Scanner.cam Team &middot; Updated 22 Oct 2026 &middot; 8 min read</div>
+<div class="quick-answer"><span class="qa-label">Quick answer</span><p>Your desktop browser is already a document scanner — no app to install, no flatbed to buy. Both Google Chrome and Mozilla Firefox can access your laptop&#x27;s built-in webcam or a USB camera, capture each page, clean up the image, and assemble a multi-page PDF, all inside a web page.</p></div>
+<figure class="hero-figure"><img src="/blog/og-how-to-scan-documents-with-chrome-or-firefox.png" alt="How to Scan Documents With Chrome or Firefox on Desktop — Scanner.cam guide" width="1200" height="630" loading="eager"></figure>
+<nav class="toc" aria-label="Table of contents"><span class="toc-label">On this page</span><ul>
+<li><a href="#what-you-need-before-you-start">What you need before you start</a></li>
+<li><a href="#chrome-the-camera-permission-walkthrough">Chrome: the camera permission walkthrough</a></li>
+<li><a href="#firefox-the-camera-permission-walkthrough">Firefox: the camera permission walkthrough</a></li>
+<li><a href="#the-operating-system-check-most-people-skip">The operating-system check most people skip</a></li>
+<li><a href="#troubleshooting-the-usual-suspects">Troubleshooting: the usual suspects</a></li>
+<li><a href="#capturing-good-scans-on-a-desktop">Capturing good scans on a desktop</a></li>
+<li><a href="#chrome-vs-firefox-does-it-matter">Chrome vs. Firefox: does it matter?</a></li>
+</ul></nav>
+<p>The only real hurdle is the camera permission: browsers guard it carefully, so the first time you scan you will need to grant access, and if you ever clicked &quot;Block&quot; by accident, you need to know where to undo it. This guide walks through the exact permission steps for both browsers, the operating-system checks that fix most failures, and the desktop capture technique that produces clean, readable scans.</p>
+
+
+<p>Desktop scanning shines in a specific situation: you are at your desk, you have a stack of pages, and your laptop is already open. Holding a phone over ten pages one-handed gets old fast; a laptop with its lid tilted back gives you a stable camera, a big preview, and both hands free to feed pages. The quality bar is the same — a readable, well-cropped PDF — and the browser approach reaches it with zero installation.</p>
+
+<h2 id="what-you-need-before-you-start">What you need before you start</h2>
+<ul>
+<li><strong>A camera:</strong> your laptop's built-in webcam works; a USB webcam gives you more positioning freedom.</li>
+<li><strong>Chrome or Firefox, reasonably up to date:</strong> camera access in the browser is built on WebRTC's <em>getUserMedia</em> API, supported in Chrome since version 53 and in all modern Firefox releases. If your browser is years out of date, update it first.</li>
+<li><strong>The scanner loaded over HTTPS:</strong> browsers refuse camera access to insecure pages entirely — a secure context is mandatory. Always use the <code>https://</code> address (look for the padlock icon); an <code>http://</code> page will fail with no useful error message.</li>
+</ul><div class="mid-cta"><div><strong>Try it as you read</strong><span>Open the scanner in a new tab and follow along — free, no signup.</span></div><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
+
+<h2 id="chrome-the-camera-permission-walkthrough">Chrome: the camera permission walkthrough</h2>
+<p>The first time a site wants your camera, Chrome shows a prompt near the address bar. Click <strong>Allow</strong> and you are done — Chrome remembers the choice for that site. If the prompt never appears, or if you blocked access earlier, fix it manually:</p>
+<ol>
+<li>With the scanner page open, click the <strong>site information icon</strong> (the padlock or "tune" icon) at the left of the address bar.</li>
+<li>Choose <strong>Site settings</strong>.</li>
+<li>Find <strong>Camera</strong> in the permissions list and set it to <strong>Allow</strong>.</li>
+<li>Reload the page. The site can now access your camera.</li>
+</ol>
+<p>To manage camera access globally, go to the three-dot menu → Settings → <strong>Privacy and security</strong> → <strong>Site settings</strong> → <strong>Camera</strong>. The recommended default is <strong>"Sites can ask to use your camera"</strong> (Ask before accessing) — this keeps you in control while letting trusted sites request access. The same page lists which camera Chrome will use by default and shows your per-site Allow/Block list; if the scanner appears under <strong>Blocked</strong>, remove it or switch it to Allow.</p>
+<p>A handy diagnostic page is <code>chrome://settings/content/camera</code> — type it into the address bar. It shows every camera Chrome detects, so you can confirm the hardware is visible before you blame the website.</p>
+
+<h2 id="firefox-the-camera-permission-walkthrough">Firefox: the camera permission walkthrough</h2>
+<p>Firefox also prompts for camera access the first time a site requests it, and the permission is granted per-site — allowing one website does not allow them all. If you need to change a decision you already made:</p>
+<ol>
+<li>Click the <strong>camera or lock icon</strong> in the address bar while on the scanner page.</li>
+<li>Clear any blocked camera permission for the site (remove it with the × or change it back to Ask).</li>
+<li>Reload the page and <strong>Allow</strong> when Firefox prompts again.</li>
+</ol>
+<p>For the full overview, go to the menu → Settings → <strong>Privacy &amp; Security</strong>, scroll to the <strong>Permissions</strong> section, and click <strong>Settings…</strong> next to Camera. This lists every site you have allowed or blocked; make sure the scanner's site is not in the Blocked list, and make sure the checkbox <strong>"Block new requests asking to access your camera"</strong> is <em>unchecked</em> — if it is checked, Firefox silently denies every request and you will never see a prompt at all.</p>
+
+<h2 id="the-operating-system-check-most-people-skip">The operating-system check most people skip</h2>
+<p>If the browser settings look right but the camera still does not work, the operating system itself may be blocking the browser. Browser permissions sit on top of OS permissions — the OS wins every time.</p>
+<ul>
+<li><strong>Windows 10/11:</strong> Settings → <strong>Privacy &amp; security</strong> → <strong>Camera</strong>. Make sure "Camera access" is on, and under "Let desktop apps access your camera" (or the app list) confirm your browser is enabled. Chrome and Firefox are desktop apps, not Store apps, so the desktop-apps toggle is the one that matters.</li>
+<li><strong>macOS:</strong> System Settings → <strong>Privacy &amp; Security</strong> → <strong>Camera</strong>, and check the box next to your browser. You may need to quit and relaunch the browser after changing this.</li>
+<li><strong>Linux:</strong> sandboxed browser packages (Snap/Flatpak) can fail to see the camera even when everything else is correct — see our <a href="https://www.scanner.cam/blog/how-to-scan-documents-on-linux/">Linux scanning guide</a> for the full fix.</li>
+</ul>
+
+<h2 id="troubleshooting-the-usual-suspects">Troubleshooting: the usual suspects</h2>
+<p>Run through this checklist when the camera refuses to cooperate:</p>
+<ul>
+<li><strong>Another app is using the camera.</strong> Zoom, Teams, Meet, or even a previous scanner tab can hold the camera exclusively. Close other video apps and duplicate tabs, then reload.</li>
+<li><strong>You blocked the site earlier.</strong> The number-one cause. Check the per-site lists described above in both Chrome and Firefox.</li>
+<li><strong>The wrong camera is selected.</strong> If you have a built-in webcam plus a USB camera, the site may default to the wrong one. Choose the device explicitly in the browser's camera settings.</li>
+<li><strong>Your browser is managed by work or school.</strong> Managed browsers can lock camera permissions behind administrator policy — if the Camera setting is greyed out, that is likely why, and only your IT admin can change it.</li>
+<li><strong>The page is not on HTTPS.</strong> Worth repeating: no padlock, no camera. Type the https:// address yourself if in doubt.</li>
+<li><strong>Drivers or a restart.</strong> On Windows, Device Manager → Imaging devices should show the camera as enabled; on any OS, a reboot clears stale camera locks from crashed apps.</li>
+</ul>
+
+<h2 id="capturing-good-scans-on-a-desktop">Capturing good scans on a desktop</h2>
+<p>A laptop webcam points at your face, not your desk — so desktop capture needs a small staging adjustment:</p>
+<ol>
+<li><strong>Tilt the lid back.</strong> Open the laptop wide and tilt the screen back so the camera angles down toward the desk. Prop the base on a book if you need a steeper angle.</li>
+<li><strong>Put the page where the camera looks.</strong> Lay the document on the desk in front of the laptop, on a dark backing for contrast. Check the live preview and nudge the page until it fills the frame.</li>
+<li><strong>Light it from the side.</strong> Overhead room light plus a desk lamp from the side gives even illumination without the glare a lamp directly behind the laptop creates.</li>
+<li><strong>Keep the page parallel to the camera.</strong> Pages shot at an angle get keystone distortion; the scanner's perspective correction can fix mild angles, but a parallel page needs no fixing.</li>
+<li><strong>Use a USB webcam for volume.</strong> If you scan multi-page documents regularly, a USB webcam on a small tripod or monitor mount beats the tilt-the-lid dance — point it straight down and feed pages underneath like a document camera.</li>
+</ol>
+<p>Once captured, the rest is the same as mobile: crop to the page edges, straighten, boost contrast for grey-looking text, and compile every page into a single PDF before downloading.</p>
+
+<h2 id="chrome-vs-firefox-does-it-matter">Chrome vs. Firefox: does it matter?</h2>
+<p>For scanning, no. Both implement the same web camera standards, both ask permission per site, and both run a browser-based scanner such as <a href="https://www.scanner.cam/">Scanner.cam</a> with all processing on your device — your document images never upload anywhere in either browser. Use whichever browser you already live in; the permission screens are the only thing that differs, and this guide covers both.</p>
+
+<p><strong>Why is my browser not asking for camera permission?</strong><br>
+Usually because a decision was already made: the site is on your Blocked list, or Firefox's "Block new requests asking to access your camera" checkbox is checked. Clear the old decision in the browser's site-permission settings, reload, and the prompt will appear. Also confirm the page is loaded over HTTPS — insecure pages never get a prompt at all.</p>
+<p><strong>How do I unblock camera access for a site in Chrome?</strong><br>
+Open the site, click the site-information (padlock/tune) icon in the address bar → Site settings → Camera → Allow, then reload. Or go to Settings → Privacy and security → Site settings → Camera and move the site from the Blocked list to Allowed.</p>
+<p><strong>How do I unblock camera access for a site in Firefox?</strong><br>
+Click the camera icon in the address bar, remove the blocked permission, and reload so Firefox prompts again. Alternatively, Settings → Privacy &amp; Security → Permissions → Camera → Settings… and delete the site's Blocked entry.</p>
+<p><strong>Can a website turn on my camera without asking?</strong><br>
+No — not in Chrome or Firefox. Camera access always requires your explicit grant, shown as a visible prompt or an indicator while the camera is active. Keeping the default "ask" behavior (rather than blanket-allow) is the safe setting, and you can revoke a site's permission from the same settings pages at any time.</p>
+<p><strong>My company laptop blocks the camera setting. Can I still scan?</strong><br>
+If your browser is managed by your employer and the camera permission is greyed out, only your IT administrator can change it. As a workaround, scan on your personal phone's browser and transfer the PDFs — the phone route needs no permissions on the laptop at all.</p>
+
+<h2 id="related-guides">Related guides</h2>
+<ul>
+<li><a href="https://www.scanner.cam/blog/scan-documents-with-laptop-webcam/">Can I Scan Documents With My Laptop Webcam?</a></li>
+<li><a href="https://www.scanner.cam/blog/scan-documents-without-a-phone/">How to Scan Documents Without a Phone (PC Only)</a></li>
+<li><a href="https://www.scanner.cam/blog/how-to-scan-documents-on-linux/">How to Scan Documents on Linux</a></li>
+<li><a href="https://www.scanner.cam/blog/how-to-scan-documents-on-mac-without-a-scanner/">How to Scan Documents on Mac Without a Scanner</a></li>
+<li><a href="https://www.scanner.cam/blog/how-to-scan-documents-on-windows-11-camera-app/">How to Scan Documents on Windows 11 With the Camera App</a></li>
+<li><a href="https://www.scanner.cam/blog/scan-multi-page-pdf-online-free/">How to Scan Multi-Page PDFs Online Free</a></li>
+<li><a href="https://www.scanner.cam/blog/is-it-safe-to-scan-documents-online/">Is It Safe to Scan Documents Online? Privacy Explained</a></li>
+</ul>
+
+<a class="cta" href="https://www.scanner.cam/">Try Scanner.cam — Free, Private, On-Device Scanning</a>
+<p><a href="https://www.scanner.cam/">
+<nav class="prevnext" aria-label="Guide navigation"><a href="/blog/how-to-scan-documents-on-linux"><span>← Previous guide</span>How to Scan Documents on Linux</a><span></span></nav>
+<div class="cta-card"><h3>Try it right now — free</h3><p>Open Scanner.cam in your browser, scan, and download. No signup, no watermark, nothing uploads.</p><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
+</article>
+</main>
+<div class="sticky-cta" role="region" aria-label="Quick scanner access"><span>Scan documents free — no app, no signup</span><a href="https://www.scanner.cam/">Scan Now</a></div>
+<footer class="site-footer app-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <a class="site-brand" href="/" aria-label="Scanner.cam home">
+        <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+        <span class="brand-name">Scanner<span>.cam</span></span>
+      </a>
+      <p class="site-footer-note">Free, private document scanning in your browser. No signup, no watermark, no uploads.</p>
+    </div>
+    <nav class="site-footer-navigation" aria-label="Product">
+      <h2>Product</h2>
+      <a href="/">Open Scanner</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+    <nav class="site-footer-navigation" aria-label="Company">
+      <h2>Company</h2>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+  <div class="site-footer-bottom">© 2026 Scanner.cam — Free online document scanner.</div>
+</footer>
+</body>
+</html>
