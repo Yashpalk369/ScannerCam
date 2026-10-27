@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#059669">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks | Scanner.cam</title>
+<meta name="description" content="Is CamScanner safe to use? The 2019 malware incident explained, the permissions the app requests today, and a practical risk assessment for your documents.">
+<meta name="keywords" content="is camscanner safe to use, camscanner safety, camscanner malware 2019, camscanner permissions privacy, is camscanner safe">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.scanner.cam/blog/is-camscanner-safe-to-use">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.scanner.cam/blog/is-camscanner-safe-to-use">
+<meta property="og:title" content="Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks">
+<meta property="og:description" content="Is CamScanner safe to use? The 2019 malware incident explained, the permissions the app requests today, and a practical risk assessment for your documents.">
+<meta property="og:image" content="https://www.scanner.cam/blog/og-is-camscanner-safe-to-use.png">
+<meta property="article:published_time" content="2026-10-27">
+<meta property="article:modified_time" content="2026-10-27">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks">
+<meta name="twitter:description" content="Is CamScanner safe to use? The 2019 malware incident explained, the permissions the app requests today, and a practical risk assessment for your documents.">
+<meta name="twitter:image" content="https://www.scanner.cam/blog/og-is-camscanner-safe-to-use.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "@id": "https://www.scanner.cam/blog/is-camscanner-safe-to-use#article", "headline": "Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks", "description": "Is CamScanner safe to use? The 2019 malware incident explained, the permissions the app requests today, and a practical risk assessment for your documents.", "image": "https://www.scanner.cam/blog/og-is-camscanner-safe-to-use.png", "author": {"@type": "Organization", "name": "Scanner.cam Team", "url": "https://www.scanner.cam"}, "publisher": {"@type": "Organization", "name": "Scanner.cam", "url": "https://www.scanner.cam"}, "datePublished": "2026-10-27", "dateModified": "2026-10-27", "mainEntityOfPage": {"@type": "WebPage", "@id": "https://www.scanner.cam/blog/is-camscanner-safe-to-use"}}, {"@type": "FAQPage", "@id": "https://www.scanner.cam/blog/is-camscanner-safe-to-use#faq", "mainEntity": [{"@type": "Question", "name": "Was CamScanner ever unsafe?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, briefly. In August 2019, Kaspersky found a Trojan dropper inside a third-party advertising library shipped in CamScanner's Android app. Google removed the app from the Play Store, CamScanner removed the library, and a clean version returned in September 2019. The iOS version was unaffected."}}, {"@type": "Question", "name": "Is CamScanner safe to use now?", "acceptedAnswer": {"@type": "Answer", "text": "No credible research since 2019 has reproduced the malware finding, and the app is actively updated. The live consideration is privacy, not malware: it is a cloud product that syncs scans to its servers, so sensitive documents deserve a second thought."}}, {"@type": "Question", "name": "Does CamScanner steal your documents?", "acceptedAnswer": {"@type": "Answer", "text": "There is no credible evidence that CamScanner leaks or steals document contents. Its cloud sync does store your scans on its servers by design, which is different from theft — but it is a reason to prefer on-device scanning for sensitive paperwork."}}, {"@type": "Question", "name": "Should I delete CamScanner?", "acceptedAnswer": {"@type": "Answer", "text": "Not necessarily. If it is installed from the official store, kept updated, and used for everyday documents, it is a capable tool. Consider deleting it — or simply not using it for sensitive scans — if the cloud-sync model or the free tier's watermark and ads bother you."}}, {"@type": "Question", "name": "Is Scanner.cam the same as CamScanner?", "acceptedAnswer": {"@type": "Answer", "text": "No. Scanner.cam is an independent, browser-based scanner. It is not affiliated with, endorsed by, or connected to CamScanner or its developer INTSIG. They are separate products."}}]}, {"@type": "BreadcrumbList", "@id": "https://www.scanner.cam/blog/is-camscanner-safe-to-use#breadcrumbs", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.scanner.cam/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://www.scanner.cam/blog"}, {"@type": "ListItem", "position": 3, "name": "Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks", "item": "https://www.scanner.cam/blog/is-camscanner-safe-to-use"}]}]}</script>
+<style>
+:root{--brand:#059669;--brand-dark:#047857;--ink:#0f172a;--muted:#64748b;--bg:#f8fafc;--border:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:0 1.25rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--brand-dark);color:#fff!important;padding:.55rem 1.1rem;border-radius:10px;font-weight:700;text-decoration:none;font-size:.9rem}
+.btn:hover{background:var(--brand-dark)}
+/* article */
+.crumbs{font-size:.82rem;color:var(--muted);margin:1.25rem 0 .5rem}
+.crumbs a{color:var(--brand-dark);text-decoration:underline;text-underline-offset:2px}
+article{background:#fff;border:1px solid var(--border);border-radius:18px;padding:2.25rem 2rem;margin:.5rem 0 2rem;box-shadow:0 8px 30px rgba(15,23,42,.05)}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);padding:.25rem .7rem;border-radius:999px;margin-bottom:1rem}
+h1{font-size:2rem;line-height:1.25;letter-spacing:-.02em;margin-bottom:.6rem}
+.byline{color:var(--muted);font-size:.88rem;margin-bottom:1.5rem}
+.quick-answer{background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(5,150,105,.03));border-left:4px solid var(--brand);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin:0 0 1.75rem}
+.quick-answer .qa-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-dark);display:block;margin-bottom:.35rem}
+.quick-answer p{margin:0}
+article h2{font-size:1.35rem;letter-spacing:-.01em;margin:2rem 0 .75rem;color:var(--ink)}
+article p{margin:0 0 1rem;color:#1f2937}
+article ul,article ol{margin:0 0 1.25rem 1.4rem;color:#1f2937}
+article li{margin-bottom:.5rem}
+article a{color:var(--brand-dark);font-weight:600}
+article strong{color:var(--ink)}
+.cta-card{background:linear-gradient(135deg,#047857,#065f46);border-radius:16px;padding:2rem;text-align:center;color:#fff;margin:2.5rem 0 0}
+.cta-card h3{font-size:1.4rem;margin-bottom:.5rem}
+.cta-card p{color:#fff;opacity:.92;margin-bottom:1.25rem}
+.cta-card .btn{background:#fff;color:#047857!important;font-size:1rem;padding:.7rem 1.6rem}
+.prevnext{display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.prevnext a{text-decoration:none;color:var(--brand-dark);font-weight:600;font-size:.92rem;max-width:45%}
+.prevnext a span{display:block;font-size:.75rem;color:var(--muted);font-weight:400}
+/* hero figure */
+.hero-figure{margin:0 0 1.5rem}
+.hero-figure img{width:100%;height:auto;border-radius:14px;border:1px solid var(--border);display:block}
+/* toc */
+.toc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin:0 0 1.75rem}
+.toc .toc-label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem}
+.toc ul{list-style:none;margin:0;padding:0;columns:2;column-gap:1.5rem}
+.toc li{margin-bottom:.35rem;break-inside:avoid}
+.toc a{color:var(--brand-dark);text-decoration:none;font-size:.9rem;font-weight:500}
+.toc a:hover{text-decoration:underline}
+@media(max-width:640px){.toc ul{columns:1}}
+/* mid-article CTA */
+.mid-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(5,150,105,.07);border:1px solid rgba(5,150,105,.3);border-radius:14px;padding:1.1rem 1.35rem;margin:1.75rem 0}
+.mid-cta strong{display:block;font-size:1rem}
+.mid-cta span{font-size:.88rem;color:#475569}
+@media(max-width:640px){.mid-cta{flex-direction:column;text-align:center}}
+/* sticky mobile CTA */
+.sticky-cta{display:none}
+@media(max-width:640px){
+.sticky-cta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(15,23,42,.97);color:#fff;padding:.7rem 1rem;font-size:.85rem;backdrop-filter:blur(8px)}
+.sticky-cta a{background:var(--brand-dark);color:#fff!important;font-weight:700;padding:.5rem 1.1rem;border-radius:9px;text-decoration:none;white-space:nowrap}
+body{padding-bottom:64px}
+}
+@media(max-width:720px){article{padding:1.5rem 1.15rem}h1{font-size:1.6rem}}
+/* hub cards */
+.hub-hero{text-align:center;padding:2.5rem 0 1rem}
+.hub-hero h1{font-size:2.1rem}
+.hub-hero p{color:var(--muted);max-width:640px;margin:.75rem auto 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;padding:1.5rem 0 3rem}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.4rem;text-decoration:none;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,23,42,.1)}
+.card .eyebrow{margin-bottom:.7rem;align-self:flex-start}
+.card h3{font-size:1.08rem;color:var(--ink);margin-bottom:.5rem;line-height:1.4}
+.card p{font-size:.9rem;color:var(--muted);flex:1}
+.card .go{color:var(--brand-dark);font-weight:700;font-size:.9rem;margin-top:.9rem}
+</style>
+<link rel="stylesheet" href="/site-shell.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="/" aria-label="Scanner.cam home">
+      <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+      <div class="site-brand-text">
+        <span class="brand-name">Scanner<span>.cam</span></span>
+        <span class="brand-tagline">Free online document scanner</span>
+      </div>
+    </a>
+    <nav class="site-navigation" aria-label="Main navigation">
+      <a href="/blog" aria-current="page">Guides</a>
+      <a href="/#faq">FAQ</a>
+      <a class="site-open-scanner" href="/">Open Scanner</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="https://www.scanner.cam/">Home</a> &rsaquo; <a href="https://www.scanner.cam/blog">Guides</a> &rsaquo; Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks</nav>
+<article>
+<div class="eyebrow">Comparisons</div>
+<h1>Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks</h1>
+<div class="byline">By Scanner.cam Team &middot; Updated 27 Oct 2026 &middot; 6 min read</div>
+<div class="quick-answer"><span class="qa-label">Quick answer</span><p>CamScanner is one of the most downloaded scanner apps in the world, which is exactly why the safety question comes up so often. The short answer is that the current version of CamScanner, downloaded from the official app stores, is not known to carry malware — but the app&#x27;s history and its cloud-based design mean it deserves a more careful answer than a simple yes or no.</p></div>
+<figure class="hero-figure"><img src="/blog/og-is-camscanner-safe-to-use.png" alt="Is CamScanner Safe to Use? The 2019 Incident, Permissions, and Current Risks — Scanner.cam guide" width="1200" height="630" loading="eager"></figure>
+<nav class="toc" aria-label="Table of contents"><span class="toc-label">On this page</span><ul>
+<li><a href="#the-short-answer">The short answer</a></li>
+<li><a href="#what-happened-in-2019">What happened in 2019</a></li>
+<li><a href="#what-permissions-does-camscanner-ask-for">What permissions does CamScanner ask for?</a></li>
+<li><a href="#where-your-scans-go">Where your scans go</a></li>
+<li><a href="#a-practical-safety-checklist">A practical safety checklist</a></li>
+<li><a href="#so-is-camscanner-safe-to-use">So, is CamScanner safe to use?</a></li>
+</ul></nav>
+<p>This guide walks through what actually happened in 2019, what permissions the app requests today, and how to judge the risk for your own documents.</p>
+
+
+<p>Important context first: Scanner.cam is an independent project. It is not CamScanner, it is not affiliated with CamScanner or its developer INTSIG, and it is not endorsed by them. This guide compares and assesses a separate product on its own merits.</p>
+
+<h2 id="the-short-answer">The short answer</h2>
+<p>If you keep CamScanner updated from Google Play or the App Store, the malware risk today is low: the 2019 incident was fixed the same year, and no credible research since has reproduced it. The more durable considerations are privacy-related, not malware-related. CamScanner is a cloud product with an account, advertising on the free tier, and scans that sync to its servers. If you scan sensitive documents — passports, contracts, financial paperwork — that trust decision matters more than the old malware headline. For one-off or sensitive scans, a tool that processes everything on your device avoids the question entirely.</p>
+
+<h2 id="what-happened-in-2019">What happened in 2019</h2>
+<p>In August 2019, researchers at the security firm Kaspersky reported that recent Android versions of CamScanner contained a malicious module inside a third-party advertising library. The module, identified as Trojan-Dropper.AndroidOS.Necro.n, could download and run further malicious code — in practice, showing intrusive ads and, in some cases, signing users up for paid subscriptions without their consent. Google removed CamScanner from the Play Store, CamScanner removed the compromised advertising library, and a clean version (5.12.5) returned to the store in September 2019. The iOS version was never affected.</p>
+<p>Two details from that episode are worth holding on to. First, the malicious code came from an advertising partner's library, not from CamScanner's own scanning code — which is why the fix was to strip the library out. Second, CamScanner stated at the time that there was no evidence document data had leaked as a result. Since then, no credible security research has reported a repeat of the problem, and the app has continued to receive regular updates, most recently in October 2026.</p>
+
+<h2 id="what-permissions-does-camscanner-ask-for">What permissions does CamScanner ask for?</h2>
+<p>Like any scanner app, CamScanner needs broad access to do its job. Its Play Store listing describes the following:</p>
+<ul>
+<li><strong>Camera:</strong> to capture documents. Unavoidable for a scanner, and the permission you should expect.</li>
+<li><strong>Storage:</strong> to save scans on your device. Standard, but note that storage access also means the app can read files it creates and manages.</li>
+<li><strong>Phone/device identity:</strong> used to bind a Premium membership to a device and to let the app work without login. This is the permission most worth noticing — it is not needed for scanning itself, but for account and subscription management.</li>
+<li><strong>Account and network access:</strong> for cloud sync, collaboration, and advertising on the free tier. Cloud sync is the feature that moves your scans off your device and onto CamScanner's servers.</li>
+</ul><div class="mid-cta"><div><strong>Try it as you read</strong><span>Open the scanner in a new tab and follow along — free, no signup.</span></div><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
+<p>None of these permissions is unusual for a free, cloud-connected scanner app. The point of reviewing them is not to find a smoking gun — it is to understand the trade: you get OCR (optical character recognition, the technology that converts pictures of text into editable text), cloud sync, and advanced editing, and in return the app holds an account tied to your device and a copy of your synced scans.</p>
+
+<h2 id="where-your-scans-go">Where your scans go</h2>
+<p>This is the part of the safety question that has not changed since 2019. CamScanner is a cloud product: scans sync to its servers so they follow you across phone, tablet, and computer. That is genuinely useful if you scan every day across devices. It also means your documents exist somewhere other than your phone, under the terms of CamScanner's privacy policy and the laws of the countries where its servers operate. For everyday paperwork — receipts, notes, whiteboard photos — that is a reasonable trade for most people. For passports, contracts, bank statements, or client-confidential documents, it is worth pausing: a scanner that processes everything on your device never creates that copy in the first place.</p>
+
+<h2 id="a-practical-safety-checklist">A practical safety checklist</h2>
+<p>If you use CamScanner, or are deciding whether to, these steps cover the real risks:</p>
+<ul>
+<li><strong>Install only from the official stores.</strong> Never install a "modded" or "premium unlocked" version from a third-party site. Those repackaged apps are a classic malware vector — the very thing the 2019 incident warns about — and they can steal accounts or documents. If a download promises paid features for free, treat it as a threat, not a bargain.</li>
+<li><strong>Keep the app updated.</strong> The 2019 fix arrived as an update; running an old version is the one scenario in which the old risk could still apply. Turn on automatic updates for the app.</li>
+<li><strong>Review permissions after installing.</strong> On both Android and iOS you can revoke permissions the app does not need for the task at hand, and re-grant them later.</li>
+<li><strong>Think before syncing sensitive documents.</strong> You can use CamScanner for everyday scans and a device-local tool for sensitive ones. You do not have to pick a single scanner for everything.</li>
+<li><strong>Check what the free tier does to your exports.</strong> Free-tier exports carry a "Scanned by CamScanner" watermark and the app shows ads. That is a quality and professionalism consideration, not a safety one — but it is the most common reason people look for an alternative.</li>
+</ul>
+
+<h2 id="so-is-camscanner-safe-to-use">So, is CamScanner safe to use?</h2>
+<p>On the evidence available today: yes, with the caveats above. The 2019 malware incident was real, it was fixed in 2019, and nothing credible since has suggested a repeat. The honest residual risk is not malware but trust: an account-based cloud scanner holds your documents on its servers, shows ads on the free tier, and requests device-identity permissions for subscription management. If that trade bothers you — especially for sensitive documents — scan in your browser instead, where nothing uploads anywhere. Either way, the single most important safety rule is the simplest one: get the app from the official store, keep it updated, and never install a cracked copy.</p>
+
+<p><strong>Was CamScanner ever unsafe?</strong><br>
+Yes, briefly. In August 2019, Kaspersky found a Trojan dropper inside a third-party advertising library shipped in CamScanner's Android app. Google removed the app from the Play Store, CamScanner removed the library, and a clean version returned in September 2019. The iOS version was unaffected.</p>
+<p><strong>Is CamScanner safe to use now?</strong><br>
+No credible research since 2019 has reproduced the malware finding, and the app is actively updated. The live consideration is privacy, not malware: it is a cloud product that syncs scans to its servers, so sensitive documents deserve a second thought.</p>
+<p><strong>Does CamScanner steal your documents?</strong><br>
+There is no credible evidence that CamScanner leaks or steals document contents. Its cloud sync does store your scans on its servers by design, which is different from theft — but it is a reason to prefer on-device scanning for sensitive paperwork.</p>
+<p><strong>Should I delete CamScanner?</strong><br>
+Not necessarily. If it is installed from the official store, kept updated, and used for everyday documents, it is a capable tool. Consider deleting it — or simply not using it for sensitive scans — if the cloud-sync model or the free tier's watermark and ads bother you.</p>
+<p><strong>Is Scanner.cam the same as CamScanner?</strong><br>
+No. Scanner.cam is an independent, browser-based scanner. It is not affiliated with, endorsed by, or connected to CamScanner or its developer INTSIG. They are separate products.</p>
+
+<h2 id="related-guides">Related guides</h2>
+<ul>
+<li><a href="https://www.scanner.cam/blog/scanner-cam-vs-camscanner">Scanner.cam vs CamScanner: Honest Head-to-Head</a></li>
+<li><a href="https://www.scanner.cam/blog/camscanner-vs-free-online-alternatives">CamScanner vs Free Online Alternatives: Head-to-Head</a></li>
+<li><a href="https://www.scanner.cam/blog/is-it-safe-to-scan-documents-online">Is It Safe to Scan Documents Online? Privacy Explained</a></li>
+<li><a href="https://www.scanner.cam/blog/best-free-scanner-app-without-watermark">Best Free Scanner App Without Watermark (2026)</a></li>
+</ul>
+<nav class="prevnext" aria-label="Guide navigation"><a href="/blog/scanner-cam-vs-camscanner"><span>← Previous guide</span>Scanner.cam vs CamScanner: Honest Head-to-Head</a><a href="/blog/how-to-remove-camscanner-watermark-for-free" style="text-align:right"><span>Next guide →</span>How to Remove the CamScanner Watermark for Free (Legitimate Methods Only)</a></nav>
+<div class="cta-card"><h3>Try it right now — free</h3><p>Open Scanner.cam in your browser, scan, and download. No signup, no watermark, nothing uploads.</p><a class="btn" href="https://www.scanner.cam/">Open Scanner.cam</a></div>
+</article>
+</main>
+<div class="sticky-cta" role="region" aria-label="Quick scanner access"><span>Scan documents free — no app, no signup</span><a href="https://www.scanner.cam/">Scan Now</a></div>
+<footer class="site-footer app-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <a class="site-brand" href="/" aria-label="Scanner.cam home">
+        <span class="brand-icon"><img src="/favicon.svg" width="40" height="40" alt=""></span>
+        <span class="brand-name">Scanner<span>.cam</span></span>
+      </a>
+      <p class="site-footer-note">Free, private document scanning in your browser. No signup, no watermark, no uploads.</p>
+    </div>
+    <nav class="site-footer-navigation" aria-label="Product">
+      <h2>Product</h2>
+      <a href="/">Open Scanner</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+    <nav class="site-footer-navigation" aria-label="Company">
+      <h2>Company</h2>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+  <div class="site-footer-bottom">© 2026 Scanner.cam — Free online document scanner.</div>
+</footer>
+</body>
+</html>
