@@ -40,6 +40,7 @@ for (const name of files) {
     next = next.replace(/<footer class="site-footer(?: app-footer)?">[\s\S]*?<\/footer>/, footer)
   }
   if (!next.includes('href="/site-shell.css"')) next = next.replace('</head>', '<link rel="stylesheet" href="/site-shell.css">\n</head>')
+  if (!next.includes('pagead2.googlesyndication.com')) next = next.replace('</head>', '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4195398786095859" crossorigin="anonymous"></script>\n</head>')
   if (next !== original) writeFileSync(path, next)
 }
 syncHomepage(root)
