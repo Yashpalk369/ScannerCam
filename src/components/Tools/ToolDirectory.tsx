@@ -1,3 +1,4 @@
+import { Eraser, FileText, Minimize2, ScanText, ShieldCheck, BookOpen, Wrench } from 'lucide-react'
 import tools from '../../content/tools.json'
 export function ToolDirectory() {
   return (
@@ -18,6 +19,37 @@ export function ToolDirectory() {
         </a>
       ))}
     </div>
+  )
+}
+
+const toolIcons: Record<string, typeof Wrench> = {
+  '/remove-background': Eraser,
+  '/pdf-editor': FileText,
+  '/compress-pdf': Minimize2,
+  '/image-to-text': ScanText,
+  '/redact-pdf': ShieldCheck,
+  '/flatten-page': BookOpen,
+}
+
+export function HomepageTools() {
+  const availableTools = tools.filter((tool) => tool.path !== '/tools')
+  return (
+    <section className="homepage-tools" aria-labelledby="homepage-tools-heading">
+      <div className="homepage-tools-heading">
+        <div><h2 id="homepage-tools-heading">More free tools</h2><p>Simple tools for your documents and images, right in your browser.</p></div>
+        <a href="/tools">View all tools →</a>
+      </div>
+      <div className="homepage-tool-grid">
+        {availableTools.map((tool) => {
+          const Icon = toolIcons[tool.path] ?? Wrench
+          return <a className="homepage-tool-card" href={tool.path} key={tool.path}>
+            <span className="homepage-tool-icon"><Icon size={22} aria-hidden="true" /></span>
+            <span className="homepage-tool-copy"><strong>{tool.heading}</strong><span>{tool.description}</span></span>
+            <span className="homepage-tool-arrow" aria-hidden="true">→</span>
+          </a>
+        })}
+      </div>
+    </section>
   )
 }
 export function ToolContent({ path }: { path: string }) {

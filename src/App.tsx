@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import tools from './content/tools.json'
-import { ToolContent, ToolDirectory } from './components/Tools/ToolDirectory'
+import { HomepageTools, ToolContent, ToolDirectory } from './components/Tools/ToolDirectory'
 import { SiteHeader } from './components/Layout/SiteShell'
 import { PageTools } from './components/Editor/PageTools'
 import { heading } from './content/homepage.json'
@@ -395,12 +395,7 @@ const ScannerApp: React.FC = () => {
           <ToolContent path={path} />
         ) : (
           <>
-            <nav className="tool-discovery" aria-label="More free tools">
-              More free tools: <a href="/pdf-editor">PDF page editor</a> ·{' '}
-              <a href="/compress-pdf">Compress PDF</a> ·{' '}
-              <a href="/remove-background">Background remover</a> ·{' '}
-              <a href="/tools">All tools</a>
-            </nav>
+            <HomepageTools />
             <SeoArticle />
           </>
         )}

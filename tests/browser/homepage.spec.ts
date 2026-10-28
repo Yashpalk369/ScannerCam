@@ -50,3 +50,17 @@ test('the initial HTML FAQ has a working anchor without JavaScript', async ({ br
     await expect(page.locator('.fallback-faq-answer')).toHaveCount(content.faqs.length)
   } finally { await context.close() }
 })
+
+test('homepage tool cards stay in sync with the tools directory and work on mobile', async ({ page }) => {
+  const tools = JSON.parse(readFileSync('src/content/tools.json', 'utf8')).filter((tool: { path: string }) => tool.path !== '/tools')
+  await page.setViewportSize({ width: 320, height: 844 })
+  await page.goto('/')
+  const section = page.locator('.homepage-tools')
+  await expect(section.getByRole('heading', { name: 'More free tools' })).toBeVisible()
+  await expect(section.locator('.homepage-tool-card')).toHaveCount(tools.length)
+  for (const tool of tools) await expect(section.locator(`a[href="${tool.path}"]`)).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+  await section.locator('a[href="/remove-background"]').click()
+  await expect(page).toHaveURL(/\/remove-background$/)
+  await expect(page.getByRole('heading', { name: 'Free Background Remover Online' })).toBeVisible()
+})
