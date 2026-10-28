@@ -23,7 +23,7 @@ async function fixture(page: Page, count = 2, useStartingButton = false) {
   const files = Array.from({ length: count }, (_, index) => ({ name: `page-${index}.png`, mimeType: 'image/png', buffer: Buffer.from(payload, 'base64') }))
   if (useStartingButton) {
     const chooserPromise = page.waitForEvent('filechooser')
-    await page.getByRole('button', { name: 'Upload Images', exact: true }).click()
+    await page.getByRole('button', { name: 'Upload Files', exact: true }).click()
     await (await chooserPromise).setFiles(files)
   } else await page.locator('input[type=file]').first().setInputFiles(files)
   await expect(page.getByRole('button', { name: `Export (${count})`, exact: true })).toBeEnabled()
@@ -51,7 +51,7 @@ test('starting screen offers real scan and upload actions without disabled editi
   })
   await page.goto('/', { waitUntil: 'domcontentloaded' })
   await expect(page.getByRole('button', { name: 'Scan Document', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Magic Color', exact: true })).toHaveCount(0)
   await expect(page.locator('.scanner-toolbar')).toBeHidden()
   await expect(page.locator('.site-header').getByRole('link', { name: 'Open Scanner', exact: true })).toHaveCount(0)
@@ -65,7 +65,7 @@ test('starting screen offers real scan and upload actions without disabled editi
   await expect(page.getByRole('button', { name: 'Upload', exact: true })).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Scan Camera', exact: true })).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Scan Document', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Magic Color', exact: true })).toBeEnabled()
 })
 

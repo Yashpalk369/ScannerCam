@@ -1,6 +1,62 @@
 {
   "rewrites": [
     {
+      "source": "/flatten-page/",
+      "destination": "/flatten-page.html"
+    },
+    {
+      "source": "/flatten-page",
+      "destination": "/flatten-page.html"
+    },
+    {
+      "source": "/redact-pdf/",
+      "destination": "/redact-pdf.html"
+    },
+    {
+      "source": "/redact-pdf",
+      "destination": "/redact-pdf.html"
+    },
+    {
+      "source": "/image-to-text/",
+      "destination": "/image-to-text.html"
+    },
+    {
+      "source": "/image-to-text",
+      "destination": "/image-to-text.html"
+    },
+    {
+      "source": "/compress-pdf/",
+      "destination": "/compress-pdf.html"
+    },
+    {
+      "source": "/compress-pdf",
+      "destination": "/compress-pdf.html"
+    },
+    {
+      "source": "/pdf-editor/",
+      "destination": "/pdf-editor.html"
+    },
+    {
+      "source": "/pdf-editor",
+      "destination": "/pdf-editor.html"
+    },
+    {
+      "source": "/remove-background/",
+      "destination": "/remove-background.html"
+    },
+    {
+      "source": "/remove-background",
+      "destination": "/remove-background.html"
+    },
+    {
+      "source": "/tools/",
+      "destination": "/tools.html"
+    },
+    {
+      "source": "/tools",
+      "destination": "/tools.html"
+    },
+    {
       "source": "/about",
       "destination": "/about.html"
     },
@@ -47,14 +103,6 @@
     {
       "source": "/blog/:slug/",
       "destination": "/blog/:slug.html"
-    },
-    {
-      "source": "/remove-background",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/remove-background/",
-      "destination": "/index.html"
     }
   ]
 }

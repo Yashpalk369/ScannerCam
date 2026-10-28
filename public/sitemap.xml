@@ -337,4 +337,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url><loc>https://www.scanner.cam/tools</loc></url>
+  <url><loc>https://www.scanner.cam/pdf-editor</loc></url>
+  <url><loc>https://www.scanner.cam/compress-pdf</loc></url>
+  <url><loc>https://www.scanner.cam/remove-background</loc></url>
+  <url><loc>https://www.scanner.cam/image-to-text</loc></url>
+  <url><loc>https://www.scanner.cam/redact-pdf</loc></url>
+  <url><loc>https://www.scanner.cam/flatten-page</loc></url>
 </urlset>

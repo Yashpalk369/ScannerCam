@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif,application/pdf,.pdf"
           multiple
           style={{ display: 'none' }}
           onChange={handleFileChange}

@@ -26,36 +26,21 @@ const STD = [0.229, 0.224, 0.225]
 // (no SharedArrayBuffer, not cross-origin isolated) fetches exactly these.
 ort.env.wasm.wasmPaths = '/ort-wasm/'
 
-const PAGE_TITLE = 'Free Background Remover Online — No Signup, No Upload | ScannerCam'
-const PAGE_DESCRIPTION =
-  'Remove any photo background free in your browser. No signup, no upload, transparent PNG download. The free remove.bg alternative.'
-
-function upsertMeta(key: string, content: string, attr: 'name' | 'property'): string | null {
-  const selector = `meta[${attr}="${key}"]`
-  let el = document.querySelector<HTMLMetaElement>(selector)
-  let created = false
-  if (!el) {
-    el = document.createElement('meta')
-    el.setAttribute(attr, key)
-    document.head.appendChild(el)
-    created = true
-  }
-  const previous = created ? null : el.getAttribute('content')
-  el.setAttribute('content', content)
-  return previous
-}
-
 export const BackgroundRemover: React.FC = () => {
-  const [modelReady, setModelReady] = useState(false)
   const [isLoadingModel, setIsLoadingModel] = useState(false)
   const [loadState, setLoadState] = useState('Model not loaded')
   const [loadProgress, setLoadProgress] = useState(0)
   const [loadLabel, setLoadLabel] = useState('')
+  const [isDecoding, setIsDecoding] = useState(false)
+  const decodingRef = useRef(false)
   const [imageReady, setImageReady] = useState(false)
   const [sourceInfo, setSourceInfo] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [canDownload, setCanDownload] = useState(false)
-  const [timing, setTiming] = useState('')
+  const [, setTiming] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+  const loadingRef = useRef(false)
+  const abortRef = useRef<AbortController | null>(null)
   const [status, setStatus] = useState('')
 
   const sessionRef = useRef<ort.InferenceSession | null>(null)
@@ -64,41 +49,27 @@ export const BackgroundRemover: React.FC = () => {
   const beforeRef = useRef<HTMLCanvasElement | null>(null)
   const afterRef = useRef<HTMLCanvasElement | null>(null)
 
-  const log = (msg: string) => {
-    setStatus((prev) => (prev ? `${prev}\n${msg}` : msg))
-    console.log('[remover]', msg)
-  }
-
-  // SEO: dynamic SPA meta while this route is mounted.
-  useEffect(() => {
-    const previousTitle = document.title
-    const previousDescription = upsertMeta('description', PAGE_DESCRIPTION, 'name')
-    const previousOgTitle = upsertMeta('og:title', PAGE_TITLE, 'property')
-    const previousOgDescription = upsertMeta('og:description', PAGE_DESCRIPTION, 'property')
-    const previousOgUrl = upsertMeta('og:url', 'https://www.scanner.cam/remove-background', 'property')
-    document.title = PAGE_TITLE
-    return () => {
-      document.title = previousTitle
-      const restore = (key: string, previous: string | null, attr: 'name' | 'property') => {
-        const el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`)
-        if (!el) return
-        if (previous === null) el.remove()
-        else el.setAttribute('content', previous)
-      }
-      restore('description', previousDescription, 'name')
-      restore('og:title', previousOgTitle, 'property')
-      restore('og:description', previousOgDescription, 'property')
-      restore('og:url', previousOgUrl, 'property')
-    }
-  }, [])
+  const log = (message: string) => console.debug('[remover]', message)
+  useEffect(
+    () => () => {
+      abortRef.current?.abort()
+      bitmapRef.current?.close()
+      void sessionRef.current?.release()
+    },
+    [],
+  )
 
   const loadModel = async () => {
-    if (isLoadingModel || modelReady) return
+    if (sessionRef.current) return sessionRef.current
+    if (loadingRef.current) return
+    loadingRef.current = true
+    const controller = new AbortController()
+    abortRef.current = controller
     setIsLoadingModel(true)
-    setLoadState('Downloading model…')
+    setLoadState('Downloading processing files…')
     const t0 = performance.now()
     try {
-      const res = await fetch(MODEL_URL)
+      const res = await fetch(MODEL_URL, { signal: controller.signal })
       if (!res.ok) throw new Error(`model fetch failed: HTTP ${res.status}`)
       const total = Number(res.headers.get('content-length')) || MODEL_BYTES
       const reader = res.body?.getReader()
@@ -112,7 +83,9 @@ export const BackgroundRemover: React.FC = () => {
           chunks.push(value)
           received += value.length
           setLoadProgress((received / total) * 100)
-          setLoadLabel(`${(received / 1048576).toFixed(1)} / ${(total / 1048576).toFixed(1)} MB`)
+          setLoadLabel(
+            `${(received / 1048576).toFixed(1)} / ${(total / 1048576).toFixed(1)} MB`,
+          )
         }
       }
       const bytes = new Uint8Array(received)
@@ -121,43 +94,79 @@ export const BackgroundRemover: React.FC = () => {
         bytes.set(c, off)
         off += c.length
       }
-      log(`model downloaded: ${received} bytes in ${((performance.now() - t0) / 1000).toFixed(1)}s`)
+      log(
+        `model downloaded: ${received} bytes in ${((performance.now() - t0) / 1000).toFixed(1)}s`,
+      )
       if (received !== MODEL_BYTES) {
-        log(`WARNING: expected ${MODEL_BYTES} bytes, got ${received} — continuing anyway`)
+        throw new Error('The processing files were incomplete. Please retry.')
       }
-      setLoadState('Creating session (WASM)…')
+      setLoadState('Preparing background removal…')
       const t1 = performance.now()
-      sessionRef.current = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] })
+      sessionRef.current = await ort.InferenceSession.create(bytes, {
+        executionProviders: ['wasm'],
+      })
       log(`session created in ${((performance.now() - t1) / 1000).toFixed(1)}s`)
-      log(`session inputs: ${sessionRef.current.inputNames.join(', ')}; outputs: ${sessionRef.current.outputNames.join(', ')}`)
+      log(
+        `session inputs: ${sessionRef.current.inputNames.join(', ')}; outputs: ${sessionRef.current.outputNames.join(', ')}`,
+      )
       setLoadState('Model ready')
-      setModelReady(true)
+      return sessionRef.current
     } catch (err) {
       setLoadState('Model load FAILED')
-      log(`ERROR loading model: ${err instanceof Error ? err.message : String(err)}`)
+      if (!controller.signal.aborted)
+        setStatus(
+          'Could not download processing files. Check your connection and retry.',
+        )
     } finally {
+      loadingRef.current = false
       setIsLoadingModel(false)
     }
   }
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFile = async (file?: File) => {
+    if (!file || isRunning || isLoadingModel || decodingRef.current) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setStatus('Choose a JPG, PNG, or WebP photo.')
+      return
+    }
+    if (file.size > 40 * 1024 * 1024) {
+      setStatus('Choose a photo smaller than 40 MB.')
+      return
+    }
+    decodingRef.current = true
+    setIsDecoding(true)
+    setCanDownload(false)
+    setImageReady(false)
+    setStatus('')
+    bitmapRef.current?.close()
     try {
       try {
-        bitmapRef.current = await createImageBitmap(file, { imageOrientation: 'from-image' })
+        bitmapRef.current = await createImageBitmap(file, {
+          imageOrientation: 'from-image',
+        })
       } catch {
         const url = URL.createObjectURL(file)
         const img = new Image()
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve()
-          img.onerror = () => reject(new Error('could not decode image'))
-          img.src = url
-        })
-        bitmapRef.current = await createImageBitmap(img)
-        URL.revokeObjectURL(url)
+        try {
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve()
+            img.onerror = () => reject(new Error('could not decode image'))
+            img.src = url
+          })
+          bitmapRef.current = await createImageBitmap(img)
+        } finally {
+          URL.revokeObjectURL(url)
+        }
       }
       const bitmap = bitmapRef.current
+      if (bitmap.width * bitmap.height > 20000000) {
+        bitmap.close()
+        bitmapRef.current = null
+        throw new Error('Choose a photo with fewer than 20 million pixels.')
+      }
+      afterRef.current
+        ?.getContext('2d')
+        ?.clearRect(0, 0, afterRef.current.width, afterRef.current.height)
       sizeRef.current = { w: bitmap.width, h: bitmap.height }
       const before = beforeRef.current
       if (before) {
@@ -171,17 +180,27 @@ export const BackgroundRemover: React.FC = () => {
       log(`image loaded: ${bitmap.width}x${bitmap.height}`)
       setImageReady(true)
     } catch (err) {
-      log(`ERROR loading image: ${err instanceof Error ? err.message : String(err)}`)
+      setStatus(
+        err instanceof Error
+          ? err.message
+          : 'Could not read this photo. Try another image.',
+      )
+    } finally {
+      decodingRef.current = false
+      setIsDecoding(false)
     }
   }
 
   const removeBackground = async () => {
-    const session = sessionRef.current
     const bitmap = bitmapRef.current
-    if (!session || !bitmap || isRunning) return
+    if (!bitmap || isRunning) return
     setIsRunning(true)
+    setCanDownload(false)
+    setStatus('')
     const t0 = performance.now()
     try {
+      const session = await loadModel()
+      if (!session) return
       const { w: sourceW, h: sourceH } = sizeRef.current
       const c320 = document.createElement('canvas')
       c320.width = MODEL_SIZE
@@ -202,7 +221,12 @@ export const BackgroundRemover: React.FC = () => {
         input[n + i] = (g - MEAN[1]) / STD[1]
         input[2 * n + i] = (b - MEAN[2]) / STD[2]
       }
-      const tensor = new ort.Tensor('float32', input, [1, 3, MODEL_SIZE, MODEL_SIZE])
+      const tensor = new ort.Tensor('float32', input, [
+        1,
+        3,
+        MODEL_SIZE,
+        MODEL_SIZE,
+      ])
 
       const feeds: Record<string, ort.Tensor> = {}
       feeds[session.inputNames[0]] = tensor
@@ -210,9 +234,12 @@ export const BackgroundRemover: React.FC = () => {
       const results = await session.run(feeds)
       const inferMs = performance.now() - tInfer
       const out = results[session.outputNames[0]]
-      log(`inference: ${inferMs.toFixed(0)}ms; output dims [${out.dims.join(', ')}], type ${out.type}`)
+      log(
+        `inference: ${inferMs.toFixed(0)}ms; output dims [${out.dims.join(', ')}], type ${out.type}`,
+      )
       const logits = out.data as Float32Array
-      if (logits.length < n) throw new Error(`unexpected output length ${logits.length}`)
+      if (logits.length < n)
+        throw new Error(`unexpected output length ${logits.length}`)
       let lo = Infinity
       let hi = -Infinity
       for (let i = 0; i < n; i++) {
@@ -229,7 +256,7 @@ export const BackgroundRemover: React.FC = () => {
       if (!mctx) throw new Error('2d canvas unavailable')
       const maskImg = mctx.createImageData(MODEL_SIZE, MODEL_SIZE)
       for (let i = 0; i < n; i++) {
-        maskImg.data[i * 4 + 3] = Math.round(255 * (logits[i] - lo) / span)
+        maskImg.data[i * 4 + 3] = Math.round((255 * (logits[i] - lo)) / span)
       }
       mctx.putImageData(maskImg, 0, 0)
 
@@ -252,7 +279,9 @@ export const BackgroundRemover: React.FC = () => {
       actx.drawImage(bitmap, 0, 0)
       const outImg = actx.getImageData(0, 0, sourceW, sourceH)
       for (let i = 0; i < sourceW * sourceH; i++) {
-        outImg.data[i * 4 + 3] = maskAlpha[i * 4 + 3]
+        outImg.data[i * 4 + 3] = Math.round(
+          (outImg.data[i * 4 + 3] * maskAlpha[i * 4 + 3]) / 255,
+        )
       }
       actx.putImageData(outImg, 0, 0)
 
@@ -261,9 +290,12 @@ export const BackgroundRemover: React.FC = () => {
         `Inference: ${(inferMs / 1000).toFixed(2)}s · Total (preprocess + inference + composite): ${(totalMs / 1000).toFixed(2)}s`,
       )
       log(`done in ${(totalMs / 1000).toFixed(2)}s total`)
+      tensor.dispose()
+      for (const output of Object.values(results)) output.dispose()
       setCanDownload(true)
+      setStatus('Background removed. Review the edges before downloading.')
     } catch (err) {
-      log(`ERROR running model: ${err instanceof Error ? err.message : String(err)}`)
+      setStatus('Could not process this photo. Try a smaller image or retry.')
     } finally {
       setIsRunning(false)
     }
@@ -283,132 +315,142 @@ export const BackgroundRemover: React.FC = () => {
     }, 'image/png')
   }
 
-  const checkerStyle: React.CSSProperties = {
-    backgroundImage: 'conic-gradient(#ddd 25%, #fff 0 50%, #ddd 0 75%, #fff 0)',
-    backgroundSize: '20px 20px',
-  }
-
   return (
-    <div role="region" aria-labelledby="remover-title" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1rem 2rem' }}>
-      <h1 className="scanner-page-title" id="remover-title">
-        Free Background Remover Online
-      </h1>
-      <p style={{ color: '#475569', maxWidth: 680 }}>
-        Remove the background from any photo in your browser. No signup, no upload, no watermark — download a
-        transparent PNG.
-      </p>
-      <p style={{ color: '#475569' }}>
-        Your photo never leaves your device — removal runs in your browser. Model: U2-Net small (Apache-2.0).
-      </p>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', margin: '1.25rem 0' }}>
-        <button
-          type="button"
-          id="remover-load-btn"
-          className="btn btn-primary"
-          onClick={loadModel}
-          disabled={isLoadingModel || modelReady}
-        >
-          {isLoadingModel ? <Loader2 size={16} className="spin-icon" /> : <Eraser size={16} />}
-          <span>1. Load model</span>
-        </button>
-        <span id="remover-load-state" style={{ color: '#475569', fontSize: '0.9rem' }}>
-          {loadState}
-        </span>
-      </div>
-      {(isLoadingModel || loadProgress > 0) && (
-        <div style={{ margin: '0 0 1rem' }}>
-          <progress id="remover-dl-progress" value={loadProgress} max={100} style={{ width: '100%' }} />
-          <span id="remover-dl-label" style={{ color: '#475569', fontSize: '0.9rem' }}>
-            {loadLabel}
-          </span>
-        </div>
-      )}
-
-      <div style={{ margin: '1rem 0' }}>
-        <label htmlFor="remover-file-input" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
-          2. Choose a photo (JPG / PNG / WebP)
-        </label>
+    <section
+      className="remover-workbench"
+      aria-label="Background removal workspace"
+      aria-busy={isRunning}
+    >
+      <div
+        className="tool-upload"
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault()
+          void handleFile(event.dataTransfer.files[0])
+        }}
+      >
+        <Eraser size={32} aria-hidden="true" />
+        <h2>
+          {imageReady
+            ? 'Your photo is ready'
+            : 'Give your photo a clean background'}
+        </h2>
+        <p>
+          Choose a photo or drop it here. JPG, PNG, or WebP · up to 40 MB and 20
+          megapixels.
+        </p>
         <input
+          ref={fileRef}
           id="remover-file-input"
+          aria-label="Choose a photo"
           type="file"
           accept="image/jpeg,image/png,image/webp"
-          onChange={handleFile}
+          hidden
+          disabled={isRunning || isDecoding}
+          onChange={(event) => {
+            void handleFile(event.target.files?.[0])
+            event.target.value = ''
+          }}
         />
-        {sourceInfo && (
-          <span style={{ color: '#475569', fontSize: '0.9rem', marginLeft: '0.5rem' }}>{sourceInfo}</span>
-        )}
-      </div>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', margin: '1rem 0' }}>
         <button
           type="button"
-          id="remover-run-btn"
-          className="btn btn-primary"
-          onClick={removeBackground}
-          disabled={!modelReady || !imageReady || isRunning}
+          className={`btn ${imageReady ? 'btn-secondary' : 'btn-primary'}`}
+          disabled={isRunning || isDecoding}
+          onClick={() => fileRef.current?.click()}
         >
-          {isRunning ? <Loader2 size={16} className="spin-icon" /> : <Upload size={16} />}
-          <span>3. Remove background</span>
+          <Upload size={18} />
+          {isDecoding
+            ? 'Reading photo…'
+            : imageReady
+              ? 'Choose another photo'
+              : 'Choose a photo'}
         </button>
-        <button
-          type="button"
-          id="remover-download-btn"
-          className="btn btn-secondary"
-          onClick={downloadResult}
-          disabled={!canDownload}
-        >
-          <Download size={16} />
-          <span>Download transparent PNG</span>
-        </button>
+        <p className="tool-note">
+          No signup · No watermark · Your photo stays on your device
+        </p>
       </div>
-
-      {timing && (
-        <p id="remover-timing" style={{ color: '#475569', fontSize: '0.9rem' }}>
-          {timing}
+      {imageReady && (
+        <div className="tool-actions">
+          <button
+            type="button"
+            id="remover-run-btn"
+            className="btn btn-primary"
+            onClick={() => void removeBackground()}
+            disabled={isRunning || isDecoding}
+          >
+            {isRunning ? (
+              <Loader2 size={18} className="spin-icon" />
+            ) : (
+              <Eraser size={18} />
+            )}
+            {isLoadingModel
+              ? 'Preparing…'
+              : isRunning
+                ? 'Removing background…'
+                : 'Remove background'}
+          </button>
+          {canDownload && (
+            <button
+              type="button"
+              id="remover-download-btn"
+              className="btn btn-secondary"
+              onClick={downloadResult}
+            >
+              <Download size={18} />
+              Download transparent PNG
+            </button>
+          )}
+          <span className="tool-note">{sourceInfo}</span>
+        </div>
+      )}
+      {isLoadingModel && (
+        <div role="status" className="tool-progress">
+          <p>
+            {loadState} {loadLabel}
+          </p>
+          <progress
+            aria-label="Processing files download"
+            value={loadProgress}
+            max={100}
+          />
+        </div>
+      )}
+      {status && (
+        <p className="tool-message" role="status">
+          {status}
         </p>
       )}
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
-        <div style={{ flex: '1 1 300px' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Before</h2>
-          <canvas
-            id="remover-before-canvas"
-            ref={beforeRef}
-            style={{ maxWidth: '100%', height: 'auto', border: '1px solid #cbd5e1', borderRadius: 8 }}
-          />
-        </div>
-        <div style={{ flex: '1 1 300px' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>After (transparent)</h2>
-          <canvas
-            id="remover-after-canvas"
-            ref={afterRef}
-            style={{ maxWidth: '100%', height: 'auto', border: '1px solid #cbd5e1', borderRadius: 8, ...checkerStyle }}
-          />
-        </div>
+      <div className="remover-previews" hidden={!imageReady}>
+        <figure>
+          <figcaption>Original</figcaption>
+          <div className="image-preview">
+            <canvas
+              ref={beforeRef}
+              id="remover-before-canvas"
+              aria-label="Original photo"
+            />
+          </div>
+        </figure>
+        <figure>
+          <figcaption>
+            {canDownload
+              ? 'Background removed'
+              : 'Your result will appear here'}
+          </figcaption>
+          <div className="image-preview checkerboard">
+            <canvas
+              ref={afterRef}
+              id="remover-after-canvas"
+              aria-label="Transparent result"
+              style={{ visibility: canDownload ? 'visible' : 'hidden' }}
+            />
+          </div>
+        </figure>
       </div>
-
-      <p style={{ color: '#475569', fontSize: '0.9rem', marginTop: '1rem' }}>
-        Quality note: best for product photos and portraits. Hair and fine edges can look softer than with premium
-        tools — that is the trade-off for a 4.4&nbsp;MB model that runs on phones.
+      <p className="tool-note">
+        Best for portraits and product photos. Hair, glass, and fine edges may
+        need further editing.
       </p>
-
-      {status && (
-        <pre
-          id="remover-status"
-          style={{
-            whiteSpace: 'pre-wrap',
-            background: '#f1f5f9',
-            padding: '0.75rem',
-            fontFamily: 'monospace',
-            fontSize: '0.85rem',
-            borderRadius: 8,
-            marginTop: '1rem',
-          }}
-        >
-          {status}
-        </pre>
-      )}
-    </div>
+    </section>
   )
 }

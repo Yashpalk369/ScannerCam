@@ -38,7 +38,7 @@
     },
     {
       "q": "Does Scanner.cam have OCR or text extraction?",
-      "a": "Yes. Open Export, expand Advanced options, and enable Searchable PDF (OCR). English text recognition runs locally in your browser and adds a searchable, selectable text layer to the exported PDF. First use needs internet access to download recognition files. Recognition accuracy depends on scan quality, and text selection positions are approximate."
+      "a": "Yes. Open Export, expand Advanced options, and enable Searchable PDF (OCR). English, Spanish, French, and German recognition can add a searchable text layer to the exported PDF. English, Spanish, French, German, Hindi, and Arabic are available as Unicode text downloads. Recognition runs locally in your browser. First use needs internet access to download recognition files. Recognition accuracy depends on scan quality, and text selection positions are approximate."
     },
     {
       "q": "Is there a limit on how large my scanned files can be?",

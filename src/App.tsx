@@ -1,4 +1,8 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react'
+import React, { useEffect, useRef, useState, lazy, Suspense } from 'react'
+import tools from './content/tools.json'
+import { ToolContent, ToolDirectory } from './components/Tools/ToolDirectory'
+import { SiteHeader } from './components/Layout/SiteShell'
+import { PageTools } from './components/Editor/PageTools'
 import { heading } from './content/homepage.json'
 import { Header } from './components/Layout/Header'
 import { SiteFooter } from './components/Layout/SiteShell'
@@ -9,23 +13,35 @@ import { SeoArticle } from './components/Content/SeoArticle'
 import { useScanner } from './hooks/useScanner'
 import { Loader2, AlertCircle, CheckCircle2, UploadCloud } from 'lucide-react'
 import './styles/app.css'
+import './styles/tools.css'
 
 const CameraModal = lazy(() =>
-  import('./components/Camera/CameraModal').then((m) => ({ default: m.CameraModal })),
+  import('./components/Camera/CameraModal').then((m) => ({
+    default: m.CameraModal,
+  })),
 )
 const ExportModal = lazy(() =>
-  import('./components/Export/ExportModal').then((m) => ({ default: m.ExportModal })),
+  import('./components/Export/ExportModal').then((m) => ({
+    default: m.ExportModal,
+  })),
 )
 const BackgroundRemover = lazy(() =>
-  import('./components/Tools/BackgroundRemover').then((m) => ({ default: m.BackgroundRemover })),
+  import('./components/Tools/BackgroundRemover').then((m) => ({
+    default: m.BackgroundRemover,
+  })),
 )
 
-export const App: React.FC = () => {
+const ScannerApp: React.FC = () => {
+  const path = window.location.pathname.replace(/\/$/, '')
+  const tool = tools.find((t) => t.path === path)
+  const [isImporting, setIsImporting] = useState(false)
+  const importLock = useRef(false)
+  const [pageTool, setPageTool] = useState<'redact' | 'flatten' | null>(null)
   const {
     pages,
     activePageId,
     activePage,
-    isProcessing,
+    isProcessing: scannerProcessing,
     statusMessage,
     isError,
     storageWarning,
@@ -38,6 +54,7 @@ export const App: React.FC = () => {
     addBlobAsPage,
     addBlobsAsPages,
     updateFilter,
+    replaceActiveRaster,
     rotateActivePage,
     startEditCorners,
     cancelEditCorners,
@@ -57,27 +74,43 @@ export const App: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
 
-  // The background remover is a pathname-based route in this router-less SPA.
-  // The path never changes during a session, so this is constant per page load.
-  const isRemoverRoute =
-    typeof window !== 'undefined' &&
-    (window.location.pathname === '/remove-background' ||
-      window.location.pathname === '/remove-background/')
-
-  // Handle file uploads (batch multi-image support)
+  const isProcessing = scannerProcessing || isImporting
+  const modalOpen = isCameraOpen || isExportOpen || Boolean(pageTool)
   const handleAddFiles = async (files: FileList) => {
-    if (isProcessing || isCameraOpen || isExportOpen) return
-    const validImages: Blob[] = []
-    for (let i = 0; i < files.length; i += 1) {
-      const file = files[i]
-      if (file.type.startsWith('image/')) {
-        validImages.push(file)
+    if (isProcessing || modalOpen || importLock.current) return
+    importLock.current = true
+    setIsImporting(true)
+    const warnings: string[] = []
+    const chosenFiles = Array.from(files)
+    try {
+      const { importFile } = await import('./core/import/files')
+      const blobs: Blob[] = [],
+        hints: { name?: string; preserveFrame: boolean }[] = []
+      for (const file of chosenFiles) {
+        setStatus(`Reading ${file.name}…`)
+        try {
+          for await (const item of importFile(file)) {
+            blobs.push(item.blob)
+            hints.push({
+              preserveFrame: item.preserveFrame,
+              ...(item.preserveFrame ? { name: item.name } : {}),
+            })
+          }
+        } catch (error) {
+          warnings.push(
+            `${file.name}: ${error instanceof Error ? error.message : 'Could not read this file.'}`,
+          )
+        }
       }
-    }
-    if (validImages.length > 0) {
-      await addBlobsAsPages(validImages, 'magic')
-    } else {
-      setStatus('Choose image files such as JPG, PNG, or WebP. PDF import is not supported.', true)
+      if (blobs.length) await addBlobsAsPages(blobs, 'magic', hints)
+      if (warnings.length) setStatus(warnings.join(' '), true)
+      if (!blobs.length && !warnings.length)
+        setStatus('Choose a PDF or document photos.', true)
+    } catch {
+      setStatus('Could not import files. Try a smaller batch.', true)
+    } finally {
+      setIsImporting(false)
+      importLock.current = false
     }
   }
 
@@ -95,7 +128,7 @@ export const App: React.FC = () => {
       if (!hasFiles) return
 
       e.preventDefault()
-      if (isProcessing || isCameraOpen || isExportOpen) return
+      if (isProcessing || modalOpen) return
       setIsDraggingOver(true)
     }
     const onDragLeave = (e: DragEvent) => {
@@ -104,7 +137,6 @@ export const App: React.FC = () => {
       }
     }
     const onDrop = (e: DragEvent) => {
-      if (isRemoverRoute) return
       const hasFiles = e.dataTransfer?.types
         ? Array.from(e.dataTransfer.types).includes('Files')
         : false
@@ -112,6 +144,7 @@ export const App: React.FC = () => {
 
       e.preventDefault()
       setIsDraggingOver(false)
+      if (isProcessing || modalOpen) return
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
         handleAddFiles(e.dataTransfer.files)
       }
@@ -126,12 +159,12 @@ export const App: React.FC = () => {
       window.removeEventListener('dragleave', onDragLeave)
       window.removeEventListener('drop', onDrop)
     }
-  }, [isProcessing, isCameraOpen, isExportOpen])
+  }, [isProcessing, modalOpen])
 
   // Keyboard navigation + undo/redo
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (isRemoverRoute) return
+      if (pageTool) return
       if (isCameraOpen || isExportOpen) {
         if (e.key === 'Escape') {
           setIsCameraOpen(false)
@@ -145,7 +178,13 @@ export const App: React.FC = () => {
         return
       }
 
-      if (e.defaultPrevented || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement || (e.target instanceof HTMLElement && e.target.isContentEditable)) {
+      if (
+        e.defaultPrevented ||
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable)
+      ) {
         return
       }
       if (isProcessing) return
@@ -159,7 +198,10 @@ export const App: React.FC = () => {
       }
 
       // Redo: Ctrl+Y or Ctrl+Shift+Z
-      if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (key === 'y' || (key === 'z' && e.shiftKey))
+      ) {
         e.preventDefault()
         if (canRedo) redoAction()
         return
@@ -193,6 +235,7 @@ export const App: React.FC = () => {
   }, [
     isCameraOpen,
     isExportOpen,
+    pageTool,
     isProcessing,
     editMode,
     cancelEditCorners,
@@ -208,128 +251,171 @@ export const App: React.FC = () => {
     redoAction,
   ])
 
-  if (isRemoverRoute) {
-    return (
-      <div className="scanner-app-shell">
-        <div className="scanner-app-content">
-          <Header
-            pageCount={0}
-            isProcessing={false}
-            onOpenCamera={() => {}}
-            onOpenExport={() => {}}
-            onAddFiles={() => {}}
-            onClearAll={() => {}}
-          />
-          <main className="scanner-workspace">
-            <Suspense fallback={null}>
-              <BackgroundRemover />
-            </Suspense>
-          </main>
-          <SiteFooter />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="scanner-app-shell">
-      <div className="scanner-app-content" inert={isCameraOpen || isExportOpen}>
-      {/* Top Header */}
-      <Header
-        pageCount={pages.length}
-        isProcessing={isProcessing}
-        onOpenCamera={() => setIsCameraOpen(true)}
-        onOpenExport={() => setIsExportOpen(true)}
-        onAddFiles={handleAddFiles}
-        onClearAll={clearAllPages}
-      />
+      <div className="scanner-app-content" inert={modalOpen}>
+        {/* Top Header */}
+        <Header
+          pageCount={pages.length}
+          isProcessing={isProcessing}
+          onOpenCamera={() => setIsCameraOpen(true)}
+          onOpenExport={() => setIsExportOpen(true)}
+          onAddFiles={handleAddFiles}
+          onClearAll={clearAllPages}
+        />
 
-      <div role="region" aria-labelledby="scanner-page-title">
-      <h1 className="scanner-page-title" id="scanner-page-title">{heading}</h1>
-      {storageWarning && <p className="scanner-storage-warning" role="alert">{storageWarning}</p>}
-      </div>
-
-      {/* Main Workspace Layout */}
-      <main className="scanner-workspace">
-        <section className="editor-main-area">
-          {/* Active Page Meta Header */}
-          {activePage && (
-            <div className="page-meta-header">
-              <span className="page-meta-title">{activePage.name}</span>
-              <span className="page-meta-details">
-                {activePage.width} × {activePage.height} px
-                {editMode ? ' • EDITING CORNERS' : ` • ${activePage.filter.toUpperCase()}`}
-              </span>
-            </div>
+        <div role="region" aria-labelledby="scanner-page-title">
+          <h1 className="scanner-page-title" id="scanner-page-title">
+            {tool?.heading ?? heading}
+          </h1>
+          {tool && <p className="tool-route-intro">{tool.intro}</p>}
+          {storageWarning && (
+            <p className="scanner-storage-warning" role="alert">
+              {storageWarning}
+            </p>
           )}
+        </div>
 
-          {/* Canvas & Corner Editor */}
-          <DocumentCanvas
-            page={activePage ?? null}
-            editMode={editMode}
-            editingQuad={editingQuad}
-            onUpdateQuadCorner={updateQuadCorner}
+        {/* Main Workspace Layout */}
+        <main className="scanner-workspace">
+          <section className="editor-main-area">
+            {/* Active Page Meta Header */}
+            {activePage && (
+              <div className="page-meta-header">
+                <span className="page-meta-title">{activePage.name}</span>
+                <span className="page-meta-details">
+                  {activePage.width} × {activePage.height} px
+                  {editMode
+                    ? ' • EDITING CORNERS'
+                    : ` • ${activePage.filter.toUpperCase()}`}
+                </span>
+              </div>
+            )}
+
+            {/* Canvas & Corner Editor */}
+            <DocumentCanvas
+              importOnly={Boolean(tool)}
+              page={activePage ?? null}
+              editMode={editMode}
+              editingQuad={editingQuad}
+              onUpdateQuadCorner={updateQuadCorner}
+              isProcessing={isProcessing}
+              onOpenCamera={() => setIsCameraOpen(true)}
+              onAddFiles={handleAddFiles}
+            />
+
+            {activePage && !editMode && (
+              <div className="page-extra-actions">
+                {path === '/image-to-text' && (
+                  <button
+                    className="btn btn-primary"
+                    disabled={isProcessing}
+                    onClick={() => setIsExportOpen(true)}
+                  >
+                    Extract text
+                  </button>
+                )}
+                <button
+                  className="btn btn-secondary"
+                  disabled={isProcessing}
+                  onClick={() => setPageTool('redact')}
+                >
+                  Redact
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  disabled={isProcessing}
+                  onClick={() => setPageTool('flatten')}
+                >
+                  Flatten curved page
+                </button>
+              </div>
+            )}
+            {/* Bottom Filter & Actions Toolbar */}
+            <FilterToolbar
+              activePage={activePage ?? null}
+              editMode={editMode}
+              isProcessing={isProcessing}
+              onUpdateFilter={updateFilter}
+              onRotate={rotateActivePage}
+              onStartEditCorners={startEditCorners}
+              onCancelEditCorners={cancelEditCorners}
+              onApplyPerspective={applyPerspective}
+              onResetCorners={resetCorners}
+              onAutoDetectCorners={autoDetectCorners}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={undoAction}
+              onRedo={redoAction}
+            />
+          </section>
+
+          {/* Sidebar / Bottom Page Strip */}
+          <PageStrip
+            pages={pages}
+            activePageId={activePageId}
             isProcessing={isProcessing}
-            onOpenCamera={() => setIsCameraOpen(true)}
+            onSelectPage={setActivePageId}
+            onMovePage={movePage}
+            onReorderPages={reorderPages}
+            onRemovePage={removePage}
             onAddFiles={handleAddFiles}
           />
+        </main>
 
-          {/* Bottom Filter & Actions Toolbar */}
-          <FilterToolbar
-            activePage={activePage ?? null}
-            editMode={editMode}
-            isProcessing={isProcessing}
-            onUpdateFilter={updateFilter}
-            onRotate={rotateActivePage}
-            onStartEditCorners={startEditCorners}
-            onCancelEditCorners={cancelEditCorners}
-            onApplyPerspective={applyPerspective}
-            onResetCorners={resetCorners}
-            onAutoDetectCorners={autoDetectCorners}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onUndo={undoAction}
-            onRedo={redoAction}
-          />
-        </section>
+        {/* Global Status Bar */}
+        <div
+          className="scanner-status-bar"
+          role="region"
+          aria-label="Scanner status"
+        >
+          <div className="status-indicator">
+            {isProcessing ? (
+              <Loader2 size={15} className="spin-icon text-brand" />
+            ) : isError ? (
+              <AlertCircle size={15} className="text-danger" />
+            ) : (
+              <CheckCircle2 size={15} className="text-brand" />
+            )}
+            <span className={`status-text ${isError ? 'error' : ''}`}>
+              {statusMessage}
+            </span>
+          </div>
 
-        {/* Sidebar / Bottom Page Strip */}
-        <PageStrip
-          pages={pages}
-          activePageId={activePageId}
-          isProcessing={isProcessing}
-          onSelectPage={setActivePageId}
-          onMovePage={movePage}
-          onReorderPages={reorderPages}
-          onRemovePage={removePage}
-          onAddFiles={handleAddFiles}
+          <div className="status-shortcuts">
+            <span>
+              Ctrl+Z (Undo) • Ctrl+Y (Redo) • R (Rotate) • E (Crop) • Arrows
+              (Nav) • Esc (Cancel)
+            </span>
+          </div>
+        </div>
+
+        {/* SEO, GEO & AEO Content Section */}
+        {tool ? (
+          <ToolContent path={path} />
+        ) : (
+          <>
+            <nav className="tool-discovery" aria-label="More free tools">
+              More free tools: <a href="/pdf-editor">PDF page editor</a> ·{' '}
+              <a href="/compress-pdf">Compress PDF</a> ·{' '}
+              <a href="/remove-background">Background remover</a> ·{' '}
+              <a href="/tools">All tools</a>
+            </nav>
+            <SeoArticle />
+          </>
+        )}
+
+        <SiteFooter />
+      </div>
+
+      {pageTool && activePage && (
+        <PageTools
+          page={activePage}
+          mode={pageTool}
+          onClose={() => setPageTool(null)}
+          onApply={replaceActiveRaster}
         />
-      </main>
-
-      {/* Global Status Bar */}
-      <div className="scanner-status-bar" role="region" aria-label="Scanner status">
-        <div className="status-indicator">
-          {isProcessing ? (
-            <Loader2 size={15} className="spin-icon text-brand" />
-          ) : isError ? (
-            <AlertCircle size={15} className="text-danger" />
-          ) : (
-            <CheckCircle2 size={15} className="text-brand" />
-          )}
-          <span className={`status-text ${isError ? 'error' : ''}`}>{statusMessage}</span>
-        </div>
-
-        <div className="status-shortcuts">
-          <span>Ctrl+Z (Undo) • Ctrl+Y (Redo) • R (Rotate) • E (Crop) • Arrows (Nav) • Esc (Cancel)</span>
-        </div>
-      </div>
-
-      {/* SEO, GEO & AEO Content Section */}
-      <SeoArticle />
-
-      <SiteFooter />
-      </div>
-
+      )}
       {/* Camera Capture Modal */}
       {isCameraOpen && (
         <Suspense fallback={null}>
@@ -364,6 +450,33 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+export const App: React.FC = () => {
+  const path = window.location.pathname.replace(/\/$/, '')
+  const tool = tools.find((t) => t.path === path)
+  if (!tool || tool.workspace === 'scanner') return <ScannerApp />
+  return (
+    <div className="scanner-app-shell">
+      <SiteHeader />
+      <main className="tool-page">
+        <header className="tool-hero">
+          <p className="tool-eyebrow">Free tools · No signup</p>
+          <h1>{tool.heading}</h1>
+          <p>{tool.intro}</p>
+        </header>
+        {path === '/tools' ? (
+          <ToolDirectory />
+        ) : (
+          <Suspense fallback={<p role="status">Opening background remover…</p>}>
+            <BackgroundRemover />
+          </Suspense>
+        )}
+        <ToolContent path={path} />
+      </main>
+      <SiteFooter />
     </div>
   )
 }

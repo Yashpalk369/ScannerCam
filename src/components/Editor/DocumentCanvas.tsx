@@ -8,6 +8,7 @@ import { calculateImageView, clampZoom, zoomAtPoint } from '../../core/cv/viewer
 import type { ViewerTransform, ViewerViewport } from '../../core/cv/viewerTransform'
 
 interface DocumentCanvasProps {
+  importOnly?: boolean
   page: ScanPage | null
   editMode: boolean
   editingQuad: Quad | null
@@ -24,6 +25,7 @@ type ViewerGesture = { kind: 'pan'; start: Point; transform: ViewerTransform }
 
 export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   page,
+  importOnly = false,
   editMode,
   editingQuad,
   onUpdateQuadCorner,
@@ -460,13 +462,13 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
       <div className="canvas-empty-state">
         <div className="empty-content">
           <span className="scanner-start-icon" aria-hidden="true"><Camera size={32} /></span>
-          <p className="empty-title">Scan your first document</p>
-          <p className="empty-subtitle">Use your camera or upload photos to create a clean PDF.</p>
+          <p className="empty-title">{importOnly ? 'Add PDFs or document photos' : 'Scan your first document'}</p>
+          <p className="empty-subtitle">Upload PDFs, HEIC, or document photos to create a clean PDF.</p>
           <div className="scanner-start-actions">
-            <button type="button" className="btn btn-primary" onClick={onOpenCamera} disabled={isProcessing}><Camera size={18} />Scan Document</button>
-            <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}><Upload size={18} />Upload Images</button>
+            {!importOnly && <button type="button" className="btn btn-primary" onClick={onOpenCamera} disabled={isProcessing}><Camera size={18} />Scan Document</button>}
+            <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}><Upload size={18} />Upload Files</button>
           </div>
-          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={event => { if (event.target.files?.length) onAddFiles(event.target.files); event.target.value = '' }} />
+          <input ref={fileInputRef} type="file" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple hidden onChange={event => { if (event.target.files?.length) onAddFiles(event.target.files); event.target.value = '' }} />
           <p className="scanner-start-privacy"><ShieldCheck size={15} />Free · No signup · Documents stay on your device</p>
         </div>
       </div>

@@ -67,3 +67,24 @@ Merged the newer main-branch SEO commits, preserving both new contract/whiteboar
 ## Empty-screen control cleanup
 
 Removed the redundant Scanner navigation item. The Open Scanner header CTA appears only away from the tool. The scanner toolbar stays hidden until a page is present, leaving the central Scan Document and Upload Images controls as the starting actions. Regression checks verify toolbar visibility and that camera, upload, and export actions remain available after adding a page.
+
+## Multi-tool release — 28 October 2026
+
+The scanner remains at `/`. A shared tools registry now provides `/tools`, `/remove-background`, `/pdf-editor`, `/compress-pdf`, `/image-to-text`, `/redact-pdf`, and `/flatten-page`. Each has a unique initial HTML title, description, canonical URL, crawlable introduction/instructions/FAQ, breadcrumb/FAQ structured data, and WebApplication data where appropriate. Shared navigation and footer links expose the tools. No ranking, rich-result eligibility, or AI citation outcome is guaranteed by these changes.
+
+Background removal now starts from a photo picker/drop area, loads its processing files automatically when requested, and shows original/result previews and a transparent PNG download. Technical logs are no longer product UI. The original local model is unchanged and was exercised in a real browser without image-upload requests.
+
+All seven proposed features have implementations: local PDF page import/editing/merging; measured target-size compression and first-page preview; native/fallback HEIC decoding; six-language OCR with Unicode text downloads; pixel-based redaction with a rebased working source; manual curve correction with preview/undo; and application/receipt/print export presets. PDF import rasterizes pages and does not retain original text layers, forms, links, or digital signatures. Hindi/Arabic support text downloads; searchable PDF text embedding is limited to English/Spanish/French/German. Curve correction is manual and intended for gentle bends. `TOOLS.md` describes file/device limits and how to add another tool.
+
+Validation:
+
+- Production build and TypeScript checks pass; 27 unit tests pass.
+- Full Chromium regression suite: 49 passed, including all existing camera, recovery, crop, export, branding and navigation tests.
+- Eight feature tests also pass against the built production site, including mixed PDF/photo import, HEIC conversion, measured compression, redaction/valid JPG bytes, curve controls, real ONNX inference, initial HTML without JavaScript, and OCR language/Unicode download handling.
+- The real Spanish OCR engine recognized `FACTURA TOTAL 12345`. All six pinned language data URLs returned HTTP 200. A UI check verified unsupported Hindi PDF text embedding is blocked while Unicode text download remains available.
+- All seven new pages have zero automated axe WCAG 2 A/AA, WCAG 2.1 AA, and best-practice violations in the checked state, and no overflow at 320/390/768/1440 px. These automated checks do not establish full assistive-technology or physical-device coverage.
+- Every sitemap page and internal link/fragment was checked by the browser suite. Article text (apart from removing a separator belonging to an orphan empty anchor), titles, and structured data were compared with incoming `main` across all 51 guide pages. Shared shell updates and existing markup repairs are applied by the build.
+- Production tool identity survives service-worker activation and offline reload. First use of processing models/decoders may still need connectivity.
+- Production dependencies: zero npm audit vulnerabilities. Compatible development dependency updates fixed the reported fast-uri and serialize-javascript advisories. Four low-severity development-only findings remain in the deepmerge/workbox build chain; npm's offered forced fix downgrades the PWA plugin to an incompatible old release and was not applied.
+
+Live deployment completion must be checked in Vercel. The environment can push Git commits but cannot inspect the live site or its deployment status.

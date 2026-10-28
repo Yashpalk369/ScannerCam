@@ -4,7 +4,7 @@ import { renderSiteHeader } from './siteShell.mjs'
 
 // Trusted local templates are also rendered into the public HTML pages at build time.
 export function SiteHeader() {
-  return <div className="site-shell-fragment" dangerouslySetInnerHTML={{ __html: renderSiteHeader(header, '/', false) }} />
+  return <div className="site-shell-fragment" dangerouslySetInnerHTML={{ __html: renderSiteHeader(header, window.location.pathname.replace(/\/$/, '') || '/', false) }} />
 }
 
 export function SiteFooter() {

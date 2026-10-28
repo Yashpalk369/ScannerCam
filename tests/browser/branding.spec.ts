@@ -23,7 +23,7 @@ test('all pages share the same header, logo, typography and footer on mobile and
   for (const width of [390, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
-    await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toBeEnabled()
     const expected = await branding(page)
     const footer = await page.locator('.site-footer').innerText()
     for (const path of paths.filter(path => path !== '/')) {
@@ -40,7 +40,7 @@ test('all pages share the same header, logo, typography and footer on mobile and
 
 test('navigation between scanner, guides, an article and a company page keeps branding consistent', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toBeEnabled()
   await expect(page.locator('.site-navigation a[aria-current=page]')).toHaveCount(0)
   const before = await branding(page)
   await page.locator('.site-navigation').getByRole('link', { name: 'Guides', exact: true }).click()
@@ -53,6 +53,6 @@ test('navigation between scanner, guides, an article and a company page keeps br
   await expect(page.getByRole('heading', { name: 'About Scanner.cam', exact: true })).toBeVisible()
   expect(await branding(page)).toEqual(before)
   await page.locator('.site-header').getByRole('link', { name: 'Scanner.cam home', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Upload Images', exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toBeEnabled()
   expect(await branding(page)).toEqual(before)
 })

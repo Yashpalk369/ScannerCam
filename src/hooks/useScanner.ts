@@ -157,7 +157,7 @@ export function useScanner() {
   )
 
   const addBlobsAsPages = useCallback(
-    async (blobs: Blob[], defaultFilter: FilterMode = 'magic') => {
+    async (blobs: Blob[], defaultFilter: FilterMode = 'magic', hints: { name?: string; preserveFrame?: boolean }[] = []) => {
       if (blobs.length === 0) return
       setIsProcessing(true)
       setStatus(`Processing 1 of ${blobs.length} images...`)
@@ -176,14 +176,15 @@ export function useScanner() {
 
             let initialQuad: Quad
             try {
-              initialQuad = await cvWorker.detectQuad(blob)
+              initialQuad = hints[i]?.preserveFrame ? defaultQuad(rawWidth, rawHeight) : await cvWorker.detectQuad(blob)
             } catch {
               initialQuad = defaultQuad(rawWidth, rawHeight)
             }
 
-            const warped = await cvWorker.warpAndFilter(blob, initialQuad, defaultFilter)
+            const pageFilter = hints[i]?.preserveFrame ? 'original' : defaultFilter
+            const warped = await cvWorker.warpAndFilter(blob, initialQuad, pageFilter)
             const currentTotal = pagesRef.current.length + newPagesList.length
-            const pageName = `Page ${currentTotal + 1}`
+            const pageName = hints[i]?.name || `Page ${currentTotal + 1}`
 
             const newPage: ScanPage = {
               id: crypto.randomUUID(),
@@ -192,7 +193,7 @@ export function useScanner() {
               previewUrl: URL.createObjectURL(warped.blob),
               width: warped.width,
               height: warped.height,
-              filter: defaultFilter,
+              filter: pageFilter,
               quad: initialQuad,
               rawBlob: blob,
               rawWidth,
@@ -224,6 +225,28 @@ export function useScanner() {
     },
     [setStatus, commitPages],
   )
+
+  const replaceActiveRaster = useCallback(async (blob: Blob) => {
+    if (!activePage) return
+    const image = await cvWorker.blobToImage(blob)
+    const width = image.naturalWidth
+    const height = image.naturalHeight
+    const updated = pages.map(page => page.id === activePage.id ? {
+      ...page,
+      blob,
+      rawBlob: blob,
+      width,
+      height,
+      rawWidth: width,
+      rawHeight: height,
+      quad: defaultQuad(width, height),
+      filter: 'original' as const,
+      previewUrl: URL.createObjectURL(blob),
+    } : page)
+    URL.revokeObjectURL(activePage.previewUrl)
+    commitPages(updated, activePageId)
+    setStatus('Page edit applied. Review before exporting.')
+  }, [activePage, pages, activePageId, commitPages, setStatus])
 
   const updateFilter = useCallback(
     async (filter: FilterMode) => {
@@ -510,6 +533,7 @@ export function useScanner() {
     addBlobAsPage,
     addBlobsAsPages,
     updateFilter,
+    replaceActiveRaster,
     rotateActivePage,
     startEditCorners,
     cancelEditCorners,

@@ -30,7 +30,6 @@ interface OcrErrorResponse {
   error: string
 }
 
-
 const workerScope = self as unknown as {
   postMessage: (msg: unknown) => void
   onmessage: ((event: MessageEvent<OcrRequest>) => void) | null
@@ -39,23 +38,42 @@ const workerScope = self as unknown as {
 
 // Lazy Tesseract instance — created once and reused for subsequent pages
 let tesseractWorkerPromise: Promise<{
-  recognize: (img: string, opts?: unknown) => Promise<{ data: { text: string; hocr: string } }>
+  recognize: (
+    img: string,
+    opts?: unknown,
+  ) => Promise<{ data: { text: string; hocr: string } }>
   terminate: () => Promise<void>
 }> | null = null
 
+let currentLanguage = ''
+
 async function getTesseract(lang: string) {
   // Dynamically import Tesseract from CDN (avoids bundling in main chunk)
-  const { default: { createWorker } } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.esm.min.js' as string) as {
-    default: { createWorker: (lang: string, oem?: number, opts?: unknown) => Promise<unknown> }
+  const {
+    default: { createWorker },
+  } = (await import(
+    'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.esm.min.js' as string
+  )) as {
+    default: {
+      createWorker: (
+        lang: string,
+        oem?: number,
+        opts?: unknown,
+      ) => Promise<unknown>
+    }
   }
 
-  const worker = await createWorker(lang, 1, {
-    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+  const worker = (await createWorker(lang, 1, {
+    workerPath:
+      'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
     corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
-    langPath: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int',
+    langPath: `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${lang}@1.0.0/4.0.0_best_int`,
     cacheMethod: 'write',
-  }) as {
-    recognize: (img: string, opts?: unknown) => Promise<{ data: { text: string; hocr: string } }>
+  })) as {
+    recognize: (
+      img: string,
+      opts?: unknown,
+    ) => Promise<{ data: { text: string; hocr: string } }>
     terminate: () => Promise<void>
   }
 
@@ -68,12 +86,21 @@ workerScope.onmessage = async (event: MessageEvent<OcrRequest>) => {
   if (req.type !== 'OCR_PAGE') return
 
   try {
+    if (!['eng', 'spa', 'fra', 'deu', 'hin', 'ara'].includes(req.lang))
+      throw new Error('Unsupported OCR language.')
+    if (tesseractWorkerPromise && currentLanguage !== req.lang) {
+      await (await tesseractWorkerPromise).terminate()
+      tesseractWorkerPromise = null
+    }
     if (!tesseractWorkerPromise) {
+      currentLanguage = req.lang
       tesseractWorkerPromise = getTesseract(req.lang)
     }
 
     const tWorker = await tesseractWorkerPromise
-    const result = await tWorker.recognize(req.imageDataUrl, { rotateAuto: false })
+    const result = await tWorker.recognize(req.imageDataUrl, {
+      rotateAuto: false,
+    })
 
     const response: OcrSuccessResponse = {
       id: req.id,

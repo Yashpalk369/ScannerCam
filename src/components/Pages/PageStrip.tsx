@@ -194,7 +194,7 @@ export const PageStrip: React.FC<PageStripProps> = ({
           <button type="button" className="add-page-tile" disabled={isProcessing} onClick={() => fileInputRef.current?.click()}>
             <Plus size={24} /><span>Add Page</span>
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFileChange} />
+          <input ref={fileInputRef} type="file" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple hidden onChange={handleFileChange} />
         </div>
       </div>
     </aside>
