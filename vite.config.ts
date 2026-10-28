@@ -3,6 +3,32 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import deployment from './vercel.json' with { type: 'json' }
 
+// Copy the onnxruntime-web WASM backend files into dist/ort-wasm/ at build
+// time (version-synced with node_modules; nothing large is committed to the
+// repo). The loader fetches exactly ort-wasm-simd-threaded.mjs +
+// ort-wasm-simd-threaded.wasm — verified with a request-logging probe
+// against the standalone prototype in a plain Chromium.
+function copyOrtWasm(): Plugin {
+  let root = ''
+  return {
+    name: 'copy-ort-wasm',
+    configResolved(config) {
+      root = config.root
+    },
+    async writeBundle(options) {
+      const { copyFileSync, mkdirSync } = await import('node:fs')
+      const { resolve } = await import('node:path')
+      const outDir = options.dir ?? 'dist'
+      const dest = resolve(outDir, 'ort-wasm')
+      mkdirSync(dest, { recursive: true })
+      const srcDir = resolve(root, 'node_modules/onnxruntime-web/dist')
+      for (const file of ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) {
+        copyFileSync(resolve(srcDir, file), resolve(dest, file))
+      }
+    },
+  }
+}
+
 // Serve the same extensionless public pages locally as the Vercel deployment.
 function publicPageRoutes(): Plugin {
   const routes = deployment.rewrites.map(route => ({
@@ -28,7 +54,16 @@ function publicPageRoutes(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Resolve onnxruntime-web to its "extern wasm" build, so the WASM backend
+  // files come only from wasmPaths (dist/ort-wasm/, copied at build time)
+  // instead of Vite emitting a second hashed copy of the .wasm binary.
+  // This matches the tested prototype, which used ort.wasm.min.mjs and
+  // fetched exactly the plain simd-threaded pair.
+  resolve: {
+    conditions: ['onnxruntime-web-use-extern-wasm'],
+  },
   plugins: [
+    copyOrtWasm(),
     publicPageRoutes(),
     react(),
     VitePWA({
@@ -87,6 +122,26 @@ export default defineConfig({
             options: {
               cacheName: 'tesseract-cache',
               expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Background remover WASM backend (same-origin, lazy — cache after first use)
+            urlPattern: /\/ort-wasm\/[^/]+$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'remover-wasm-cache',
+              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Background remover model (same-origin, lazy — cache after first use)
+            urlPattern: /\/models\/[^/]+\.onnx$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'remover-model-cache',
+              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

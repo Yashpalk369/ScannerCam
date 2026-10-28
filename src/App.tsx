@@ -16,6 +16,9 @@ const CameraModal = lazy(() =>
 const ExportModal = lazy(() =>
   import('./components/Export/ExportModal').then((m) => ({ default: m.ExportModal })),
 )
+const BackgroundRemover = lazy(() =>
+  import('./components/Tools/BackgroundRemover').then((m) => ({ default: m.BackgroundRemover })),
+)
 
 export const App: React.FC = () => {
   const {
@@ -53,6 +56,13 @@ export const App: React.FC = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
+
+  // The background remover is a pathname-based route in this router-less SPA.
+  // The path never changes during a session, so this is constant per page load.
+  const isRemoverRoute =
+    typeof window !== 'undefined' &&
+    (window.location.pathname === '/remove-background' ||
+      window.location.pathname === '/remove-background/')
 
   // Handle file uploads (batch multi-image support)
   const handleAddFiles = async (files: FileList) => {
@@ -94,6 +104,7 @@ export const App: React.FC = () => {
       }
     }
     const onDrop = (e: DragEvent) => {
+      if (isRemoverRoute) return
       const hasFiles = e.dataTransfer?.types
         ? Array.from(e.dataTransfer.types).includes('Files')
         : false
@@ -120,6 +131,7 @@ export const App: React.FC = () => {
   // Keyboard navigation + undo/redo
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (isRemoverRoute) return
       if (isCameraOpen || isExportOpen) {
         if (e.key === 'Escape') {
           setIsCameraOpen(false)
@@ -195,6 +207,29 @@ export const App: React.FC = () => {
     undoAction,
     redoAction,
   ])
+
+  if (isRemoverRoute) {
+    return (
+      <div className="scanner-app-shell">
+        <div className="scanner-app-content">
+          <Header
+            pageCount={0}
+            isProcessing={false}
+            onOpenCamera={() => {}}
+            onOpenExport={() => {}}
+            onAddFiles={() => {}}
+            onClearAll={() => {}}
+          />
+          <main className="scanner-workspace">
+            <Suspense fallback={null}>
+              <BackgroundRemover />
+            </Suspense>
+          </main>
+          <SiteFooter />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="scanner-app-shell">

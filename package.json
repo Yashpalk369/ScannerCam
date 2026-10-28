@@ -27,6 +27,7 @@
     "idb": "^8.0.3",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.43.0",
+    "onnxruntime-web": "^1.31.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   }

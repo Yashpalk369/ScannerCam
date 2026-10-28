@@ -47,6 +47,14 @@
     {
       "source": "/blog/:slug/",
       "destination": "/blog/:slug.html"
+    },
+    {
+      "source": "/remove-background",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/remove-background/",
+      "destination": "/index.html"
     }
   ]
 }
