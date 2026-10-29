@@ -57,8 +57,31 @@ test('tool pages have crawlable content, unique canonicals and matching FAQ sche
         ['@graph'].find((item: any) => item['@type'] === 'FAQPage')
         .mainEntity.map((item: any) => item.name),
     ).toEqual(tool.faqs.map((faq) => faq.q))
+    const faqSchema = JSON.parse(graph!)['@graph'].find(
+      (item: any) => item['@type'] === 'FAQPage',
+    )
+    expect(
+      faqSchema.mainEntity.map((item: any) => ({
+        q: item.name,
+        a: item.acceptedAnswer.text,
+      })),
+    ).toEqual(tool.faqs)
     for (const faq of tool.faqs)
       await expect(page.getByText(faq.a, { exact: true })).toBeVisible()
+    await expect(page.getByText(tool.answer, { exact: true })).toBeVisible()
+    for (const section of tool.sections) {
+      await expect(
+        page.getByRole('heading', { name: section.heading, exact: true }),
+      ).toBeVisible()
+      for (const paragraph of section.paragraphs)
+        await expect(page.getByText(paragraph, { exact: true })).toBeVisible()
+    }
+    for (const link of tool.related)
+      await expect(
+        page
+          .locator('.tool-static-fallback')
+          .getByRole('link', { name: link.label, exact: true }),
+      ).toHaveAttribute('href', link.href)
     await expect(page.locator('.site-footer')).toHaveCount(1)
   }
   await context.close()
@@ -403,31 +426,64 @@ test('OCR language selection reaches the worker and Unicode text downloads retai
   expect(await page.evaluate(() => (window as any).__ocrLanguage)).toBe('hin')
 })
 
-test('background remover accepts HEIC photos with the local decoder', async ({ page }) => {
+test('background remover accepts HEIC photos with the local decoder', async ({
+  page,
+}) => {
   await page.goto('/remove-background')
-  await page.locator('#remover-file-input').setInputFiles('tests/fixtures/document.heic')
-  await expect(page.getByRole('button', { name: 'Remove background', exact: true })).toBeEnabled({ timeout: 20000 })
+  await page
+    .locator('#remover-file-input')
+    .setInputFiles('tests/fixtures/document.heic')
+  await expect(
+    page.getByRole('button', { name: 'Remove background', exact: true }),
+  ).toBeEnabled({ timeout: 20000 })
   await expect(page.getByText('Your photo is ready')).toBeVisible()
   await expect(page.locator('#remover-before-canvas')).toBeVisible()
 })
 
-test('searchable PDF words retain OCR coordinates and size', async ({ page }) => {
+test('searchable PDF words retain OCR coordinates and size', async ({
+  page,
+}) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
     const { parseHocrWords } = await import('/src/core/pdf/ocrWords.ts')
     const { createPdfBlob } = await import('/src/core/pdf/pdfBuilder.ts')
     const pdfjs = await import('/node_modules/pdfjs-dist/build/pdf.mjs')
-    pdfjs.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.min.mjs'
-    const c = document.createElement('canvas'); c.width = 1000; c.height = 1000
-    const ctx = c.getContext('2d')!; ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1000, 1000)
-    const blob = await new Promise<Blob>(resolve => c.toBlob(b => resolve(b!)))
-    const hocr = '<span class="ocrx_word" title="bbox 200 100 500 150; x_wconf 99">ACCOUNT</span>'
+    pdfjs.GlobalWorkerOptions.workerSrc =
+      '/node_modules/pdfjs-dist/build/pdf.worker.min.mjs'
+    const c = document.createElement('canvas')
+    c.width = 1000
+    c.height = 1000
+    const ctx = c.getContext('2d')!
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, 1000, 1000)
+    const blob = await new Promise<Blob>((resolve) =>
+      c.toBlob((b) => resolve(b!)),
+    )
+    const hocr =
+      '<span class="ocrx_word" title="bbox 200 100 500 150; x_wconf 99">ACCOUNT</span>'
     const words = parseHocrWords(hocr, 1000, 1000)
-    const pdfBlob = await createPdfBlob([{ id: 'test', name: 'test', blob, width: 1000, height: 1000 } as any], { searchable: true, ocrTexts: ['ACCOUNT'], ocrWords: [words], format: 'a4', margin: 20 })
-    const pdf = await pdfjs.getDocument({ data: new Uint8Array(await pdfBlob.arrayBuffer()) }).promise
+    const pdfBlob = await createPdfBlob(
+      [{ id: 'test', name: 'test', blob, width: 1000, height: 1000 } as any],
+      {
+        searchable: true,
+        ocrTexts: ['ACCOUNT'],
+        ocrWords: [words],
+        format: 'a4',
+        margin: 20,
+      },
+    )
+    const pdf = await pdfjs.getDocument({
+      data: new Uint8Array(await pdfBlob.arrayBuffer()),
+    }).promise
     const text = await (await pdf.getPage(1)).getTextContent()
     const item = text.items.find((item: any) => item.str === 'ACCOUNT') as any
-    return { words, x: item.transform[4], y: item.transform[5], width: item.width, height: item.height }
+    return {
+      words,
+      x: item.transform[4],
+      y: item.transform[5],
+      width: item.width,
+      height: item.height,
+    }
   })
   expect(result.words[0]).toMatchObject({ x0: 200, y0: 100, x1: 500, y1: 150 })
   // A square scan is centered on an A4 page, 555pt wide with 20pt side margins.
@@ -437,16 +493,72 @@ test('searchable PDF words retain OCR coordinates and size', async ({ page }) =>
   expect(result.y).toBeCloseTo(619.5, 0)
 })
 
-test('tool pages show a loading workspace rather than flashing the article', async ({ page }) => {
+test('tool pages show a loading workspace rather than flashing the article', async ({
+  page,
+}) => {
   let release!: () => void
-  const blocked = new Promise<void>(resolve => { release = resolve })
-  await page.route('**/src/main.tsx', async route => { await blocked; await route.continue() })
+  const blocked = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await page.route('**/src/main.tsx', async (route) => {
+    await blocked
+    await route.continue()
+  })
   try {
     await page.goto('/remove-background', { waitUntil: 'commit' })
     await expect(page.locator('[data-tool-loading]')).toBeVisible()
     await expect(page.locator('.tool-static-fallback')).toBeHidden()
-    await expect(page.getByRole('heading', { name: 'Free Background Remover Online' })).toBeVisible()
-  } finally { release() }
-  await expect(page.getByRole('button', { name: 'Choose a photo', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Free Background Remover Online' }),
+    ).toBeVisible()
+  } finally {
+    release()
+  }
+  await expect(
+    page.getByRole('button', { name: 'Choose a photo', exact: true }),
+  ).toBeVisible()
   await expect(page.locator('[data-tool-loading]')).toHaveCount(0)
+})
+
+test('each interactive tool presents its own answers and related links', async ({
+  page,
+}) => {
+  for (const tool of tools) {
+    await page.goto(tool.path)
+    const content = page.locator('.tool-explainer')
+    await expect(content.getByText(tool.answer, { exact: true })).toBeVisible()
+    for (const section of tool.sections) {
+      await expect(
+        content.getByRole('heading', { name: section.heading, exact: true }),
+      ).toBeVisible()
+      for (const paragraph of section.paragraphs)
+        await expect(
+          content.getByText(paragraph, { exact: true }),
+        ).toBeVisible()
+    }
+    for (const faq of tool.faqs) {
+      const detail = content
+        .locator('details')
+        .filter({ has: page.locator('summary', { hasText: faq.q }) })
+      await detail.locator('summary').click()
+      await expect(detail.getByText(faq.a, { exact: true })).toBeVisible()
+    }
+    for (const link of tool.related)
+      await expect(
+        content.getByRole('link', { name: link.label }),
+      ).toHaveAttribute('href', link.href)
+  }
+})
+
+test('the PDF compressor exposes a clear next step after upload', async ({
+  page,
+}) => {
+  await uploadPdf(page, '/compress-pdf')
+  await page
+    .getByRole('button', { name: 'Choose PDF size', exact: true })
+    .click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(
+    page.getByLabel('Maximum PDF size', { exact: true }),
+  ).toHaveValue('1000')
 })

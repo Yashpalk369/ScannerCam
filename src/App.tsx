@@ -306,6 +306,12 @@ const ScannerApp: React.FC = () => {
 
             {activePage && !editMode && (
               <div className="page-extra-actions">
+                {path === '/pdf-editor' && (
+                  <button className="btn btn-primary" disabled={isProcessing} onClick={() => setIsExportOpen(true)}>Export PDF</button>
+                )}
+                {path === '/compress-pdf' && (
+                  <button className="btn btn-primary" disabled={isProcessing} onClick={() => setIsExportOpen(true)}>Choose PDF size</button>
+                )}
                 {path === '/image-to-text' && (
                   <button
                     className="btn btn-primary"
@@ -316,14 +322,14 @@ const ScannerApp: React.FC = () => {
                   </button>
                 )}
                 <button
-                  className="btn btn-secondary"
+                  className={`btn ${path === '/redact-pdf' ? 'btn-primary' : 'btn-secondary'}`}
                   disabled={isProcessing}
                   onClick={() => setPageTool('redact')}
                 >
                   Redact
                 </button>
                 <button
-                  className="btn btn-secondary"
+                  className={`btn ${path === '/flatten-page' ? 'btn-primary' : 'btn-secondary'}`}
                   disabled={isProcessing}
                   onClick={() => setPageTool('flatten')}
                 >

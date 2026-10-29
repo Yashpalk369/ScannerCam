@@ -4,7 +4,7 @@ The scanner keeps `/` and its existing SEO identity. `/tools` lists available to
 
 ## Adding a tool
 
-1. Add its route, title, description, heading, introduction, instructions, FAQ, and workspace to `src/content/tools.json`.
+1. Add its route, title, description, heading, introduction, quick answer, practical sections, related links, instructions, FAQ, and workspace to `src/content/tools.json`.
 2. Implement its workspace in `src/components/Tools` and add the workspace dispatch in `src/App.tsx`. Heavy engines should be lazy-loaded after the tool is chosen; file contents must remain local.
 3. Add exact rewrites for its route and trailing-slash alias in `vercel.json`, and its canonical URL in `public/sitemap.xml`.
 4. Extend the service-worker navigation denylist in `vite.config.ts` so it cannot receive the scanner homepage as a fallback. The registry automatically generates its own HTML and precache entry.
