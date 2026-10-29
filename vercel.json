@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/passport-photo-maker/",
+      "destination": "/passport-photo-maker.html"
+    },
+    {
+      "source": "/passport-photo-maker",
+      "destination": "/passport-photo-maker.html"
+    },
+    {
       "source": "/sign-pdf/",
       "destination": "/sign-pdf.html"
     },

@@ -1042,5 +1042,47 @@
         "label": "Explore all tools"
       }
     ]
+  },
+  {
+    "path": "/passport-photo-maker",
+    "title": "Passport Photo Crop and Resize | Scanner.cam",
+    "heading": "Passport Photo Maker",
+    "description": "Crop and resize a photo manually using common size presets or custom dimensions. Check the requirements of the organization receiving your photo; this tool does not verify compliance or change the background.",
+    "intro": "Crop and resize a photo manually using common size presets or custom dimensions. Check the requirements of the organization receiving your photo; this tool does not verify compliance or change the background.",
+    "workspace": "passport",
+    "answer": "Crop and resize a photo manually using common size presets or custom dimensions. Check the requirements of the organization receiving your photo; this tool does not verify compliance or change the background.",
+    "steps": [
+      "Choose a photo.",
+      "Select dimensions and adjust the crop.",
+      "Preview and download the image."
+    ],
+    "sections": [
+      {
+        "heading": "Check official requirements",
+        "paragraphs": [
+          "Photo rules vary by country and application. Confirm dimensions, background, head position and other requirements with the receiving authority before submitting."
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Does this guarantee an accepted passport photo?",
+        "a": "No. Check the official requirements for your application."
+      },
+      {
+        "q": "Does the tool change the background?",
+        "a": "No. It crops and resizes your photo; it does not replace the background."
+      }
+    ],
+    "related": [
+      {
+        "href": "/remove-background",
+        "label": "Remove a photo background"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all tools"
+      }
+    ]
   }
 ]

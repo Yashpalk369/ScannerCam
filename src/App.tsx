@@ -35,6 +35,7 @@ const SplitPdf = lazy(() => import('./components/Tools/SplitPdf').then(m => ({ d
 const ImageUtilities = lazy(() => import('./components/Tools/ImageUtilities').then(m => ({ default: m.ImageUtilities })))
 const RemoveImageMetadata = lazy(() => import('./components/Tools/RemoveImageMetadata').then(m => ({ default: m.RemoveImageMetadata })))
 const SignPdf = lazy(() => import('./components/Tools/SignPdf').then(m => ({ default: m.SignPdf })))
+const PassportPhotoMaker = lazy(() => import('./components/Tools/PassportPhotoMaker').then(m => ({ default: m.PassportPhotoMaker })))
 
 const ScannerApp: React.FC = () => {
   const path = window.location.pathname.replace(/\/$/, '')
@@ -487,6 +488,7 @@ export const App: React.FC = () => {
              path === '/resize-image-to-kb' ? <ImageUtilities mode="resize-image-to-kb" /> :
              path === '/heic-to-jpg' ? <ImageUtilities mode="heic-to-jpg" /> :
              path === '/remove-image-metadata' ? <RemoveImageMetadata /> :
+             path === '/passport-photo-maker' ? <PassportPhotoMaker /> :
              path === '/sign-pdf' ? <SignPdf /> : null}
           </Suspense>
         )}
