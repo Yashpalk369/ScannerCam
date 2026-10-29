@@ -9,6 +9,7 @@ import type { ViewerTransform, ViewerViewport } from '../../core/cv/viewerTransf
 
 interface DocumentCanvasProps {
   importOnly?: boolean
+  toolPath?: string
   page: ScanPage | null
   editMode: boolean
   editingQuad: Quad | null
@@ -26,6 +27,7 @@ type ViewerGesture = { kind: 'pan'; start: Point; transform: ViewerTransform }
 export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   page,
   importOnly = false,
+  toolPath,
   editMode,
   editingQuad,
   onUpdateQuadCorner,
@@ -458,12 +460,19 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
   }
 
   if (!page) {
+    const toolPrompts: Record<string, string> = {
+      '/pdf-editor': 'Add PDFs or photos to arrange and combine their pages.',
+      '/compress-pdf': 'Add a scanned PDF or photos to reduce the exported file size.',
+      '/image-to-text': 'Add a document photo or scanned PDF to extract text.',
+      '/redact-pdf': 'Add a scanned PDF or photo to hide sensitive information.',
+      '/flatten-page': 'Add a page photo to straighten gentle curves.',
+    }
     return (
       <div className="canvas-empty-state">
         <div className="empty-content">
           <span className="scanner-start-icon" aria-hidden="true">{importOnly ? <Upload size={32} /> : <Camera size={32} />}</span>
           <p className="empty-title">{importOnly ? 'Add PDFs or document photos' : 'Scan your first document'}</p>
-          <p className="empty-subtitle">Upload PDFs, HEIC, or document photos to create a clean PDF.</p>
+          <p className="empty-subtitle">{toolPrompts[toolPath ?? ''] ?? 'Add PDFs, HEIC files, or document photos to get started.'}</p>
           <div className="scanner-start-actions">
             {!importOnly && <button type="button" className="btn btn-primary" onClick={onOpenCamera} disabled={isProcessing}><Camera size={18} />Scan Document</button>}
             <button type="button" className={`btn ${importOnly ? 'btn-primary' : 'btn-secondary'}`} onClick={() => fileInputRef.current?.click()} disabled={isProcessing}><Upload size={18} />Upload Files</button>

@@ -152,7 +152,7 @@ export const SeoArticle: React.FC = () => {
             <h4>No App Store Installation</h4>
             <p>
               Instant access on any desktop or mobile browser (iOS Safari, Android Chrome, Edge, Firefox).
-              No downloads, storage consumption, or permissions tracking.
+              No app installation is required. The browser may use local storage and ask for camera permission.
             </p>
           </div>
 
@@ -299,7 +299,7 @@ export const SeoArticle: React.FC = () => {
                 <Camera size={18} /> Capture or Upload
               </h4>
               <p>
-                Click <strong>Scan Camera</strong> to open the full-screen camera viewfinder with live document
+                Click <strong>Scan Document</strong> to open the full-screen camera viewfinder with live document
                 framing lines, or drag-and-drop existing camera photos directly from your device.
               </p>
             </div>
