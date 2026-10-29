@@ -185,6 +185,12 @@
         "href": "/",
         "label": "Open the document scanner"
       }
+    ],
+    "features": [
+      "transparent PNG export",
+      "on-device processing",
+      "no signup",
+      "no watermark"
     ]
   },
   {
@@ -271,6 +277,13 @@
         "href": "/blog/how-to-scan-documents-with-phone-camera",
         "label": "Tips for sharper document photos"
       }
+    ],
+    "features": [
+      "reorder pages",
+      "rotate pages",
+      "delete pages",
+      "merge PDFs and photos",
+      "local processing"
     ]
   },
   {
@@ -357,6 +370,11 @@
         "href": "/tools",
         "label": "Explore all browser tools"
       }
+    ],
+    "features": [
+      "target-size compression",
+      "measured output size shown before download",
+      "local processing"
     ]
   },
   {
@@ -443,6 +461,12 @@
         "href": "/flatten-page",
         "label": "Straighten curved book pages first"
       }
+    ],
+    "features": [
+      "6 languages",
+      "scanned PDF input",
+      "UTF-8 text download",
+      "local OCR"
     ]
   },
   {
@@ -529,6 +553,11 @@
         "href": "/tools",
         "label": "Explore all browser tools"
       }
+    ],
+    "features": [
+      "pixel-replacing redaction",
+      "scanned PDF and photo input",
+      "local processing"
     ]
   },
   {
@@ -611,6 +640,11 @@
         "href": "/tools",
         "label": "Explore all browser tools"
       }
+    ],
+    "features": [
+      "manual bend controls",
+      "preview before applying",
+      "local processing"
     ]
   }
 ]

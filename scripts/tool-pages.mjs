@@ -85,6 +85,28 @@ export function renderToolHtml(html, tool) {
           : 'MultimediaApplication',
       operatingSystem: 'Web browser',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      ...(tool.features ? { featureList: tool.features } : {}),
+    })
+  if (tool.path === '/tools')
+    graph.push({
+      '@type': 'ItemList',
+      name: 'Scanner.cam tools',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Document scanner',
+          item: 'https://www.scanner.cam/',
+        },
+        ...tools
+          .filter((t) => t.path !== '/tools')
+          .map((t, i) => ({
+            '@type': 'ListItem',
+            position: i + 2,
+            name: t.heading,
+            item: `https://www.scanner.cam${t.path}`,
+          })),
+      ],
     })
   html = html.replace(
     '</head>',
