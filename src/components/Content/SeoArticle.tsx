@@ -175,8 +175,7 @@ export const SeoArticle: React.FC = () => {
           Comparison Matrix: Scanner.cam vs. CamScanner Mobile vs. Adobe Scan
         </h3>
         <p className="section-text">
-          Here is how Scanner.cam compares directly against conventional mobile scanning applications on key
-          privacy, feature, and pricing metrics:
+          Features and prices can vary by platform and plan. Check the official CamScanner and Adobe Scan documentation before choosing.
         </p>
 
         <div className="table-responsive" role="region" aria-label="Scanner feature comparison" tabIndex={0}>
@@ -196,7 +195,7 @@ export const SeoArticle: React.FC = () => {
                   <Check size={16} /> <strong>No (100% Local)</strong>
                 </td>
                 <td className="danger">
-                  <X size={16} /> Yes (Cloud Sync)
+                  Cloud sync available with an account
                 </td>
                 <td className="danger">
                   <X size={16} /> Yes (Adobe Cloud)
@@ -220,7 +219,7 @@ export const SeoArticle: React.FC = () => {
                   <Check size={16} /> <strong>Zero Signup</strong>
                 </td>
                 <td className="danger">
-                  <X size={16} /> Mandatory / Prompted
+                  Can be used without signing up
                 </td>
                 <td className="danger">
                   <X size={16} /> Adobe ID Required
@@ -267,20 +266,21 @@ export const SeoArticle: React.FC = () => {
                 <td className="highlight-col success">
                   <Check size={16} /> <strong>Unlimited Free</strong>
                 </td>
-                <td className="warning">Limited on Free</td>
-                <td className="success">Unlimited Free</td>
+                <td>Check current plan limits</td>
+                <td>Check current plan limits</td>
               </tr>
               <tr>
                 <td><strong>Price</strong></td>
                 <td className="highlight-col success">
                   <strong>100% Free Forever</strong>
                 </td>
-                <td>$4.99 - $9.99 / mo</td>
-                <td>Freemium ($9.99/mo)</td>
+                <td>Free and paid plans; check current pricing</td>
+                <td>Free and paid plans; check current pricing</td>
               </tr>
             </tbody>
           </table>
         </div>
+        <p className="section-text">Reviewed 29 October 2026. Sources: <a href="https://www.camscanner.com/faq?category=create-save">CamScanner help</a> and <a href="https://www.adobe.com/devnet-docs/adobescan/android/en/export.html">Adobe Scan help</a>. Features and pricing may change.</p>
       </section>
 
       {/* Step-by-Step Guide: How to Scan Documents Online */}
