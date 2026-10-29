@@ -1,9 +1,9 @@
 [
   {
     "path": "/tools",
-    "title": "Free Online Document & Image Tools | Scanner.cam",
+    "title": "Free Online Document Tools — No Signup, Private",
     "heading": "Everyday tools. Entirely in your browser.",
-    "description": "Free document and image tools with no signup. Scan documents, edit and compress PDFs, and remove photo backgrounds privately in your browser.",
+    "description": "Free document and image tools that run in your browser — scan, edit and compress PDFs, extract text, redact scans and remove backgrounds. No signup.",
     "intro": "Choose a tool, finish your task, and download the result. Your files are processed on your device, with no account required.",
     "steps": [
       "Choose a document or image tool.",
@@ -26,10 +26,26 @@
       {
         "q": "Do the tools work offline?",
         "a": "Some processing files must be downloaded on first use. Availability offline depends on which assets your browser has cached; keep an internet connection available when trying a feature for the first time."
+      },
+      {
+        "q": "Which tools does Scanner.cam offer?",
+        "a": "A document scanner, a background remover, a PDF page editor, a PDF compressor, image-to-text OCR, a PDF redaction tool and a book-page flattener — all free, all in your browser."
+      },
+      {
+        "q": "Do I need an app for these tools?",
+        "a": "No. Every tool opens in a browser on phones, tablets and computers. Nothing to install and no account to create."
+      },
+      {
+        "q": "Can I use these tools for work documents?",
+        "a": "Yes. Files are processed on your device and never uploaded, which suits sensitive documents — but always review outputs before sharing, especially redacted files."
+      },
+      {
+        "q": "What is the difference between the PDF editor and compress PDF?",
+        "a": "The PDF editor changes pages — their order, rotation, or which pages are kept — and combines PDFs and photos into one file. Compress PDF changes file size toward a target like 1 MB. Use the editor first, then compress."
       }
     ],
     "workspace": "directory",
-    "answer": "Scanner.cam provides free browser-based document and image tools. Choose a tool, add a file, and download the result without an account. Processing happens on your device.",
+    "answer": "Scanner.cam provides free browser-based document and image tools. Choose a tool, add a file, and download the result without an account. Processing happens on your device. Scanner.cam offers free document and image tools that run entirely in your browser: scan documents with your camera, remove photo backgrounds, edit and combine PDF pages, compress scanned PDFs to a target size, extract text with OCR, redact sensitive details, and flatten curved book pages. No signup, no app install, no file uploads — processing happens on your device and results download straight to it.",
     "sections": [
       {
         "heading": "Choose a tool for your task",
@@ -54,14 +70,42 @@
       {
         "href": "/blog/is-it-safe-to-scan-documents-online",
         "label": "Read the guide to online scanning privacy"
+      },
+      {
+        "href": "/remove-background",
+        "label": "Free Background Remover Online"
+      },
+      {
+        "href": "/pdf-editor",
+        "label": "Edit and Combine PDF Pages Online"
+      },
+      {
+        "href": "/compress-pdf",
+        "label": "Compress a Scanned PDF to Your Size Limit"
+      },
+      {
+        "href": "/image-to-text",
+        "label": "Extract Text from Images and Scanned PDFs"
+      },
+      {
+        "href": "/redact-pdf",
+        "label": "Redact Sensitive Information from Scans"
+      },
+      {
+        "href": "/flatten-page",
+        "label": "Straighten Gentle Curves in Book Scans"
+      },
+      {
+        "href": "/blog",
+        "label": "Browse the scanning guides"
       }
     ]
   },
   {
     "path": "/remove-background",
-    "title": "Free Background Remover — Transparent PNG, No Signup | Scanner.cam",
+    "title": "Remove Background Online Free — Transparent PNG",
     "heading": "Free Background Remover Online",
-    "description": "Remove photo backgrounds free on your device. Preview the original and cutout, then download a transparent PNG. No signup, watermark, or photo uploads.",
+    "description": "Remove a photo background free in your browser — no signup, no upload, no watermark. Preview the cutout and download a transparent PNG.",
     "intro": "Turn portraits and product photos into transparent PNGs. Choose a photo, remove the background, and download the result. Your image stays on your device.",
     "steps": [
       "Choose a JPG, PNG, WebP, or HEIC photo, or drop it into the upload area.",
@@ -92,10 +136,26 @@
       {
         "q": "Why are the edges of my cutout imperfect?",
         "a": "The automatic model estimates the subject boundary. Fine hair, glass, similar colors, and cluttered backgrounds can make that boundary harder to identify. Try a clearer photo and review the result."
+      },
+      {
+        "q": "Can I remove the background from a product photo for an online listing?",
+        "a": "Yes. Upload the product photo, remove the background and download the transparent PNG, then place it on a white background in any editor if a marketplace requires one."
+      },
+      {
+        "q": "Does the background remover work on my phone?",
+        "a": "Yes. It runs in your phone’s browser. The small on-device model downloads once and is then cached, so later removals start faster."
+      },
+      {
+        "q": "What is a transparent PNG?",
+        "a": "A PNG image whose background pixels carry no colour, so the subject can sit on any colour, photo or slide. JPG cannot do this — it always fills the background with a solid colour."
+      },
+      {
+        "q": "Can it cut out hair or fur cleanly?",
+        "a": "It works best where the subject stands out clearly from the background. Fine hair edges are approximate, so always preview the cutout before downloading."
       }
     ],
     "workspace": "background",
-    "answer": "Upload a JPG, PNG, WebP, or HEIC photo, choose Remove background, then download the transparent PNG. The image is processed in your browser without an account or photo upload.",
+    "answer": "Upload a JPG, PNG, WebP, or HEIC photo, choose Remove background, then download the transparent PNG. The image is processed in your browser without an account or photo upload. Scanner.cam's background remover runs a small AI model entirely on your device: upload a JPG, PNG, WebP or HEIC photo, the background is removed in your browser, and you download a transparent PNG. No account, no upload, no watermark. It works best on photos with a clear subject; hair and busy backgrounds may leave faint edges, so preview before downloading.",
     "sections": [
       {
         "heading": "When to use a transparent background",
@@ -120,14 +180,18 @@
       {
         "href": "/tools",
         "label": "Explore all browser tools"
+      },
+      {
+        "href": "/",
+        "label": "Open the document scanner"
       }
     ]
   },
   {
     "path": "/pdf-editor",
-    "title": "Free PDF Page Editor — Merge, Reorder & Rotate | Scanner.cam",
+    "title": "Reorder PDF Pages Online Free — Merge, Rotate, Delete",
     "heading": "Edit and Combine PDF Pages Online",
-    "description": "Import PDFs and photos, reorder or remove pages, rotate scans, and export one PDF. Free browser-based PDF page editing with no signup or file uploads.",
+    "description": "Reorder, rotate or delete PDF pages free in your browser — no signup, no upload. Combine PDFs and photos into one PDF and export it. Pages become images.",
     "intro": "Combine existing PDFs with document photos in one workspace. Reorder, rotate, or remove pages before exporting a new PDF. Imported pages become images; original links, forms, signatures, and text layers are not preserved.",
     "steps": [
       "Upload PDFs or images from your device.",
@@ -154,10 +218,26 @@
       {
         "q": "Will the original PDF be changed?",
         "a": "No. Importing creates a working copy in your browser, and exporting downloads a new PDF. Keep the original file if you need its existing text, links, forms, or signatures."
+      },
+      {
+        "q": "Can I merge two PDFs into one PDF?",
+        "a": "Yes. Import both PDFs, and photos too if needed, arrange the pages and export a single combined PDF."
+      },
+      {
+        "q": "Can I delete pages from a PDF online?",
+        "a": "Yes. Remove any pages in the Pages panel before export. Your original file is never changed."
+      },
+      {
+        "q": "Can I rotate a sideways scanned page?",
+        "a": "Yes. Select the page, rotate it the right way up, then export."
+      },
+      {
+        "q": "Does reordering PDF pages change the page content?",
+        "a": "No. Only the order changes. Note that the export is image-based: the original text layer, links, forms and signatures are not preserved."
       }
     ],
     "workspace": "scanner",
-    "answer": "Upload PDFs or document photos, arrange the pages, and export a combined PDF. The page editor runs locally; imported PDF pages are rendered as images.",
+    "answer": "Upload PDFs or document photos, arrange the pages, and export a combined PDF. The page editor runs locally; imported PDF pages are rendered as images. Scanner.cam's PDF page editor runs entirely in your browser: import PDFs and photos, drag or move pages into order, rotate sideways scans, remove unwanted pages, and export one combined PDF — no signup and no file upload. Imported PDF pages are rendered as images, so links, forms, signatures and selectable text are not carried into the export, and password-protected PDFs are not supported. Imports are limited to 80 MB and 100 pages.",
     "sections": [
       {
         "heading": "Combine and arrange pages",
@@ -182,14 +262,22 @@
       {
         "href": "/compress-pdf",
         "label": "Compress a scanned PDF"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all browser tools"
+      },
+      {
+        "href": "/blog/how-to-scan-documents-with-phone-camera",
+        "label": "Tips for sharper document photos"
       }
     ]
   },
   {
     "path": "/compress-pdf",
-    "title": "Compress Scanned PDF to a Target Size — Free | Scanner.cam",
+    "title": "Compress PDF to 1MB Online Free — Scanned PDFs",
     "heading": "Compress a Scanned PDF to Your Size Limit",
-    "description": "Reduce scanned PDFs toward 500 KB, 1 MB, or a custom size. Check the actual output size and preview quality before downloading. Free, private, no signup.",
+    "description": "Compress a scanned PDF toward 1 MB, 500 KB or a custom size, free in your browser. See the measured output size before download — no signup, no upload.",
     "intro": "Upload a scanned PDF or photos, then choose a size limit in Export. Compression adjusts image resolution and quality locally. Very small limits may be impossible without losing readability; the tool tells you when the limit cannot be met.",
     "steps": [
       "Upload your scanned PDF or document photos.",
@@ -212,10 +300,26 @@
       {
         "q": "Why does my compressed PDF look less sharp?",
         "a": "Smaller files can require lower resolution or stronger JPEG compression. Try a larger target or export fewer pages, then inspect all pages before submitting."
+      },
+      {
+        "q": "How do I compress a PDF to 500 KB?",
+        "a": "Choose the 500 KB target. The tool tries image settings locally and shows the measured output size before you download, so you can see whether the target was reached."
+      },
+      {
+        "q": "Can I compress a PDF for email?",
+        "a": "Yes. Pick a target that fits the attachment limit and check the measured size shown before downloading."
+      },
+      {
+        "q": "Why is my scanned PDF so large?",
+        "a": "A scanned PDF stores every page as an image, so file size grows with page count and scan resolution. Compression re-encodes those page images at lower settings to shrink the file."
+      },
+      {
+        "q": "Do I need to upload my PDF to compress it?",
+        "a": "No. Compression runs entirely in your browser; the file never leaves your device."
       }
     ],
     "workspace": "scanner",
-    "answer": "Upload a scanned PDF or photos, open Export, and choose a maximum size. Scanner.cam tries image settings locally and shows the measured PDF size before download.",
+    "answer": "Upload a scanned PDF or photos, open Export, and choose a maximum size. Scanner.cam tries image settings locally and shows the measured PDF size before download. Scanner.cam compresses scanned PDFs entirely in your browser: upload a scanned PDF or photos, pick a maximum size — 500 KB, 1 MB or a custom limit — and the tool tries image settings locally, then shows the measured output size before you download. No signup, no upload, no watermark. Very small targets can soften scanned text, so preview readability before downloading and keep your original.",
     "sections": [
       {
         "heading": "Choose a practical size target",
@@ -240,15 +344,27 @@
       {
         "href": "/pdf-editor",
         "label": "Combine and arrange PDF pages"
+      },
+      {
+        "href": "/blog/how-to-scan-documents-for-a-job-application",
+        "label": "Scan documents for a job application"
+      },
+      {
+        "href": "/blog/how-to-scan-documents-for-university-admission",
+        "label": "Scan documents for university admission"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all browser tools"
       }
     ]
   },
   {
     "path": "/image-to-text",
     "workspace": "scanner",
-    "title": "Free Image to Text OCR — 6 Languages, No Signup | Scanner.cam",
+    "title": "Image to Text Converter Free — OCR JPG, PNG & PDF",
     "heading": "Extract Text from Images and Scanned PDFs",
-    "description": "Recognize text locally in English, Spanish, French, German, Hindi, or Arabic. Download Unicode text without uploading documents or creating an account.",
+    "description": "Convert images and scanned PDFs to text free in your browser. On-device OCR in English, Spanish, French, German, Hindi or Arabic — download text, no signup.",
     "intro": "Turn document photos and scanned PDF pages into editable text. Recognition runs on your device in six languages. First use downloads recognition files; review the output for errors.",
     "steps": [
       "Upload document photos or a scanned PDF.",
@@ -271,9 +387,25 @@
       {
         "q": "Why is my OCR result inaccurate?",
         "a": "Blur, shadows, small type, handwriting, and the wrong language selection can reduce accuracy. Try a sharper, upright image with even light and select the matching language."
+      },
+      {
+        "q": "Can I convert a JPG to text?",
+        "a": "Yes. Upload the JPG, select the language of the text and download the recognized text."
+      },
+      {
+        "q": "Can I extract text from a scanned PDF?",
+        "a": "Yes. Scanned PDF pages are recognized on your device and the text can be downloaded as a UTF-8 text file."
+      },
+      {
+        "q": "Can OCR read a screenshot?",
+        "a": "Yes, if the text in the screenshot is clear and high-resolution. Small or blurry screenshot text gives worse results."
+      },
+      {
+        "q": "Does OCR work on handwritten notes?",
+        "a": "The tool is built for printed text. Handwriting may be recognized, but results vary — treat handwritten output as a draft and check it against the original."
       }
     ],
-    "answer": "Upload a document photo or scanned PDF, open Extract text, select a language, and download the recognized text as a UTF-8 text file. Recognition runs locally after the language files download.",
+    "answer": "Upload a document photo or scanned PDF, open Extract text, select a language, and download the recognized text as a UTF-8 text file. Recognition runs locally after the language files download. Scanner.cam's image-to-text tool runs OCR entirely in your browser: upload a document photo or scanned PDF, pick the language — English, Spanish, French, German, Hindi or Arabic — and download the recognized text as a UTF-8 file. No signup and no document upload; the language files download once and recognition runs on your device. Clear printed text works best; check names, numbers and punctuation against the original.",
     "sections": [
       {
         "heading": "Turn a scan into text",
@@ -298,15 +430,27 @@
       {
         "href": "/pdf-editor",
         "label": "Arrange scanned pages before export"
+      },
+      {
+        "href": "/blog/how-to-scan-receipts-for-expenses",
+        "label": "Scan receipts for expenses"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all browser tools"
+      },
+      {
+        "href": "/flatten-page",
+        "label": "Straighten curved book pages first"
       }
     ]
   },
   {
     "path": "/redact-pdf",
     "workspace": "scanner",
-    "title": "Redact Scanned PDFs & Images Locally — Free | Scanner.cam",
+    "title": "Redact PDF Online Free — Black Out Text Permanently",
     "heading": "Redact Sensitive Information from Scans",
-    "description": "Cover sensitive details in scanned PDFs or document photos. Redaction replaces image pixels before export. Free, local processing with no signup.",
+    "description": "Redact a PDF free in your browser — cover sensitive details with boxes that replace the pixels, so hidden text cannot be recovered. No signup, no upload.",
     "intro": "Hide private details in document photos and scanned PDFs. Applied boxes replace the covered pixels in exported files. Original files and local undo history remain on your device until you clear them.",
     "steps": [
       "Upload a scanned PDF or photo and select a page.",
@@ -329,9 +473,25 @@
       {
         "q": "Can I undo a redaction?",
         "a": "Yes, the current session supports Undo. Undo restores an earlier version, so check the final page and exported file before sharing it."
+      },
+      {
+        "q": "Can I black out text in a scanned PDF?",
+        "a": "Yes. Scanned pages are images, so you draw boxes over the areas to hide and the pixels are replaced before export."
+      },
+      {
+        "q": "Is blacking out text with a black box permanent?",
+        "a": "Here, yes. The boxes replace the underlying pixels in the exported image-based file, so the covered content is not in the exported file at all — unlike a highlight drawn over a text layer, which can be removed. Always review the exported file before sharing."
+      },
+      {
+        "q": "Can I redact a photo of a document?",
+        "a": "Yes. Document photos work the same way as scanned PDFs."
+      },
+      {
+        "q": "Can I redact a signature or photo inside a PDF?",
+        "a": "Yes. Boxes cover any area, not just text — signatures, photos, stamps and logos included."
       }
     ],
-    "answer": "Upload a scanned PDF or photo, select a page, and apply redaction boxes over sensitive areas. The boxes replace image pixels before the new PDF or image is exported.",
+    "answer": "Upload a scanned PDF or photo, select a page, and apply redaction boxes over sensitive areas. The boxes replace image pixels before the new PDF or image is exported. Scanner.cam's redaction tool runs entirely in your browser: upload a scanned PDF or document photo, draw boxes over names, numbers, signatures or any sensitive area, and export a new PDF or image. The boxes replace the underlying pixels before export, so the covered content is not recoverable from the exported file — unlike a highlight drawn over a text layer. No signup, no upload. Always review the exported file before sharing, and keep your original.",
     "sections": [
       {
         "heading": "How to redact a scanned document",
@@ -356,15 +516,27 @@
       {
         "href": "/pdf-editor",
         "label": "Arrange PDF pages"
+      },
+      {
+        "href": "/blog/how-to-scan-id-card-online",
+        "label": "Scan an ID card"
+      },
+      {
+        "href": "/blog/how-to-scan-contracts-online-free",
+        "label": "Scan contracts"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all browser tools"
       }
     ]
   },
   {
     "path": "/flatten-page",
     "workspace": "scanner",
-    "title": "Flatten Curved Book & Notebook Scans — Free | Scanner.cam",
+    "title": "Flatten Book Scans Free — Straighten Curved Pages",
     "heading": "Straighten Gentle Curves in Book Scans",
-    "description": "Adjust curved book or notebook photos with manual top and bottom bend controls. Preview, apply, and export locally. Free and no signup required.",
+    "description": "Flatten curved book and notebook scans free in your browser. Manual top and bottom bend controls, live preview, no signup, no upload — gentle curves only.",
     "intro": "Use manual curve controls to straighten gently bowed lines in book and notebook photos. Preview the result before applying. Complex page folds or strong curves may still need a new photo.",
     "steps": [
       "Upload a document photo and select the page.",
@@ -387,9 +559,25 @@
       {
         "q": "Why does my book page still look distorted?",
         "a": "The manual controls work best for gentle vertical curves. A deep fold, a page hidden by the binding, or a strongly angled photo may need a new image or a different correction workflow."
+      },
+      {
+        "q": "How do I flatten a book page photo?",
+        "a": "Upload the page photo, choose the flatten control, adjust the top and bottom bend controls, preview the correction, then apply and export."
+      },
+      {
+        "q": "Can I flatten a photo of a notebook page?",
+        "a": "Yes. Notebook pages work the same way as book pages."
+      },
+      {
+        "q": "Can I flatten a page that is badly curled?",
+        "a": "Only gentle curves. The tool uses manual bend controls, not automatic dewarping, so heavy curls near the spine may not straighten fully."
+      },
+      {
+        "q": "Can I use this on a photo of a single loose page?",
+        "a": "Yes. Any page photo with a gentle curve can be adjusted, not just book pages."
       }
     ],
-    "answer": "Upload a page photo, choose Flatten curved page, and adjust the top and bottom bend controls. Preview the result, apply the correction, and export it.",
+    "answer": "Upload a page photo, choose Flatten curved page, and adjust the top and bottom bend controls. Preview the result, apply the correction, and export it. Scanner.cam's page flattener runs entirely in your browser: upload a photo of a curved book or notebook page, adjust the manual top and bottom bend controls, preview the correction, then apply and export. No signup, no upload. It handles gentle curves — it is not an automatic dewarping tool, and heavily curled pages near the spine may not straighten fully.",
     "sections": [
       {
         "heading": "Straighten a gently curved page",
@@ -414,6 +602,14 @@
       {
         "href": "/pdf-editor",
         "label": "Arrange and export pages"
+      },
+      {
+        "href": "/image-to-text",
+        "label": "Extract text after flattening"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all browser tools"
       }
     ]
   }
