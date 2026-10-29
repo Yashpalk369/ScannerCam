@@ -282,3 +282,49 @@ test('another tab cannot silently overwrite or clear a newer saved session', asy
   await expect(page.getByRole('button', { name: 'Export (2)', exact: true })).toBeEnabled()
   await other.close()
 })
+
+test('an older tab blocking the database upgrade does not leave the scanner stuck', async ({ context, page }) => {
+  await page.goto('/blog')
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open('scannercam_db', 1)
+    request.onupgradeneeded = () => { const store = request.result.createObjectStore('scanned_pages', { keyPath: 'id' }); store.createIndex('by-order', 'order') }
+    request.onsuccess = () => { (window as any).__legacyDatabase = request.result; resolve() }
+    request.onerror = () => reject(request.error)
+  }))
+  const newer = await context.newPage()
+  try {
+    await newer.goto('/')
+    await expect(newer.getByRole('button', { name: 'Upload Files', exact: true })).toBeEnabled({ timeout: 10000 })
+    await expect(newer.locator('.scanner-storage-warning')).toContainText('older scanner tab')
+    const buffer = Buffer.from(await newer.evaluate(() => { const c=document.createElement('canvas'); c.width=100; c.height=140; const x=c.getContext('2d')!; x.fillStyle='white'; x.fillRect(0,0,100,140); return c.toDataURL().split(',')[1] }), 'base64')
+    await newer.locator('input[type=file]').first().setInputFiles({ name: 'scan.png', mimeType: 'image/png', buffer })
+    await expect(newer.getByRole('button', { name: 'Export (1)', exact: true })).toBeEnabled()
+    await expect(newer.locator('.scanner-storage-warning')).toContainText('Export any new scans')
+  } finally {
+    await page.evaluate(() => (window as any).__legacyDatabase.close())
+    await newer.close()
+  }
+})
+
+test('existing version-one scans survive the storage upgrade', async ({ page }) => {
+  await page.goto('/blog')
+  await page.evaluate(async () => {
+    const canvas = document.createElement('canvas'); canvas.width = 200; canvas.height = 300
+    const ctx = canvas.getContext('2d')!; ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 200, 300)
+    const blob = await new Promise<Blob>(resolve => canvas.toBlob(value => resolve(value!)))
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('scannercam_db', 1)
+      request.onupgradeneeded = () => { const store = request.result.createObjectStore('scanned_pages', { keyPath: 'id' }); store.createIndex('by-order', 'order') }
+      request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error)
+    })
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('scanned_pages', 'readwrite')
+      tx.objectStore('scanned_pages').put({ id: 'legacy', name: 'Legacy scan', blob, rawBlob: blob, width: 200, height: 300, rawWidth: 200, rawHeight: 300, filter: 'original', quad: [{ x: 0, y: 0 }, { x: 199, y: 0 }, { x: 199, y: 299 }, { x: 0, y: 299 }], order: 0, createdAt: Date.now() })
+      tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error)
+    })
+    db.close()
+  })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: 'Export (1)', exact: true })).toBeEnabled()
+  await expect(page.getByText('Legacy scan', { exact: true }).first()).toBeVisible()
+})

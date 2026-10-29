@@ -10,6 +10,10 @@ export class SessionConflictError extends Error {
   constructor() { super('The saved session changed in another tab.'); this.name = 'SessionConflictError' }
 }
 
+export class StorageUpgradeBlockedError extends Error {
+  constructor() { super('Another tab is blocking the storage upgrade.'); this.name = 'StorageUpgradeBlockedError' }
+}
+
 interface DbPageRecord {
   id: string
   name: string
@@ -30,7 +34,17 @@ class ScanDatabase {
 
   private getDb(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
-      this.dbPromise = openDB(DB_NAME, DB_VERSION, {
+      let timedOut = false
+      let timer: ReturnType<typeof setTimeout> | undefined
+      let rejectBlocked!: (reason: Error) => void
+      const blocked = new Promise<never>((_resolve, reject) => { rejectBlocked = reject })
+      const opening = openDB(DB_NAME, DB_VERSION, {
+        blocked() {
+          if (!timer) timer = setTimeout(() => {
+            timedOut = true
+            rejectBlocked(new StorageUpgradeBlockedError())
+          }, 2500)
+        },
         upgrade(db) {
           if (!db.objectStoreNames.contains(STORE_META)) db.createObjectStore(STORE_META)
           if (!db.objectStoreNames.contains(STORE_PAGES)) {
@@ -38,7 +52,14 @@ class ScanDatabase {
             store.createIndex('by-order', 'order')
           }
         },
-      }).catch(error => {
+      })
+      // A blocked open cannot be cancelled. Close it if it eventually succeeds
+      // after the caller has already fallen back to an in-memory session.
+      void opening.then(db => {
+        if (timer) clearTimeout(timer)
+        if (timedOut) db.close()
+      }, () => { if (timer) clearTimeout(timer) })
+      this.dbPromise = Promise.race([opening, blocked]).catch(error => {
         this.dbPromise = null
         throw error
       })

@@ -28,4 +28,4 @@ The existing same-origin U2-Net small model remains unchanged. Users choose or d
 
 Runtime assets for ONNX and PDF.js are served locally in development and copied from the locked packages at build time. Large HEIC/PDF decoders are cached after use rather than fetched during the initial scanner visit. New tool pages retain their identity on offline reload after caching; processing files may still need a first online download.
 
-Session saves use a revision checked atomically in IndexedDB. If another tab has saved a newer session, the stale tab retains its local pages for export and displays a warning instead of overwriting the shared session.
+Session saves use a revision checked atomically in IndexedDB. If another tab has saved a newer session, the stale tab retains its local pages for export and displays a warning instead of overwriting the shared session. If an older tab blocks the database upgrade, the new tab becomes usable in memory and explains how to recover the saved session.

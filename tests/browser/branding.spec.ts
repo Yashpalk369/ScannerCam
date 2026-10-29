@@ -30,6 +30,8 @@ test('all pages share the same header, logo, typography and footer on mobile and
       await page.goto(path, { waitUntil: 'domcontentloaded' })
       await expect(page.locator('.site-header')).toHaveCount(1)
       await expect(page.locator('.site-footer')).toHaveCount(1)
+      // The shared stylesheet can finish after DOMContentLoaded on static pages.
+      await expect.poll(() => page.locator('.site-footer-inner').evaluate(el => getComputedStyle(el).display)).toBe('grid')
       expect(await branding(page), `${path} at ${width}px`).toEqual(expected)
       expect(await page.locator('.site-footer').innerText(), path).toBe(footer)
       await expect(page.locator('.site-navigation').getByRole('link', { name: 'Guides', exact: true })).toBeVisible()

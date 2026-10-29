@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FilterMode, Point, Quad, ScanPage } from '../core/cv/types'
 import { cvWorker } from '../core/workers/workerClient'
 import { cloneQuad, defaultQuad, isConvexQuad, polygonArea } from '../core/cv/homography'
-import { scanDb, SessionConflictError } from '../core/storage/scanDb'
+import { scanDb, SessionConflictError, StorageUpgradeBlockedError } from '../core/storage/scanDb'
 import { useHistory } from './useHistory'
 
 export function useScanner() {
@@ -72,7 +72,9 @@ export function useScanner() {
       })
       .catch((err) => {
         console.warn('Failed to restore pages from IndexedDB:', err)
-        if (mounted) setStorageWarning('Saved scans could not be restored. New scans will stay in this tab only; download them before closing. Reload to retry recovery.')
+        if (mounted) setStorageWarning(err instanceof StorageUpgradeBlockedError
+          ? 'An older scanner tab is preventing saved scans from opening. Close that tab, then reload to recover saved scans. Export any new scans before reloading.'
+          : 'Saved scans could not be restored. New scans will stay in this tab only; download them before closing. Reload to retry recovery.')
       })
       .finally(() => {
         if (mounted) {
