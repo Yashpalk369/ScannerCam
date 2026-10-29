@@ -1,0 +1,8 @@
+.pdf-image-workspace { max-width: 900px; margin: 28px auto; padding: 24px; border: 1px solid #dbe4ed; border-radius: 18px; background: #fff; }
+.pdf-image-workspace p { color: #475569; line-height: 1.6; }
+.pdf-image-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 20px 0; }
+.pdf-image-controls label { display: flex; align-items: center; gap: 8px; }
+.pdf-image-controls input, .pdf-image-controls select { border: 1px solid #aab6c4; border-radius: 6px; padding: 8px; font: inherit; }
+.pdf-image-controls input { width: 76px; }
+.pdf-image-preview { display: block; max-width: 100%; max-height: 75vh; width: auto; height: auto; margin: 20px auto 0; border: 1px solid #dbe4ed; }
+.pdf-image-status { min-height: 1.5em; }

@@ -466,6 +466,9 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
       '/image-to-text': 'Add a document photo or scanned PDF to extract text.',
       '/redact-pdf': 'Add a scanned PDF or photo to hide sensitive information.',
       '/flatten-page': 'Add a page photo to straighten gentle curves.',
+      '/image-to-pdf': 'Add photos to combine into a PDF.',
+      '/id-card-to-pdf': 'Add the front and back of an ID card to create a PDF.',
+      '/searchable-pdf': 'Add scanned pages to create a searchable PDF.',
     }
     return (
       <div className="canvas-empty-state">

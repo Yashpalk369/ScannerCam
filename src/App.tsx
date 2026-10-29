@@ -30,6 +30,11 @@ const BackgroundRemover = lazy(() =>
     default: m.BackgroundRemover,
   })),
 )
+const PdfToImage = lazy(() => import('./components/Tools/PdfToImage').then(m => ({ default: m.PdfToImage })))
+const SplitPdf = lazy(() => import('./components/Tools/SplitPdf').then(m => ({ default: m.SplitPdf })))
+const ImageUtilities = lazy(() => import('./components/Tools/ImageUtilities').then(m => ({ default: m.ImageUtilities })))
+const RemoveImageMetadata = lazy(() => import('./components/Tools/RemoveImageMetadata').then(m => ({ default: m.RemoveImageMetadata })))
+const SignPdf = lazy(() => import('./components/Tools/SignPdf').then(m => ({ default: m.SignPdf })))
 
 const ScannerApp: React.FC = () => {
   const path = window.location.pathname.replace(/\/$/, '')
@@ -102,7 +107,7 @@ const ScannerApp: React.FC = () => {
           )
         }
       }
-      if (blobs.length) await addBlobsAsPages(blobs, 'magic', hints)
+      if (blobs.length) await addBlobsAsPages(blobs, path === '/image-to-pdf' ? 'original' : 'magic', hints)
       if (warnings.length) setStatus(warnings.join(' '), true)
       if (!blobs.length && !warnings.length)
         setStatus('Choose a PDF or document photos.', true)
@@ -310,6 +315,9 @@ const ScannerApp: React.FC = () => {
                 {path === '/pdf-editor' && (
                   <button className="btn btn-primary" disabled={isProcessing} onClick={() => setIsExportOpen(true)}>Export PDF</button>
                 )}
+                {['/image-to-pdf', '/id-card-to-pdf', '/searchable-pdf'].includes(path) && (
+                  <button className="btn btn-primary" disabled={isProcessing} onClick={() => setIsExportOpen(true)}>{path === '/id-card-to-pdf' ? 'Create ID PDF' : path === '/searchable-pdf' ? 'Create searchable PDF' : 'Export PDF'}</button>
+                )}
                 {path === '/compress-pdf' && (
                   <button className="btn btn-primary" disabled={isProcessing} onClick={() => setIsExportOpen(true)}>Choose PDF size</button>
                 )}
@@ -472,8 +480,14 @@ export const App: React.FC = () => {
         {path === '/tools' ? (
           <ToolDirectory />
         ) : (
-          <Suspense fallback={<p role="status">Opening background remover…</p>}>
-            <BackgroundRemover />
+          <Suspense fallback={<p role="status">Opening tool…</p>}>
+            {path === '/remove-background' ? <BackgroundRemover /> :
+             path === '/pdf-to-jpg' ? <PdfToImage /> :
+             path === '/extract-pdf-pages' ? <SplitPdf /> :
+             path === '/resize-image-to-kb' ? <ImageUtilities mode="resize-image-to-kb" /> :
+             path === '/heic-to-jpg' ? <ImageUtilities mode="heic-to-jpg" /> :
+             path === '/remove-image-metadata' ? <RemoveImageMetadata /> :
+             path === '/sign-pdf' ? <SignPdf /> : null}
           </Suspense>
         )}
         <ToolContent path={path} />

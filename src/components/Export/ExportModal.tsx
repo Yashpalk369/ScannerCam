@@ -54,14 +54,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [language, setLanguage] = useState('eng')
   const previewGeneration = useRef(0)
   const [quality, setQuality] = useState<PdfQuality>('balanced')
-  const [layout, setLayout] = useState<PdfLayout>('document')
+  const [layout, setLayout] = useState<PdfLayout>(window.location.pathname.startsWith('/id-card-to-pdf') ? 'id-card' : 'document')
   const [frontId, setFrontId] = useState(pages[0]?.id ?? '')
   const [backId, setBackId] = useState(pages[1]?.id ?? '')
   const [searchablePdf, setSearchablePdf] = useState(
-    window.location.pathname.startsWith('/image-to-text'),
+    ['/image-to-text', '/searchable-pdf'].some(path => window.location.pathname.startsWith(path)),
   )
   const [advancedOpen, setAdvancedOpen] = useState(
-    window.location.pathname.startsWith('/image-to-text'),
+    ['/image-to-text', '/searchable-pdf'].some(path => window.location.pathname.startsWith(path)),
   )
   const [isExporting, setIsExporting] = useState(false)
   const [isPreparing, setIsPreparing] = useState(true)
@@ -489,7 +489,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               onChange={(event) => {
                 const value = event.target.value
                 if (!value) return
-                setLayout('document')
+                setLayout(window.location.pathname.startsWith('/id-card-to-pdf') ? 'id-card' : 'document')
                 setPaperFormat('a4')
                 setMargin(20)
                 setQuality(
