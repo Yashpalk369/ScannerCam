@@ -4,7 +4,8 @@ import { Download, Image as ImageIcon, Upload } from 'lucide-react'
 type Mode = 'resize-image-to-kb' | 'heic-to-jpg'
 type Result = { url: string; size: number; width: number; height: number; metTarget: boolean }
 
-const formatSize = (bytes: number) => `${(bytes / 1024).toFixed(1)} KB`
+// File-size limits on submission portals are commonly specified in decimal KB.
+const formatSize = (bytes: number) => `${(bytes / 1000).toFixed(1)} KB (${bytes.toLocaleString()} bytes)`
 
 async function canvasBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob(
@@ -82,7 +83,7 @@ export function ImageUtilities({ mode }: { mode: Mode }) {
       let best: { blob: Blob; width: number; height: number } | undefined
       let smallest: { blob: Blob; width: number; height: number } | undefined
       let scale = 1
-      const byteLimit = kb * 1024
+      const byteLimit = kb * 1000
       for (let attempt = 0; attempt < (isResize ? 9 : 1); attempt++) {
         canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
         canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
@@ -131,7 +132,7 @@ export function ImageUtilities({ mode }: { mode: Mode }) {
     {file && <div className="tool-actions">
       <span>{file.name} · {formatSize(file.size)}</span>
       {isResize && <>
-        <label htmlFor="image-size-target">Maximum size (KB) </label>
+        <label htmlFor="image-size-target">Maximum size (KB, 1 KB = 1,000 bytes) </label>
         <input id="image-size-target" type="number" min="5" max="10240" step="1" value={target} disabled={busy} onChange={event => { setTarget(event.target.value); setResult(null) }} />
         {[20, 50, 100, 200].map(value => <button key={value} className="btn btn-secondary" type="button" disabled={busy} aria-pressed={target === String(value)} onClick={() => { setTarget(String(value)); setResult(null) }}>{value} KB</button>)}
       </>}
