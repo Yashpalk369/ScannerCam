@@ -344,4 +344,34 @@
   <url><loc>https://www.scanner.cam/image-to-text</loc></url>
   <url><loc>https://www.scanner.cam/redact-pdf</loc></url>
   <url><loc>https://www.scanner.cam/flatten-page</loc></url>
+  <url>
+    <loc>https://www.scanner.cam/blog/scanner-app-vs-spreadsheet-photo-for-receipts</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/why-does-my-scanner-app-keep-crashing</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-real-estate-agents-scan-documents-on-site</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-documents-for-hr-onboarding</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/can-i-scan-documents-straight-to-google-drive-or-dropbox</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
