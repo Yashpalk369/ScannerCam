@@ -295,6 +295,7 @@ const ScannerApp: React.FC = () => {
             {/* Canvas & Corner Editor */}
             <DocumentCanvas
               importOnly={Boolean(tool)}
+              toolPath={path}
               page={activePage ?? null}
               editMode={editMode}
               editingQuad={editingQuad}
