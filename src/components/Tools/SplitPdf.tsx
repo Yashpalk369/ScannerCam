@@ -8,6 +8,7 @@ export function SplitPdf() {
   const [file, setFile] = useState<File | null>(null)
   const [count, setCount] = useState(0)
   const [range, setRange] = useState('')
+  const [outputMode, setOutputMode] = useState<'combined' | 'separate'>('combined')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -41,10 +42,15 @@ export function SplitPdf() {
     try { selected = parsePageRange(range, count) } catch (error) { setMessage(error instanceof Error ? error.message : 'Check the page numbers.'); return }
     setBusy(true); setMessage('Preparing PDF…')
     try {
-      const [task, { jsPDF }] = await Promise.all([openPdf(file), import('jspdf')])
+      const [task, { jsPDF }, zipLibrary] = await Promise.all([
+        openPdf(file),
+        import('jspdf'),
+        outputMode === 'separate' ? import('fflate') : Promise.resolve(null),
+      ])
       try {
         const pdf = await task.promise
         let output: InstanceType<typeof jsPDF> | null = null
+        const zipEntries: Record<string, Uint8Array> = {}
         for (const [index, number] of selected.entries()) {
           setMessage(`Preparing page ${index + 1} of ${selected.length}…`)
           const page = await pdf.getPage(number)
@@ -55,14 +61,32 @@ export function SplitPdf() {
           try {
             await page.render({ canvas, viewport: view, background: '#ffffff' }).promise
             const orientation = base.width > base.height ? 'landscape' : 'portrait'
-            if (!output) output = new jsPDF({ unit: 'pt', format: [base.width, base.height], orientation, compress: true })
-            else output.addPage([base.width, base.height], orientation)
-            output.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, base.width, base.height, undefined, 'FAST')
+            if (outputMode === 'separate') {
+              const single = new jsPDF({ unit: 'pt', format: [base.width, base.height], orientation, compress: true })
+              single.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, base.width, base.height, undefined, 'FAST')
+              zipEntries[`page-${String(number).padStart(3, '0')}.pdf`] = new Uint8Array(single.output('arraybuffer'))
+            } else {
+              if (!output) output = new jsPDF({ unit: 'pt', format: [base.width, base.height], orientation, compress: true })
+              else output.addPage([base.width, base.height], orientation)
+              output.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, base.width, base.height, undefined, 'FAST')
+            }
           } finally { canvas.width = canvas.height = 1; page.cleanup() }
         }
-        if (!output) throw new Error('No pages selected.')
-        const url = URL.createObjectURL(output.output('blob'))
-        const link = document.createElement('a'); link.href = url; link.download = `${file.name.replace(/\.pdf$/i, '')}-extracted.pdf`; link.click()
+        let download: Blob
+        let extension: string
+        if (outputMode === 'separate') {
+          if (!zipLibrary || !Object.keys(zipEntries).length) throw new Error('No pages selected.')
+          setMessage('Preparing ZIP…')
+          const zip = zipLibrary.zipSync(zipEntries, { level: 0 })
+          download = new Blob([zip.buffer as ArrayBuffer], { type: 'application/zip' })
+          extension = 'split-pages.zip'
+        } else {
+          if (!output) throw new Error('No pages selected.')
+          download = output.output('blob')
+          extension = 'extracted.pdf'
+        }
+        const url = URL.createObjectURL(download)
+        const link = document.createElement('a'); link.href = url; link.download = `${file.name.replace(/\.pdf$/i, '')}-${extension}`; link.click()
         setTimeout(() => URL.revokeObjectURL(url), 60_000)
         setMessage(`Downloaded ${selected.length} ${selected.length === 1 ? 'page' : 'pages'}.`)
       } finally { await task.destroy() }
@@ -73,7 +97,7 @@ export function SplitPdf() {
   return <section className="remover-workbench" aria-label="Extract PDF pages workspace">
     <div className="tool-upload">
       <FileText size={32} aria-hidden="true" />
-      <h2>Extract PDF pages</h2>
+      <h2>Extract or split PDF pages</h2>
       <p>Choose a PDF up to 80 MB and 100 pages. Processing happens on your device.</p>
       <button className="btn btn-primary" type="button" disabled={busy} onClick={() => input.current?.click()}><Upload size={18} /> Choose PDF</button>
       <input ref={input} hidden type="file" accept="application/pdf,.pdf" onChange={event => { void choose(event.target.files?.[0]); event.target.value = '' }} />
@@ -81,10 +105,15 @@ export function SplitPdf() {
     </div>
     {file && <div className="tool-actions" style={{ alignItems: 'stretch', flexDirection: 'column' }}>
       <p><strong>{file.name}</strong> · {count} {count === 1 ? 'page' : 'pages'}</p>
+      <label htmlFor="extract-mode">Output</label>
+      <select id="extract-mode" value={outputMode} disabled={busy} onChange={e => setOutputMode(e.target.value as 'combined' | 'separate')}>
+        <option value="combined">Selected pages in one PDF</option>
+        <option value="separate">Separate one-page PDFs in a ZIP</option>
+      </select>
       <label htmlFor="extract-pages">Pages to keep</label>
       <input id="extract-pages" type="text" value={range} onChange={e => setRange(e.target.value)} disabled={busy} placeholder="e.g. 1-3, 5" />
       <p className="tool-note">Use commas and ranges, for example 1-3, 5. Pages appear in the order entered; duplicates are ignored.</p>
-      <button className="btn btn-primary" type="button" disabled={busy} onClick={() => void extract()}>Extract and download PDF</button>
+      <button className="btn btn-primary" type="button" disabled={busy} onClick={() => void extract()}>{outputMode === 'separate' ? 'Split and download ZIP' : 'Extract and download PDF'}</button>
     </div>}
     {message && <p className="tool-message" role="status" aria-live="polite">{message}</p>}
   </section>
