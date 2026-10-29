@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PDFDocumentProxy, PDFDocumentLoadingTask } from 'pdfjs-dist'
 import { downloadBlob } from '../../core/pdf/pdfBuilder'
+import { parsePageRange } from '../../core/pdf/pageRange'
 import './pdf-to-image.css'
 
-/** PDF pages are rendered locally. The active page is exported one at a time. */
+/** Render PDF pages locally for single-page or ZIP downloads. */
 export function PdfToImage() {
   const [fileName, setFileName] = useState('')
   const [pageCount, setPageCount] = useState(0)
   const [pageNumber, setPageNumber] = useState(1)
+  const [pageRange, setPageRange] = useState('')
   const [format, setFormat] = useState<'jpeg' | 'png'>('jpeg')
   const [busy, setBusy] = useState(false)
   const [rendered, setRendered] = useState(false)
@@ -52,6 +54,7 @@ export function PdfToImage() {
       setFileName(file.name.replace(/\.pdf$/i, '') || 'document')
       setPageNumber(1)
       setPageCount(pdf.numPages)
+      setPageRange(`1-${Math.min(pdf.numPages, 25)}`)
       setMessage(`Loaded ${pdf.numPages} ${pdf.numPages === 1 ? 'page' : 'pages'}. Choose a page to download.`)
     } catch (error) {
       if (generation === generationRef.current) {
@@ -99,6 +102,43 @@ export function PdfToImage() {
     }, `image/${format}`, 0.95)
   }
 
+  async function downloadBatch() {
+    const doc = docRef.current
+    if (!doc || busy) return
+    let selected: number[]
+    try {
+      selected = parsePageRange(pageRange, pageCount)
+      if (selected.length > 25) throw new Error('Choose at most 25 pages per ZIP to limit memory use.')
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Check the page numbers.'); return }
+    setBusy(true)
+    setMessage('Preparing images…')
+    try {
+      const { zipSync } = await import('fflate')
+      const entries: Record<string, Uint8Array> = {}
+      let totalBytes = 0
+      for (const [index, pageNo] of selected.entries()) {
+        setMessage(`Preparing page ${index + 1} of ${selected.length}…`)
+        const page = await doc.getPage(pageNo)
+        const initial = page.getViewport({ scale: 1 })
+        const viewport = page.getViewport({ scale: Math.min(2, 2400 / Math.max(initial.width, initial.height)) })
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.ceil(viewport.width)
+        canvas.height = Math.ceil(viewport.height)
+        try {
+          await page.render({ canvas, viewport, background: '#ffffff' }).promise
+          const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Could not create an image.')), `image/${format}`, 0.95))
+          totalBytes += blob.size
+          if (totalBytes > 50 * 1024 * 1024) throw new Error('Images exceed the 50 MB ZIP limit. Select fewer pages.')
+          entries[`page-${String(pageNo).padStart(3, '0')}.${format === 'jpeg' ? 'jpg' : 'png'}`] = new Uint8Array(await blob.arrayBuffer())
+        } finally { canvas.width = canvas.height = 1; page.cleanup() }
+      }
+      const bytes = zipSync(entries, { level: 0 })
+      downloadBlob(new Blob([bytes.buffer as ArrayBuffer], { type: 'application/zip' }), `${fileName}-images.zip`)
+      setMessage(`Downloaded ${selected.length} ${selected.length === 1 ? 'page' : 'pages'} as a ZIP.`)
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not create the ZIP. Try fewer pages.') }
+    finally { setBusy(false) }
+  }
+
   return <section className="pdf-image-workspace" aria-label="PDF to image converter">
     <p>Choose a PDF, preview a page and download it as a JPG or PNG. Pages are processed on your device.</p>
     <input ref={fileRef} type="file" accept="application/pdf,.pdf" hidden onChange={e => { const file = e.currentTarget.files?.[0]; if (file) void openFile(file); e.currentTarget.value = '' }} />
@@ -110,7 +150,12 @@ export function PdfToImage() {
         <label>Format <select value={format} disabled={busy} onChange={e => setFormat(e.currentTarget.value as 'jpeg' | 'png')}><option value="jpeg">JPG</option><option value="png">PNG</option></select></label>
         <button className="btn btn-primary" type="button" disabled={busy || !rendered} onClick={download}>Download page</button>
       </div>
-      <p>Downloads one page at a time. Pages are rendered at up to 2× scale and 2400 pixels on the longest side.</p>
+      <p>Pages are rendered at up to 2× scale and 2400 pixels on the longest side.</p>
+      <div className="pdf-image-controls">
+        <label>Pages for ZIP <input type="text" value={pageRange} disabled={busy} onChange={e => setPageRange(e.currentTarget.value)} placeholder="e.g. 1-3, 5" /></label>
+        <button className="btn btn-secondary" type="button" disabled={busy || !rendered} onClick={() => void downloadBatch()}>Download pages as ZIP</button>
+      </div>
+      <p>Choose up to 25 pages per ZIP (maximum 50 MB of images). For longer PDFs, download several batches. ZIP pages use the selected image format.</p>
       <canvas ref={canvasRef} className="pdf-image-preview" aria-label={`Preview of page ${pageNumber}`} />
     </>}
   </section>

@@ -786,16 +786,16 @@
   },
   {
     "path": "/pdf-to-jpg",
-    "title": "PDF to JPG or PNG Online Free — Convert a Page",
+    "title": "PDF to JPG or PNG Online Free — Convert PDF Pages",
     "heading": "Convert PDF Pages to JPG or PNG",
-    "description": "Convert a PDF page to JPG or PNG in your browser. Choose a page and download it without uploading the PDF.",
-    "intro": "Choose a PDF, select a page and download it as JPG or PNG. Your PDF is processed on your device.",
+    "description": "Convert PDF pages to JPG or PNG in your browser. Download a page or up to 25 selected pages as a ZIP.",
+    "intro": "Choose a PDF and download a page or up to 25 selected pages as JPG or PNG in a ZIP. Your PDF is processed on your device.",
     "workspace": "pdf-to-image",
-    "answer": "Choose a PDF and page, select JPG or PNG, and download the image. Each page is downloaded individually; the PDF is processed locally.",
+    "answer": "Choose a PDF and JPG or PNG format, then download one page or up to 25 selected pages in a ZIP. The PDF is processed locally.",
     "steps": [
       "Choose a PDF from your device.",
       "Select the page and JPG or PNG format.",
-      "Download the page and repeat for other pages."
+      "Download the page, or enter page numbers and download up to 25 pages as a ZIP."
     ],
     "sections": [
       {
@@ -809,7 +809,7 @@
     "faqs": [
       {
         "q": "Can I convert multiple PDF pages?",
-        "a": "Yes. Select and download each page separately. Batch ZIP downloads are not currently supported."
+        "a": "Yes. Download a single page or select up to 25 pages per ZIP, limited to 50 MB of images. Larger PDFs can be downloaded in batches."
       },
       {
         "q": "Is my PDF uploaded?",
@@ -834,6 +834,7 @@
       "PDF to JPG",
       "PDF to PNG",
       "page preview",
+      "batch ZIP download",
       "local processing"
     ]
   },
