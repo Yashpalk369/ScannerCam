@@ -57,7 +57,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [layout, setLayout] = useState<PdfLayout>('document')
   const [frontId, setFrontId] = useState(pages[0]?.id ?? '')
   const [backId, setBackId] = useState(pages[1]?.id ?? '')
-  const [searchablePdf, setSearchablePdf] = useState(false)
+  const [searchablePdf, setSearchablePdf] = useState(
+    window.location.pathname.startsWith('/image-to-text'),
+  )
   const [advancedOpen, setAdvancedOpen] = useState(
     window.location.pathname.startsWith('/image-to-text'),
   )
@@ -867,6 +869,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           )}
         </div>
         <div className="modal-footer">
+          {window.location.pathname.startsWith('/image-to-text') && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={!selectedPages.length || isExporting || isPreparing}
+              onClick={() => void downloadText()}
+            >
+              <FileText size={16} />
+              <span>Download text (.txt)</span>
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-primary"
