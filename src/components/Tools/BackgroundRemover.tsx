@@ -125,8 +125,9 @@ export const BackgroundRemover: React.FC = () => {
 
   const handleFile = async (file?: File) => {
     if (!file || isRunning || isLoadingModel || decodingRef.current) return
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      setStatus('Choose a JPG, PNG, or WebP photo.')
+    const isHeic = /\.(heic|heif)$/i.test(file.name) || /image\/hei[cf]/.test(file.type)
+    if (!isHeic && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setStatus('Choose a JPG, PNG, WebP, or HEIC photo.')
       return
     }
     if (file.size > 40 * 1024 * 1024) {
@@ -140,12 +141,17 @@ export const BackgroundRemover: React.FC = () => {
     setStatus('')
     bitmapRef.current?.close()
     try {
+      let imageBlob: Blob = file
+      if (isHeic) {
+        const { importFile } = await import('../../core/import/files')
+        for await (const image of importFile(file)) { imageBlob = image.blob; break }
+      }
       try {
-        bitmapRef.current = await createImageBitmap(file, {
+        bitmapRef.current = await createImageBitmap(imageBlob, {
           imageOrientation: 'from-image',
         })
       } catch {
-        const url = URL.createObjectURL(file)
+        const url = URL.createObjectURL(imageBlob)
         const img = new Image()
         try {
           await new Promise<void>((resolve, reject) => {
@@ -336,7 +342,7 @@ export const BackgroundRemover: React.FC = () => {
             : 'Give your photo a clean background'}
         </h2>
         <p>
-          Choose a photo or drop it here. JPG, PNG, or WebP · up to 40 MB and 20
+          Choose a photo or drop it here. JPG, PNG, WebP, or HEIC · up to 40 MB and 20
           megapixels.
         </p>
         <input
@@ -344,7 +350,7 @@ export const BackgroundRemover: React.FC = () => {
           id="remover-file-input"
           aria-label="Choose a photo"
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
           hidden
           disabled={isRunning || isDecoding}
           onChange={(event) => {

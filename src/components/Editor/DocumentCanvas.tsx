@@ -461,12 +461,12 @@ export const DocumentCanvas: React.FC<DocumentCanvasProps> = ({
     return (
       <div className="canvas-empty-state">
         <div className="empty-content">
-          <span className="scanner-start-icon" aria-hidden="true"><Camera size={32} /></span>
+          <span className="scanner-start-icon" aria-hidden="true">{importOnly ? <Upload size={32} /> : <Camera size={32} />}</span>
           <p className="empty-title">{importOnly ? 'Add PDFs or document photos' : 'Scan your first document'}</p>
           <p className="empty-subtitle">Upload PDFs, HEIC, or document photos to create a clean PDF.</p>
           <div className="scanner-start-actions">
             {!importOnly && <button type="button" className="btn btn-primary" onClick={onOpenCamera} disabled={isProcessing}><Camera size={18} />Scan Document</button>}
-            <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}><Upload size={18} />Upload Files</button>
+            <button type="button" className={`btn ${importOnly ? 'btn-primary' : 'btn-secondary'}`} onClick={() => fileInputRef.current?.click()} disabled={isProcessing}><Upload size={18} />Upload Files</button>
           </div>
           <input ref={fileInputRef} type="file" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple hidden onChange={event => { if (event.target.files?.length) onAddFiles(event.target.files); event.target.value = '' }} />
           <p className="scanner-start-privacy"><ShieldCheck size={15} />Free · No signup · Documents stay on your device</p>

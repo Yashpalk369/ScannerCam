@@ -29,7 +29,7 @@
     "description": "Remove photo backgrounds free on your device. Preview the original and cutout, then download a transparent PNG. No signup, watermark, or photo uploads.",
     "intro": "Turn portraits and product photos into transparent PNGs. Choose a photo, remove the background, and download the result. Your image stays on your device.",
     "steps": [
-      "Choose a JPG, PNG, or WebP photo, or drop it into the upload area.",
+      "Choose a JPG, PNG, WebP, or HEIC photo, or drop it into the upload area.",
       "Select Remove background. Processing files download on first use.",
       "Compare the original with the cutout and download your transparent PNG."
     ],

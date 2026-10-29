@@ -9,6 +9,8 @@ import {
   Loader2,
 } from 'lucide-react'
 import type { ScanPage } from '../../core/cv/types'
+import { parseHocrWords } from '../../core/pdf/ocrWords'
+import type { OcrWord } from '../../core/pdf/ocrWords'
 import { createPdfForTarget, downloadBlob } from '../../core/pdf/pdfBuilder'
 import { formatFileSize, PDF_QUALITY_PRESETS } from '../../core/pdf/pdfLayout'
 import type { PdfLayout, PdfQuality } from '../../core/pdf/pdfLayout'
@@ -207,6 +209,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
     try {
       const ocrTexts: string[] = []
+      const ocrWords: OcrWord[][] = []
       let recognizedPages = 0
       if (searchablePdf) {
         for (let i = 0; i < selectedPages.length; i += 1) {
@@ -220,6 +223,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             )
             controller.signal.throwIfAborted()
             ocrTexts[i] = result.text
+            ocrWords[i] = parseHocrWords(result.hocr, selectedPages[i].width, selectedPages[i].height)
+            if (result.text.trim() && !ocrWords[i].length) throw new Error('OCR did not return word positions.')
             if (result.text.trim()) recognizedPages += 1
           } catch (error) {
             controller.signal.throwIfAborted()
@@ -239,6 +244,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               signal: controller.signal,
               searchable: searchablePdf,
               ocrTexts,
+              ocrWords,
               onProgress: (_current, _total, message) =>
                 updateProgress(message),
             })

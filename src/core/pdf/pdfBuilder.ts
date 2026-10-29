@@ -1,3 +1,4 @@
+import type { OcrWord } from './ocrWords'
 import { jsPDF } from 'jspdf'
 import type { ScanPage } from '../cv/types'
 import {
@@ -21,8 +22,10 @@ export interface PdfExportOptions {
   signal?: AbortSignal
   /** If true, embeds an invisible OCR text layer for searchable/copyable PDF */
   searchable?: boolean
-  /** OCR text per page, indexed by page order. Must be provided when searchable=true. */
+  /** Recognized text per page, used to validate that word positions are available. */
   ocrTexts?: string[]
+  /** Word bounds in the processed image coordinate system, indexed by page. */
+  ocrWords?: OcrWord[][]
   onProgress?: (current: number, total: number, message: string) => void
 }
 
@@ -94,35 +97,18 @@ async function prepareImage(
  * Embeds an invisible OCR text overlay over a PDF page.
  * PDF rendering mode 3 keeps text searchable without painting over the scan.
  */
-function embedTextLayer(
-  doc: jsPDF,
-  text: string,
-  pageX: number,
-  pageY: number,
-  _pageW: number,
-  pageH: number,
-): void {
-  if (!text || !text.trim()) return
-
-  doc.setFontSize(1)
-
-  // Split text into lines and distribute them proportionally across the page
-  const lines = text.split('\n').filter((l) => l.trim().length > 0)
-  if (lines.length === 0) return
-
-  const lineHeight = pageH / Math.max(lines.length, 1)
-
-  lines.forEach((line, i) => {
-    const y = pageY + (i + 0.5) * lineHeight
-    if (y > pageY + pageH) return
-    doc.text(line.trim(), pageX, y, {
-      baseline: 'middle',
-      renderingMode: 'invisible',
-    })
-  })
-
-  // Reset to default black
-  doc.setTextColor(0, 0, 0)
+function embedTextLayer(doc: jsPDF, words: OcrWord[], sourceWidth: number, sourceHeight: number, box: ImageBox): void {
+  for (const word of words) {
+    const x = box.x + word.x0 / sourceWidth * box.width
+    const wordWidth = (word.x1 - word.x0) / sourceWidth * box.width
+    const height = (word.y1 - word.y0) / sourceHeight * box.height
+    const baseline = box.y + word.y1 / sourceHeight * box.height - height * 0.15
+    if (!(wordWidth > 0 && height > 0)) continue
+    doc.setFontSize(height * 0.85)
+    const naturalWidth = doc.getTextWidth(word.text)
+    if (naturalWidth <= 0) continue
+    doc.text(word.text, x, baseline, { renderingMode: 'invisible', horizontalScale: wordWidth / naturalWidth })
+  }
   doc.setFontSize(12)
 }
 
@@ -140,6 +126,7 @@ export async function createPdfBlob(
     margin = 20,
     searchable = false,
     ocrTexts = [],
+    ocrWords = [],
     onProgress,
   } = options
 
@@ -205,8 +192,10 @@ export async function createPdfBlob(
     }
 
     // Embed invisible OCR text layer if available
-    if (searchable && ocrTexts[i]) {
-      embedTextLayer(doc, ocrTexts[i], x, y, renderW, renderH)
+    if (searchable && ocrWords[i]?.length) {
+      embedTextLayer(doc, ocrWords[i], page.width, page.height, placement)
+    } else if (searchable && ocrTexts[i]) {
+      throw new Error('OCR word positions are missing. Retry recognition before exporting a searchable PDF.')
     }
   }
 

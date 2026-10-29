@@ -188,3 +188,16 @@ test('export emphasizes PDF download and keeps advanced options accessible', asy
   await download.press('Tab')
   await expect(page.getByRole('button', { name: 'Close export', exact: true })).toBeFocused()
 })
+
+test('empty scanner and PDF editor avoid a duplicate empty pages panel', async ({ page }) => {
+  for (const path of ['/', '/pdf-editor']) {
+    await page.goto(path)
+    await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toBeEnabled()
+    await expect(page.locator('.page-strip-panel')).toHaveCount(0)
+    await expect(page.locator('.scanner-workspace-empty')).toBeVisible()
+  }
+  const canvas = await page.evaluate(() => { const c=document.createElement('canvas'); c.width=200; c.height=260; const ctx=c.getContext('2d')!; ctx.fillStyle='white';ctx.fillRect(0,0,200,260);ctx.fillStyle='black';ctx.fillRect(30,30,130,8); return c.toDataURL().split(',')[1] })
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'scan.png', mimeType: 'image/png', buffer: Buffer.from(canvas, 'base64') })
+  await expect(page.getByRole('heading', { name: 'Pages', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add Page', exact: true })).toBeVisible()
+})

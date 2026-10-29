@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FilterMode, Point, Quad, ScanPage } from '../core/cv/types'
 import { cvWorker } from '../core/workers/workerClient'
 import { cloneQuad, defaultQuad, isConvexQuad, polygonArea } from '../core/cv/homography'
-import { scanDb } from '../core/storage/scanDb'
+import { scanDb, SessionConflictError } from '../core/storage/scanDb'
 import { useHistory } from './useHistory'
 
 export function useScanner() {
@@ -16,6 +16,11 @@ export function useScanner() {
   const hasInitializedDbRef = useRef(false)
   const hasRestoredStorageRef = useRef(false)
   const pagesRef = useRef<ScanPage[]>([])
+  const revisionRef = useRef(0)
+  const conflictedRef = useRef(false)
+  const persistenceQueue = useRef<Promise<void>>(Promise.resolve())
+  const lastSavedPagesRef = useRef<ScanPage[] | null>(null)
+  const conflictWarning = 'The saved session changed in another tab. Your current pages are in this tab only; export them before closing. Reload to open the latest saved session.'
 
   useEffect(() => {
     pagesRef.current = pages
@@ -49,12 +54,14 @@ export function useScanner() {
   useEffect(() => {
     let mounted = true
     scanDb
-      .loadAllPages()
-      .then((restored) => {
+      .loadSnapshot()
+      .then(({ pages: restored, revision }) => {
         if (!mounted) {
           restored.forEach(page => URL.revokeObjectURL(page.previewUrl))
           return
         }
+        revisionRef.current = revision
+        lastSavedPagesRef.current = restored
         hasRestoredStorageRef.current = true
         if (restored.length > 0) {
           setPages(restored)
@@ -78,16 +85,27 @@ export function useScanner() {
     }
   }, [setStatus, resetHistory])
 
-  // Sync state changes to IndexedDB (only after initial load has completed)
+  // Serialize writes from this tab and reject stale snapshots atomically in IndexedDB.
   useEffect(() => {
-    if (!hasInitializedDbRef.current || !hasRestoredStorageRef.current) return
+    if (!hasInitializedDbRef.current || !hasRestoredStorageRef.current || pages === lastSavedPagesRef.current) return
     let current = true
-    const update = pages.length > 0 ? scanDb.saveAllPages(pages) : scanDb.clearAll()
-    update.then(() => { if (current) setStorageWarning(null) }).catch(error => {
-      console.warn('Could not update saved scans:', error)
-      if (current) setStorageWarning(pages.length > 0
-        ? 'These scans could not be saved for recovery. Download them before closing this tab.'
-        : 'Saved scans could not be cleared and may reappear after reload. Clear this site’s browser storage to remove them.')
+    persistenceQueue.current = persistenceQueue.current.then(async () => {
+      if (conflictedRef.current) return
+      try {
+        revisionRef.current = await scanDb.saveAllPages(pages, revisionRef.current)
+        lastSavedPagesRef.current = pages
+        if (current) setStorageWarning(null)
+      } catch (error) {
+        if (error instanceof SessionConflictError) {
+          conflictedRef.current = true
+          setStorageWarning(conflictWarning)
+        } else if (current) {
+          console.warn('Could not update saved scans:', error)
+          setStorageWarning(pages.length > 0
+            ? 'These scans could not be saved for recovery. Download them before closing this tab.'
+            : 'Saved scans could not be cleared and may reappear after reload. Clear this site’s browser storage to remove them.')
+        }
+      }
     })
     return () => { current = false }
   }, [pages])
@@ -471,16 +489,23 @@ export function useScanner() {
   const clearAllPages = useCallback(async () => {
     setIsProcessing(true)
     try {
-      if (hasRestoredStorageRef.current) await scanDb.clearAll()
+      await persistenceQueue.current
+      if (hasRestoredStorageRef.current) {
+        if (conflictedRef.current) throw new SessionConflictError()
+        revisionRef.current = await scanDb.clearAll(revisionRef.current)
+      }
       pagesRef.current.forEach(page => URL.revokeObjectURL(page.previewUrl))
       setEditMode(false)
       setEditingQuad(null)
-      commitPages([], null, true)
-      resetHistory([], null)
+      const emptyPages: ScanPage[] = []
+      lastSavedPagesRef.current = emptyPages
+      commitPages(emptyPages, null, true)
+      resetHistory(emptyPages, null)
       setStatus(hasRestoredStorageRef.current ? 'All pages cleared.' : 'Current pages cleared. Saved session recovery remains unavailable.')
     } catch (error) {
       console.warn('Could not clear saved scans:', error)
-      setStorageWarning('Saved scans could not be cleared. Your pages are unchanged. Retry clearing, or clear this site’s browser storage.')
+      if (error instanceof SessionConflictError) { conflictedRef.current = true; setStorageWarning(conflictWarning) }
+      else setStorageWarning('Saved scans could not be cleared. Your pages are unchanged. Retry clearing, or clear this site’s browser storage.')
       setStatus('Could not clear saved scans. Your pages are unchanged.', true)
     } finally { setIsProcessing(false) }
   }, [setStatus, commitPages, resetHistory])

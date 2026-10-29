@@ -7,14 +7,14 @@ export function ToolDirectory() {
         {
           path: '/',
           heading: 'Document scanner',
-          intro:
+          description:
             'Scan, straighten, enhance, and export document photos as PDFs.',
         },
         ...tools.filter((t) => t.path !== '/tools'),
       ].map((tool) => (
         <a className="tool-card" href={tool.path} key={tool.path}>
           <h2>{tool.heading}</h2>
-          <p>{tool.intro}</p>
+          <p>{tool.description}</p>
           <span>Open tool →</span>
         </a>
       ))}

@@ -1,6 +1,6 @@
 # Scanner.cam tools
 
-The scanner keeps `/` and its existing SEO identity. `/tools` lists available tools. Each tool has a canonical, extensionless route, a server-rendered fallback, matching visible FAQ content and structured data, and the shared header/footer. React replaces the initial fallback when JavaScript starts.
+The scanner keeps `/` and its existing SEO identity. `/tools` lists available tools. Each tool has a canonical, extensionless route, a server-rendered fallback, matching visible FAQ content and structured data, and the shared header/footer. React replaces the initial fallback when JavaScript starts. With JavaScript enabled, the initial HTML shows a loading workspace instead of flashing the FAQ; the complete fallback remains available without JavaScript, and a failed load exposes it with an error.
 
 ## Adding a tool
 
@@ -18,7 +18,7 @@ The scanner keeps `/` and its existing SEO identity. `/tools` lists available to
 - HEIC/HEIF import first attempts native decoding, then lazy local conversion with heic2any. Unsupported encodings produce JPG-export guidance. No conversion server is used.
 - Target-size PDF export measures candidates at progressively lower image settings. An unmet target blocks the PDF download and reports the smallest result; it never silently downloads an oversized file. Size targets use decimal KB/MB for upload portals. OCR text bytes are included in the final target calculation. A first-page preview helps review quality; inspect all exported pages before submitting them.
 - Export presets cover job applications (1 MB target), receipts (small), and printing (high quality). Settings remain editable after selection.
-- OCR recognizes English, Spanish, French, German, Hindi, and Arabic locally, with pinned per-language downloads on first use. All six languages support UTF-8 text download. Searchable PDF currently supports English, Spanish, French, and German; Hindi and Arabic PDF text embedding is blocked with an explanation. OCR selection positions are approximate.
+- OCR recognizes English, Spanish, French, German, Hindi, and Arabic locally, with pinned per-language downloads on first use. All six languages support UTF-8 text download. Searchable PDF currently supports English, Spanish, French, and German; Hindi and Arabic PDF text embedding is blocked with an explanation. Searchable PDFs place invisible words at the hOCR word bounds; recognition and positions can still be imperfect.
 - Applied redactions replace covered image pixels and rebase the working source, so choosing Original or another filter cannot reveal covered content. Exports do not include the pre-redaction source. Undo history and original files remain on the device; users should clear saved scans on shared devices. Pixel coverage rounds outwards to avoid exposing fractional edge pixels.
 - Curve correction is a manual vertical resampling tool with top and bottom bend controls and a preview. It helps gentle page curves; it is not automatic 3D book reconstruction. Corrections can be undone.
 
@@ -27,3 +27,5 @@ The scanner keeps `/` and its existing SEO identity. `/tools` lists available to
 The existing same-origin U2-Net small model remains unchanged. Users choose or drop a photo and select Remove background; model loading happens automatically on first use. Original and transparent-result previews appear after selection. Processing status is user-facing; engine diagnostics stay in the console. Results preserve existing source alpha and export as PNG. Photo limits are 40 MB and 20 megapixels. Review fine edges before use.
 
 Runtime assets for ONNX and PDF.js are served locally in development and copied from the locked packages at build time. Large HEIC/PDF decoders are cached after use rather than fetched during the initial scanner visit. New tool pages retain their identity on offline reload after caching; processing files may still need a first online download.
+
+Session saves use a revision checked atomically in IndexedDB. If another tab has saved a newer session, the stale tab retains its local pages for export and displays a warning instead of overwriting the shared session.

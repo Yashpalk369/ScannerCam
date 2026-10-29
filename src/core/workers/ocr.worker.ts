@@ -41,6 +41,7 @@ let tesseractWorkerPromise: Promise<{
   recognize: (
     img: string,
     opts?: unknown,
+    output?: unknown,
   ) => Promise<{ data: { text: string; hocr: string } }>
   terminate: () => Promise<void>
 }> | null = null
@@ -98,9 +99,7 @@ workerScope.onmessage = async (event: MessageEvent<OcrRequest>) => {
     }
 
     const tWorker = await tesseractWorkerPromise
-    const result = await tWorker.recognize(req.imageDataUrl, {
-      rotateAuto: false,
-    })
+    const result = await tWorker.recognize(req.imageDataUrl, { rotateAuto: false }, { text: true, hocr: true })
 
     const response: OcrSuccessResponse = {
       id: req.id,

@@ -95,7 +95,7 @@ async function mockOcr(page: Page, mode: 'crash' | 'pending' | 'success') {
         if (mode === 'pending') return
         setTimeout(() => {
           if (mode === 'crash' && attempts === 1) this.onerror?.(new ErrorEvent('error', { message: 'worker crashed' }))
-          else this.onmessage?.({ data: { id: request.id, success: true, text: 'SEARCHABLE TEST TEXT', hocr: '' } })
+          else this.onmessage?.({ data: { id: request.id, success: true, text: 'SEARCHABLE TEST TEXT', hocr: '<span class="ocrx_word" title="bbox 10 10 100 40">SEARCHABLE</span>' } })
         }, 50)
       }
     }
@@ -189,14 +189,14 @@ test('searchable PDFs use invisible text rendering instead of painting white tex
     const { createPdfBlob } = await import('/src/core/pdf/pdfBuilder.ts')
     const pages = await scanDb.loadAllPages()
     try {
-      return [...new Uint8Array(await (await createPdfBlob(pages, { searchable: true, ocrTexts: ['SEARCHABLE TEST TEXT'] })).arrayBuffer())]
+      return [...new Uint8Array(await (await createPdfBlob(pages, { searchable: true, ocrWords: [[{ text: 'SEARCHABLE', x0: 10, y0: 10, x1: 100, y1: 40 }]] })).arrayBuffer())]
     } finally { pages.forEach(page => URL.revokeObjectURL(page.previewUrl)) }
   })
   const pdf = Buffer.from(bytes).toString('latin1')
   const streams = [...pdf.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)].map(match => {
     try { return inflateSync(Buffer.from(match[1], 'latin1')).toString('latin1') } catch { return '' }
   }).join('\n')
-  expect(streams).toContain('(SEARCHABLE TEST TEXT)')
+  expect(streams).toContain('(SEARCHABLE)')
   expect(streams).toMatch(/\b3 Tr\b/)
 })
 
@@ -257,4 +257,28 @@ test('confirmed clear removes the saved session and its undo history', async ({ 
   await page.reload()
   await expect(page.getByRole('button', { name: 'Upload Files', exact: true })).toBeEnabled()
   expect(await record(page)).toBeNull()
+})
+
+test('another tab cannot silently overwrite or clear a newer saved session', async ({ context, page }) => {
+  const buffer = await image(page)
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'first.png', mimeType: 'image/png', buffer })
+  await expect(page.getByRole('button', { name: 'Export (1)', exact: true })).toBeEnabled()
+  const savedCount = () => page.evaluate(async () => { const { scanDb } = await import('/src/core/storage/scanDb.ts'); const pages = await scanDb.loadAllPages(); pages.forEach(p => URL.revokeObjectURL(p.previewUrl)); return pages.length })
+  await expect.poll(savedCount).toBe(1)
+  const other = await context.newPage()
+  await other.goto('/')
+  await expect(other.getByRole('button', { name: 'Export (1)', exact: true })).toBeEnabled()
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'second.png', mimeType: 'image/png', buffer })
+  await expect(page.getByRole('button', { name: 'Export (2)', exact: true })).toBeEnabled()
+  await expect.poll(savedCount).toBe(2)
+  await other.getByRole('button', { name: 'Rotate', exact: true }).click()
+  await expect(other.locator('.scanner-storage-warning')).toContainText('changed in another tab')
+  await expect(other.getByRole('button', { name: 'Export (1)', exact: true })).toBeEnabled()
+  other.once('dialog', dialog => dialog.accept())
+  await other.getByRole('button', { name: 'Clear all pages', exact: true }).click()
+  await expect(other.locator('.scanner-storage-warning')).toContainText('changed in another tab')
+  expect(await savedCount()).toBe(2)
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Export (2)', exact: true })).toBeEnabled()
+  await other.close()
 })

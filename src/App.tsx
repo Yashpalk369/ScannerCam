@@ -277,7 +277,7 @@ const ScannerApp: React.FC = () => {
         </div>
 
         {/* Main Workspace Layout */}
-        <main className="scanner-workspace">
+        <main className={`scanner-workspace ${pages.length === 0 ? 'scanner-workspace-empty' : ''}`}>
           <section className="editor-main-area">
             {/* Active Page Meta Header */}
             {activePage && (
@@ -351,7 +351,7 @@ const ScannerApp: React.FC = () => {
           </section>
 
           {/* Sidebar / Bottom Page Strip */}
-          <PageStrip
+          {pages.length > 0 && <PageStrip
             pages={pages}
             activePageId={activePageId}
             isProcessing={isProcessing}
@@ -360,7 +360,7 @@ const ScannerApp: React.FC = () => {
             onReorderPages={reorderPages}
             onRemovePage={removePage}
             onAddFiles={handleAddFiles}
-          />
+          />}
         </main>
 
         {/* Global Status Bar */}
