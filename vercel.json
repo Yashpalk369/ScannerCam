@@ -1,6 +1,86 @@
 {
   "rewrites": [
     {
+      "source": "/passport-photo-maker/",
+      "destination": "/passport-photo-maker.html"
+    },
+    {
+      "source": "/passport-photo-maker",
+      "destination": "/passport-photo-maker.html"
+    },
+    {
+      "source": "/sign-pdf/",
+      "destination": "/sign-pdf.html"
+    },
+    {
+      "source": "/sign-pdf",
+      "destination": "/sign-pdf.html"
+    },
+    {
+      "source": "/image-to-pdf/",
+      "destination": "/image-to-pdf.html"
+    },
+    {
+      "source": "/image-to-pdf",
+      "destination": "/image-to-pdf.html"
+    },
+    {
+      "source": "/id-card-to-pdf/",
+      "destination": "/id-card-to-pdf.html"
+    },
+    {
+      "source": "/id-card-to-pdf",
+      "destination": "/id-card-to-pdf.html"
+    },
+    {
+      "source": "/searchable-pdf/",
+      "destination": "/searchable-pdf.html"
+    },
+    {
+      "source": "/searchable-pdf",
+      "destination": "/searchable-pdf.html"
+    },
+    {
+      "source": "/pdf-to-jpg/",
+      "destination": "/pdf-to-jpg.html"
+    },
+    {
+      "source": "/pdf-to-jpg",
+      "destination": "/pdf-to-jpg.html"
+    },
+    {
+      "source": "/extract-pdf-pages/",
+      "destination": "/extract-pdf-pages.html"
+    },
+    {
+      "source": "/extract-pdf-pages",
+      "destination": "/extract-pdf-pages.html"
+    },
+    {
+      "source": "/resize-image-to-kb/",
+      "destination": "/resize-image-to-kb.html"
+    },
+    {
+      "source": "/resize-image-to-kb",
+      "destination": "/resize-image-to-kb.html"
+    },
+    {
+      "source": "/heic-to-jpg/",
+      "destination": "/heic-to-jpg.html"
+    },
+    {
+      "source": "/heic-to-jpg",
+      "destination": "/heic-to-jpg.html"
+    },
+    {
+      "source": "/remove-image-metadata/",
+      "destination": "/remove-image-metadata.html"
+    },
+    {
+      "source": "/remove-image-metadata",
+      "destination": "/remove-image-metadata.html"
+    },
+    {
       "source": "/flatten-page/",
       "destination": "/flatten-page.html"
     },
