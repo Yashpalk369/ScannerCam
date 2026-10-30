@@ -18,6 +18,7 @@ export function SignPdf() {
   const pdfRef = useRef<PDFDocumentProxy | null>(null)
   const loadingTaskRef = useRef<PDFDocumentLoadingTask | null>(null)
   const drawingRef = useRef(false)
+  const signatureGenerationRef = useRef(0)
   const [filename, setFilename] = useState('')
   const [pageCount, setPageCount] = useState(0)
   const [pdfRevision, setPdfRevision] = useState(0)
@@ -57,18 +58,34 @@ export function SignPdf() {
   }, [pageNumber, pageCount, pdfRevision])
 
   async function openPdf(file: File) {
-    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { setStatus('Choose a PDF file.'); return }
-    if (file.size > MAX_BYTES) { setStatus('Choose a PDF smaller than 80 MB.'); return }
+    if (busy) return
     setBusy(true)
     setStatus('Opening PDF on your device…')
+    // Once a replacement is selected, never leave the previous document or
+    // signature available if the new file fails validation or decoding.
+    const previousTask = loadingTaskRef.current
+    loadingTaskRef.current = null
+    pdfRef.current = null
+    setPageCount(0)
+    setPageNumber(1)
+    setFilename('')
+    setSignature('')
+    signatureGenerationRef.current++
+    setTypedSignature('')
+    setPosition({ x: 0.1, y: 0.7 })
+    drawingRef.current = false
+    let task: PDFDocumentLoadingTask | undefined
     try {
+      await previousTask?.destroy()
+      if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') throw new Error('Choose a PDF file.')
+      if (file.size > MAX_BYTES) throw new Error('Choose a PDF smaller than 80 MB.')
       const pdfjs = await import('pdfjs-dist')
       pdfjs.GlobalWorkerOptions.workerSrc = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default
-      const task = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), cMapUrl: '/pdf-assets/cmaps/', cMapPacked: true, standardFontDataUrl: '/pdf-assets/standard_fonts/', wasmUrl: '/pdf-assets/wasm/' })
+      task = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), cMapUrl: '/pdf-assets/cmaps/', cMapPacked: true, standardFontDataUrl: '/pdf-assets/standard_fonts/', wasmUrl: '/pdf-assets/wasm/' })
       const pdf = await task.promise
-      if (pdf.numPages > MAX_PAGES) { await task.destroy(); throw new Error('Use a PDF of 100 pages or fewer.') }
-      await loadingTaskRef.current?.destroy()
+      if (pdf.numPages > MAX_PAGES) throw new Error('Use a PDF of 100 pages or fewer.')
       loadingTaskRef.current = task
+      task = undefined
       pdfRef.current = pdf
       setPdfRevision(value => value + 1)
       setFilename(file.name)
@@ -78,7 +95,10 @@ export function SignPdf() {
       setStatus('Draw your signature, then tap the page to place it.')
     } catch (error) {
       setStatus(error instanceof Error && error.name === 'PasswordException' ? 'Password-protected PDFs are not supported. Unlock a copy and try again.' : error instanceof Error ? `Could not open PDF: ${error.message}` : 'Could not open this PDF.')
-    } finally { setBusy(false) }
+    } finally {
+      if (task) await task.destroy().catch(() => {})
+      setBusy(false)
+    }
   }
 
   function draw(event: React.PointerEvent<HTMLCanvasElement>, start = false) {
@@ -89,13 +109,14 @@ export function SignPdf() {
     const y = (event.clientY - rect.top) * canvas.height / rect.height
     const ctx = canvas.getContext('2d')!
     ctx.strokeStyle = '#111827'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'
-    if (start) { drawingRef.current = true; canvas.setPointerCapture(event.pointerId); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.01, y + 0.01) }
+    if (start) { signatureGenerationRef.current++; drawingRef.current = true; canvas.setPointerCapture(event.pointerId); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.01, y + 0.01) }
     else ctx.lineTo(x, y)
     ctx.stroke()
     setSignature(canvas.toDataURL('image/png'))
   }
 
   function clearSignature() {
+    signatureGenerationRef.current++
     const canvas = signatureRef.current
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height)
     setSignature('')
@@ -104,6 +125,7 @@ export function SignPdf() {
   function makeTypedSignature() {
     const canvas = signatureRef.current
     if (!canvas || !typedSignature.trim()) return
+    signatureGenerationRef.current++
     const ctx = canvas.getContext('2d')!
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.fillStyle = '#111827'; ctx.font = 'italic 72px cursive'; ctx.textBaseline = 'middle'
@@ -115,8 +137,10 @@ export function SignPdf() {
     if (!['image/png', 'image/jpeg'].includes(file.type) || file.size > 5 * 1024 * 1024) {
       setStatus('Choose a PNG or JPG signature image under 5 MB.'); return
     }
+    const generation = ++signatureGenerationRef.current
     try {
       const bitmap = await createImageBitmap(file)
+      if (generation !== signatureGenerationRef.current) { bitmap.close(); return }
       const canvas = signatureRef.current
       if (!canvas) { bitmap.close(); return }
       const ctx = canvas.getContext('2d')!
@@ -127,7 +151,7 @@ export function SignPdf() {
       bitmap.close()
       setSignature(canvas.toDataURL('image/png'))
       setStatus('Signature added. Tap the page or use the controls to position it.')
-    } catch { setStatus('Could not read that signature image. Try a PNG or JPG.') }
+    } catch { if (generation === signatureGenerationRef.current) setStatus('Could not read that signature image. Try a PNG or JPG.') }
   }
 
   async function exportPdf() {
