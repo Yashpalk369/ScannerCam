@@ -1,6 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/resize-image-pixels/",
+      "destination": "/resize-image-pixels.html"
+    },
+    {
+      "source": "/resize-image-pixels",
+      "destination": "/resize-image-pixels.html"
+    },
+    {
+      "source": "/image-format-converter/",
+      "destination": "/image-format-converter.html"
+    },
+    {
+      "source": "/image-format-converter",
+      "destination": "/image-format-converter.html"
+    },
+    {
       "source": "/passport-photo-maker/",
       "destination": "/passport-photo-maker.html"
     },

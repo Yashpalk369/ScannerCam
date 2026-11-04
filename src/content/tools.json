@@ -1084,5 +1084,99 @@
         "label": "Explore all tools"
       }
     ]
+  },
+  {
+    "path": "/resize-image-pixels",
+    "title": "Resize Image by Pixels Online | Scanner.cam",
+    "heading": "Resize Image by Pixels",
+    "description": "Resize an image to selected pixel dimensions in your browser. Preview and download locally.",
+    "intro": "Set your image width and height in pixels, preview the result and download it. Your file stays on your device.",
+    "workspace": "pixel-resize",
+    "answer": "Choose an image, set pixel dimensions, preview and download. Lock the aspect ratio to keep proportions. Processing happens locally.",
+    "steps": [
+      "Choose an image.",
+      "Set the width and height; lock proportions if needed.",
+      "Preview and download the resized image."
+    ],
+    "sections": [
+      {
+        "heading": "Choose image dimensions",
+        "paragraphs": [
+          "Keep the aspect ratio locked to avoid stretching. Enlarging a small image may reduce sharpness.",
+          "JPEG fills transparent areas with white. Review the result before sharing."
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Are my images uploaded?",
+        "a": "No. Image processing takes place in your browser."
+      },
+      {
+        "q": "Does resizing improve image quality?",
+        "a": "No. Enlarging an image cannot restore missing detail."
+      }
+    ],
+    "related": [
+      {
+        "href": "/resize-image-to-kb",
+        "label": "Resize image to a file-size limit"
+      },
+      {
+        "href": "/image-format-converter",
+        "label": "Convert image formats"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all tools"
+      }
+    ]
+  },
+  {
+    "path": "/image-format-converter",
+    "title": "Convert JPG, PNG and WebP Online | Scanner.cam",
+    "heading": "Convert Image Formats",
+    "description": "Convert JPG, PNG and WebP images locally in your browser and download the result.",
+    "intro": "Choose a JPG, PNG or WebP image and download it in another supported format. Your file stays on your device.",
+    "workspace": "image-converter",
+    "answer": "Choose a JPG, PNG or WebP image, select an output format and download the converted file. Conversion runs in your browser.",
+    "steps": [
+      "Choose an image.",
+      "Select JPG, PNG or WebP.",
+      "Preview and download the converted file."
+    ],
+    "sections": [
+      {
+        "heading": "Choose a format",
+        "paragraphs": [
+          "PNG and WebP can preserve transparency. JPG does not support transparency, so transparent areas become white.",
+          "Converting to JPG or WebP may change image quality. Keep the original when it matters."
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Are my images uploaded?",
+        "a": "No. Conversion runs in your browser."
+      },
+      {
+        "q": "Can JPG preserve a transparent background?",
+        "a": "No. Transparent pixels are filled with white in JPG output."
+      }
+    ],
+    "related": [
+      {
+        "href": "/heic-to-jpg",
+        "label": "Convert HEIC to JPG"
+      },
+      {
+        "href": "/resize-image-pixels",
+        "label": "Resize image by pixels"
+      },
+      {
+        "href": "/tools",
+        "label": "Explore all tools"
+      }
+    ]
   }
 ]
