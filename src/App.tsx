@@ -36,6 +36,8 @@ const ImageUtilities = lazy(() => import('./components/Tools/ImageUtilities').th
 const RemoveImageMetadata = lazy(() => import('./components/Tools/RemoveImageMetadata').then(m => ({ default: m.RemoveImageMetadata })))
 const SignPdf = lazy(() => import('./components/Tools/SignPdf').then(m => ({ default: m.SignPdf })))
 const PassportPhotoMaker = lazy(() => import('./components/Tools/PassportPhotoMaker').then(m => ({ default: m.PassportPhotoMaker })))
+const ResizeImagePixels = lazy(() => import('./components/Tools/ResizeImagePixels').then(m => ({ default: m.ResizeImagePixels })))
+const ImageFormatConverter = lazy(() => import('./components/Tools/ImageFormatConverter').then(m => ({ default: m.ImageFormatConverter })))
 
 const ScannerApp: React.FC = () => {
   const path = window.location.pathname.replace(/\/$/, '')
@@ -489,6 +491,8 @@ export const App: React.FC = () => {
              path === '/heic-to-jpg' ? <ImageUtilities mode="heic-to-jpg" /> :
              path === '/remove-image-metadata' ? <RemoveImageMetadata /> :
              path === '/passport-photo-maker' ? <PassportPhotoMaker /> :
+             path === '/resize-image-pixels' ? <ResizeImagePixels /> :
+             path === '/image-format-converter' ? <ImageFormatConverter /> :
              path === '/sign-pdf' ? <SignPdf /> : null}
           </Suspense>
         )}
