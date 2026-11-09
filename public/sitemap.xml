@@ -8,7 +8,7 @@
   </url>
   <url>
     <loc>https://www.scanner.cam/blog</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -723,6 +723,36 @@
   <url>
     <loc>https://www.scanner.cam/blog/what-is-the-best-dpi-for-scanning-old-photos</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-remove-glare-when-scanning-glossy-photos</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-business-cards-and-save-them-as-contacts</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/can-ocr-read-business-cards-accurately</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-certificates-and-diplomas</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-prepare-a-document-pack-for-a-visa-application</loc>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
