@@ -8,7 +8,7 @@
   </url>
   <url>
     <loc>https://www.scanner.cam/blog</loc>
-    <lastmod>2026-11-10</lastmod>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -783,6 +783,36 @@
   <url>
     <loc>https://www.scanner.cam/blog/how-to-scan-property-documents-sale-deed-registry</loc>
     <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-bank-statements-for-a-loan-application</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-invoices-for-clients-as-a-freelancer</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-a-qr-code-from-a-screenshot</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/how-to-scan-barcodes-with-your-phone</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.scanner.cam/blog/is-it-safe-to-scan-random-qr-codes</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
